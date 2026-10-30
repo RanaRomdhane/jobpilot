@@ -8,10 +8,10 @@ Status: **awaiting approval**. Each phase lives on its own branch, lands through
 - Branch per phase: `phase/1-foundation`, `phase/2-triage`, … ; conventional commits
   (`feat:`, `fix:`, `test:`, `docs:`, `chore:`, `ci:`).
 - PR checklist = the phase's acceptance criteria + security checklist.
-- Squash-merge, then delete the branch. (Branch protection rules need GitHub Pro on private repos;
-  without it the "CI green before merge" rule is enforced by process.)
+- Squash-merge only; merged branches are deleted automatically. `main` is protected (no force push,
+  no deletion); the CI jobs become required status checks at the end of Phase 1.
 
-## Phase 0 — Bootstrap ✅ (this PR-less initial commit)
+## Phase 0 — Bootstrap ✅ (initial commits directly on `main`)
 
 Prerequisites, repo, brief, architecture, ADRs 0001–0004, this plan.
 
