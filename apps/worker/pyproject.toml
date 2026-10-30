@@ -5,6 +5,7 @@ description = "JobPilot background worker"
 requires-python = ">=3.12,<3.13"
 dependencies = [
   "jobpilot-core",
+  "jobpilot-resume",
   "jobpilot-security",
   "jobpilot-latex",
   "jobpilot-agents",

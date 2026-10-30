@@ -17,6 +17,7 @@ COPY packages/core/pyproject.toml packages/core/
 COPY packages/security/pyproject.toml packages/security/
 COPY packages/jobs_sources/pyproject.toml packages/jobs_sources/
 COPY packages/latex/pyproject.toml packages/latex/
+COPY packages/resume/pyproject.toml packages/resume/
 COPY apps/api/pyproject.toml apps/api/
 COPY apps/worker/pyproject.toml apps/worker/
 COPY apps/mcp_gmail/pyproject.toml apps/mcp_gmail/

@@ -109,3 +109,23 @@ async def test_add_labels_only_adds_and_only_jobpilot_labels() -> None:
     with pytest.raises(LabelNotAllowedError):
         await client.ensure_labels(["Important"])
     await client.aclose()
+
+
+@pytest.mark.parametrize(
+    "module",
+    ["jobpilot_agents.resume_parser", "jobpilot_agents.ats_review", "jobpilot_agents.structured"],
+)
+def test_cv_agents_have_no_tools_and_no_gmail_access(module: str) -> None:
+    """ResumeParserAgent and the ATS review are pure structured output: no tools, no Gmail."""
+    import importlib
+
+    source = inspect.getsource(importlib.import_module(module))
+    imported = {
+        (n.module or "") if isinstance(n, ast.ImportFrom) else a.name
+        for n in ast.walk(ast.parse(source))
+        if isinstance(n, ast.Import | ast.ImportFrom)
+        for a in n.names
+    }
+    assert not {m for m in imported if "gmail" in m or m.startswith(("agents", "mcp"))}
+    for wiring in ("tools=", "mcp_servers", "function_tool", "tool_choice", '"tools"'):
+        assert wiring not in source

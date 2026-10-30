@@ -19,11 +19,14 @@ from jobpilot_core.crypto import SecretBox
 from jobpilot_core.db import create_engine, create_sessionmaker
 from jobpilot_core.enums import EmailCategory, OAuthScopeSet
 from jobpilot_core.health import WORKER_HEARTBEAT_KEY, WORKER_HEARTBEAT_TTL_S
+from jobpilot_core.llm import DbUsageSink, LLMConfigurationError, LLMProvider, build_provider
 from jobpilot_core.log import configure_logging
 from jobpilot_core.models import EmailMessage, OAuthCredential
 from jobpilot_core.tasks import TaskReporter, create_task_run
 from jobpilot_mcp_gmail.credentials import CredentialStore, GmailNotConnectedError
 from jobpilot_mcp_gmail.gmail_client import GmailAuthExpiredError, GmailClient
+from jobpilot_security.factory import build_detector
+from jobpilot_worker.resume import ResumePipeline
 from jobpilot_worker.triage import run_triage
 from jobpilot_worker.user_labels import UserLabelActions
 
@@ -140,6 +143,54 @@ async def user_label_change(
     return {"ok": True}
 
 
+def resume_pipeline(ctx: Ctx, rep: TaskReporter) -> ResumePipeline:
+    settings = ctx["settings"]
+    provider: LLMProvider | None
+    try:
+        provider = build_provider(
+            settings, ctx["app_redis"], usage_sink=DbUsageSink(ctx["sessionmaker"])
+        )
+    except LLMConfigurationError:
+        provider = None  # deterministic ATS rules still run
+    return ResumePipeline(
+        settings, ctx["sessionmaker"], provider, build_detector(settings, provider), rep
+    )
+
+
+async def parse_resume(ctx: Ctx, task_id: str, resume_id: int) -> dict[str, Any]:
+    """Extract, scan, parse and grade an uploaded CV."""
+    rep = reporter(ctx, task_id)
+    await rep.start("CV received")
+    try:
+        result = await resume_pipeline(ctx, rep).process(resume_id)
+    except Exception as exc:
+        await rep.fail(f"{type(exc).__name__}: {exc}")
+        raise
+    if result["status"] == "failed" and result.get("ats_report_id") is None:
+        await rep.fail(result["error"])
+    else:
+        await rep.succeed(result, f"ATS score {result.get('score')}/100")
+    return result
+
+
+async def ats_report(
+    ctx: Ctx, task_id: str, resume_id: int, job_text: str | None, job_title: str | None
+) -> dict[str, Any]:
+    """A new ATS report for an already-parsed CV, optionally against a pasted job posting."""
+    rep = reporter(ctx, task_id)
+    await rep.start("ATS analysis")
+    try:
+        report_id, score = await resume_pipeline(ctx, rep).ats(
+            resume_id, job_text=job_text, job_title=job_title
+        )
+    except Exception as exc:
+        await rep.fail(f"{type(exc).__name__}: {exc}")
+        raise
+    result = {"ats_report_id": report_id, "score": score}
+    await rep.succeed(result, f"ATS score {score}/100")
+    return result
+
+
 async def scheduled_triage(ctx: Ctx) -> None:
     """Cron: incremental sync + triage, only once Gmail is connected."""
     async with ctx["sessionmaker"]() as session:
@@ -155,7 +206,7 @@ async def scheduled_triage(ctx: Ctx) -> None:
 class WorkerSettings:
     """arq reads these plain class attributes directly."""
 
-    functions = [ping, triage, user_label_change]  # noqa: RUF012
+    functions = [ping, triage, user_label_change, parse_resume, ats_report]  # noqa: RUF012
     cron_jobs = [  # noqa: RUF012
         cron(heartbeat, second={0, 15, 30, 45}, run_at_startup=True),
         cron(scheduled_triage, minute={5, 35}, unique=True, timeout=3600),
