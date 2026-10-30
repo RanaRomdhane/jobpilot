@@ -12,7 +12,8 @@ export const runtime = "nodejs";
 
 const API_URL = process.env.API_INTERNAL_URL ?? "http://127.0.0.1:8000";
 
-// Hop-by-hop headers must not be forwarded (RFC 9110 §7.6.1); cookies stay at the edge.
+// Hop-by-hop headers must not be forwarded (RFC 9110 §7.6.1). Cookies are rebuilt below so
+// that only the dashboard session cookie ever reaches the API.
 const DROP_REQUEST_HEADERS = new Set([
   "host",
   "connection",
@@ -25,7 +26,9 @@ const DROP_REQUEST_HEADERS = new Set([
   "cookie",
   "content-length",
 ]);
+const SESSION_COOKIE = "jp_session";
 const DROP_RESPONSE_HEADERS = new Set([
+  "set-cookie",
   "connection",
   "keep-alive",
   "transfer-encoding",
@@ -50,6 +53,8 @@ async function proxy(
   request.headers.forEach((value, key) => {
     if (!DROP_REQUEST_HEADERS.has(key.toLowerCase())) headers.set(key, value);
   });
+  const session = request.cookies.get(SESSION_COOKIE)?.value;
+  if (session) headers.set("cookie", `${SESSION_COOKIE}=${session}`);
 
   const hasBody = !["GET", "HEAD"].includes(request.method);
   let upstream: Response;
@@ -72,6 +77,9 @@ async function proxy(
   upstream.headers.forEach((value, key) => {
     if (!DROP_RESPONSE_HEADERS.has(key.toLowerCase())) responseHeaders.set(key, value);
   });
+  for (const cookie of upstream.headers.getSetCookie()) {
+    if (cookie.startsWith(`${SESSION_COOKIE}=`)) responseHeaders.append("set-cookie", cookie);
+  }
   if (responseHeaders.get("content-type")?.startsWith("text/event-stream")) {
     responseHeaders.set("cache-control", "no-cache, no-transform");
     responseHeaders.set("x-accel-buffering", "no");

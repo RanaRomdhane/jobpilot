@@ -8,6 +8,7 @@ from fastapi import APIRouter, status
 from pydantic import BaseModel
 from sqlalchemy import func, select
 
+from jobpilot_api.auth import Authenticated
 from jobpilot_api.deps import Session, State
 from jobpilot_api.schemas import TaskCreated
 from jobpilot_core.models import EmailMessage, GmailSyncState, OAuthCredential
@@ -33,7 +34,7 @@ class GmailStatus(BaseModel):
 
 
 @router.get("/status", response_model=GmailStatus)
-async def gmail_status(session: Session) -> GmailStatus:
+async def gmail_status(_: Authenticated, session: Session) -> GmailStatus:
     creds = (await session.scalars(select(OAuthCredential))).all()
     sync = (
         await session.scalars(
@@ -71,7 +72,9 @@ async def gmail_status(session: Session) -> GmailStatus:
     status_code=status.HTTP_202_ACCEPTED,
     summary="Sync Gmail and classify unprocessed emails (background task)",
 )
-async def start_triage(state: State, session: Session, sync: bool = True) -> TaskCreated:
+async def start_triage(
+    _: Authenticated, state: State, session: Session, sync: bool = True
+) -> TaskCreated:
     row = await create_task_run(session, "triage", {"sync": sync})
     await state.arq.enqueue_job("triage", str(row.id), sync, _job_id=str(row.id))
     return TaskCreated(task_id=str(row.id))

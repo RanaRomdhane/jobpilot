@@ -10,24 +10,12 @@ import httpx
 import pytest
 from redis.asyncio import Redis
 
-from jobpilot_api.main import create_app
 from jobpilot_core.config import Settings
 from jobpilot_core.db import create_engine, create_sessionmaker
 from jobpilot_core.health import WORKER_HEARTBEAT_KEY
 from jobpilot_worker.main import heartbeat, ping
 
 pytestmark = pytest.mark.integration
-
-
-@pytest.fixture
-async def client(
-    integration_settings: Settings, real_redis: Redis
-) -> AsyncIterator[httpx.AsyncClient]:
-    app = create_app(integration_settings)
-    async with app.router.lifespan_context(app):
-        transport = httpx.ASGITransport(app=app)
-        async with httpx.AsyncClient(transport=transport, base_url="http://test") as c:
-            yield c
 
 
 @pytest.fixture

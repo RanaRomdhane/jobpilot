@@ -4,6 +4,208 @@
  */
 
 export interface paths {
+    "/api/v1/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Applications */
+        get: operations["list_applications_api_v1_applications_get"];
+        put?: never;
+        /** Create Application */
+        post: operations["create_application_api_v1_applications_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{app_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Application */
+        get: operations["get_application_api_v1_applications__app_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Application */
+        delete: operations["delete_application_api_v1_applications__app_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Application */
+        patch: operations["update_application_api_v1_applications__app_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/applications/{app_id}/emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Link Email
+         * @description Attach an email (and its thread) to an application; future replies link automatically.
+         */
+        post: operations["link_email_api_v1_applications__app_id__emails_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{app_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Change Status
+         * @description Kanban drag & drop: change the status and record an event.
+         */
+        patch: operations["change_status_api_v1_applications__app_id__status_patch"];
+        trace?: never;
+    };
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login_api_v1_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout */
+        post: operations["logout_api_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Session Info */
+        get: operations["session_info_api_v1_auth_session_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Emails */
+        get: operations["list_emails_api_v1_emails_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/emails/{email_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Email */
+        get: operations["get_email_api_v1_emails__email_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/emails/{email_id}/category": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Reclassify
+         * @description Your correction wins: stored as `manual_category` (eval feed) and synced to Gmail.
+         */
+        patch: operations["reclassify_api_v1_emails__email_id__category_patch"];
+        trace?: never;
+    };
+    "/api/v1/emails/{email_id}/clear-suspicious": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Clear Suspicious
+         * @description You reviewed it and it is fine: unflag and remove the ⚠ Suspicious label in Gmail.
+         */
+        post: operations["clear_suspicious_api_v1_emails__email_id__clear_suspicious_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/gmail/status": {
         parameters: {
             query?: never;
@@ -72,6 +274,142 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Overview */
+        get: operations["overview_api_v1_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/security": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Security Report */
+        get: operations["security_report_api_v1_security_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Settings */
+        get: operations["get_settings_api_v1_settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Preferences */
+        put: operations["update_preferences_api_v1_settings_preferences_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Suggestions */
+        get: operations["list_suggestions_api_v1_suggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/suggestions/{suggestion_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept Suggestion */
+        post: operations["accept_suggestion_api_v1_suggestions__suggestion_id__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/suggestions/{suggestion_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismiss Suggestion */
+        post: operations["dismiss_suggestion_api_v1_suggestions__suggestion_id__dismiss_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent Tasks */
+        get: operations["recent_tasks_api_v1_tasks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tasks/ping": {
         parameters: {
             query?: never;
@@ -83,6 +421,23 @@ export interface paths {
         put?: never;
         /** Enqueue a demo task that exercises worker + progress streaming */
         post: operations["enqueue_ping_api_v1_tasks_ping_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stream every task event (dashboard toasts) as SSE */
+        get: operations["stream_all_api_v1_tasks_stream_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -127,6 +482,176 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Activity */
+        Activity: {
+            /** Application Id */
+            application_id?: number | null;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /**
+             * Detail
+             * @default {}
+             */
+            detail: {
+                [key: string]: unknown;
+            };
+            /** Kind */
+            kind: string;
+            /** Title */
+            title: string;
+        };
+        /** ApplicationCreate */
+        ApplicationCreate: {
+            /** Applied At */
+            applied_at?: string | null;
+            /** @default email */
+            apply_channel: components["schemas"]["ApplyChannel"];
+            /** Apply Url */
+            apply_url?: string | null;
+            /** Company Domain */
+            company_domain?: string | null;
+            /** Company Name */
+            company_name: string;
+            /** Contact Email */
+            contact_email?: string | null;
+            /** Interview At */
+            interview_at?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Role Title */
+            role_title: string;
+            /** Source */
+            source?: string | null;
+            /** @default sent */
+            status: components["schemas"]["ApplicationStatus"];
+        };
+        /** ApplicationDetail */
+        ApplicationDetail: {
+            /** Applied At */
+            applied_at: string | null;
+            apply_channel: components["schemas"]["ApplyChannel"];
+            /** Apply Url */
+            apply_url: string | null;
+            company: components["schemas"]["CompanyOut"] | null;
+            /** Contact Email */
+            contact_email: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Emails */
+            emails: components["schemas"]["EmailOut"][];
+            /** Events */
+            events: components["schemas"]["EventOut"][];
+            /** Gmail Thread Id */
+            gmail_thread_id: string | null;
+            /** Id */
+            id: number;
+            /** Interview At */
+            interview_at: string | null;
+            /** Notes */
+            notes: string | null;
+            /**
+             * Pending Suggestions
+             * @default 0
+             */
+            pending_suggestions: number;
+            /** Role Title */
+            role_title: string;
+            /** Source */
+            source: string | null;
+            status: components["schemas"]["ApplicationStatus"];
+            /** Suggestions */
+            suggestions: components["schemas"]["SuggestionOut"][];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** ApplicationOut */
+        ApplicationOut: {
+            /** Applied At */
+            applied_at: string | null;
+            apply_channel: components["schemas"]["ApplyChannel"];
+            /** Apply Url */
+            apply_url: string | null;
+            company: components["schemas"]["CompanyOut"] | null;
+            /** Contact Email */
+            contact_email: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Gmail Thread Id */
+            gmail_thread_id: string | null;
+            /** Id */
+            id: number;
+            /** Interview At */
+            interview_at: string | null;
+            /** Notes */
+            notes: string | null;
+            /**
+             * Pending Suggestions
+             * @default 0
+             */
+            pending_suggestions: number;
+            /** Role Title */
+            role_title: string;
+            /** Source */
+            source: string | null;
+            status: components["schemas"]["ApplicationStatus"];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * ApplicationStatus
+         * @enum {string}
+         */
+        ApplicationStatus: "draft" | "ready_for_review" | "sent" | "recruiter_contact" | "interview" | "offer" | "rejected" | "withdrawn" | "ghosted";
+        /** ApplicationUpdate */
+        ApplicationUpdate: {
+            /** Applied At */
+            applied_at?: string | null;
+            /** Apply Url */
+            apply_url?: string | null;
+            /** Company Domain */
+            company_domain?: string | null;
+            /** Contact Email */
+            contact_email?: string | null;
+            /** Interview At */
+            interview_at?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Role Title */
+            role_title?: string | null;
+            /** Source */
+            source?: string | null;
+        };
+        /**
+         * ApplyChannel
+         * @enum {string}
+         */
+        ApplyChannel: "email" | "link";
+        /** CompanyOut */
+        CompanyOut: {
+            /** Domain */
+            domain: string | null;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Website */
+            website: string | null;
+        };
         /** ComponentStatus */
         ComponentStatus: {
             /** Critical */
@@ -139,6 +664,151 @@ export interface components {
             name: string;
             /** Ok */
             ok: boolean;
+        };
+        /** EmailActionResult */
+        EmailActionResult: {
+            email: components["schemas"]["EmailDetail"];
+            /** Task Id */
+            task_id: string | null;
+        };
+        /**
+         * EmailCategory
+         * @enum {string}
+         */
+        EmailCategory: "Recruteur" | "Entretien" | "Refus" | "Offre" | "Newsletter" | "Autre";
+        /** EmailDetail */
+        EmailDetail: {
+            category: components["schemas"]["EmailCategory"] | null;
+            /** Classification Reason */
+            classification_reason: string | null;
+            /** Confidence */
+            confidence: number | null;
+            /** Extracted */
+            extracted: {
+                [key: string]: unknown;
+            };
+            /** From Address */
+            from_address: string | null;
+            /** From Name */
+            from_name: string | null;
+            /** Gmail Url */
+            gmail_url: string;
+            /** Id */
+            id: number;
+            /** Injection Flag */
+            injection_flag: boolean;
+            /** Injection Reasons */
+            injection_reasons: {
+                [key: string]: unknown;
+            }[];
+            /** Injection Score */
+            injection_score: number | null;
+            /** Label Applied */
+            label_applied: boolean;
+            manual_category: components["schemas"]["EmailCategory"] | null;
+            /** Processed At */
+            processed_at: string | null;
+            /** Received At */
+            received_at: string | null;
+            /** Snippet */
+            snippet: string | null;
+            /** Subject */
+            subject: string | null;
+            /** Thread Id */
+            thread_id: string;
+        };
+        /** EmailOut */
+        EmailOut: {
+            category: components["schemas"]["EmailCategory"] | null;
+            /** Classification Reason */
+            classification_reason: string | null;
+            /** Confidence */
+            confidence: number | null;
+            /** From Address */
+            from_address: string | null;
+            /** From Name */
+            from_name: string | null;
+            /** Id */
+            id: number;
+            /** Injection Flag */
+            injection_flag: boolean;
+            /** Injection Score */
+            injection_score: number | null;
+            /** Label Applied */
+            label_applied: boolean;
+            manual_category: components["schemas"]["EmailCategory"] | null;
+            /** Processed At */
+            processed_at: string | null;
+            /** Received At */
+            received_at: string | null;
+            /** Snippet */
+            snippet: string | null;
+            /** Subject */
+            subject: string | null;
+            /** Thread Id */
+            thread_id: string;
+        };
+        /** EmailPage */
+        EmailPage: {
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Items */
+            items: components["schemas"]["EmailOut"][];
+            /** Total */
+            total: number;
+        };
+        /** EventOut */
+        EventOut: {
+            /** Id */
+            id: number;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Source Email Id */
+            source_email_id: number | null;
+            /** Type */
+            type: string;
+        };
+        /** FlaggedItem */
+        FlaggedItem: {
+            category: components["schemas"]["EmailCategory"] | null;
+            /** Id */
+            id: number;
+            /** Kind */
+            kind: string;
+            /** Reasons */
+            reasons: {
+                [key: string]: unknown;
+            }[];
+            /** Received At */
+            received_at: string | null;
+            /** Score */
+            score: number | null;
+            /** Source */
+            source: string | null;
+            /** Title */
+            title: string | null;
+        };
+        /** FunnelStep */
+        FunnelStep: {
+            /** Count */
+            count: number;
+            status: components["schemas"]["ApplicationStatus"];
+        };
+        /** GmailScope */
+        GmailScope: {
+            /** Account Email */
+            account_email: string | null;
+            /** Scope Set */
+            scope_set: string;
         };
         /** GmailStatus */
         GmailStatus: {
@@ -174,6 +844,97 @@ export interface components {
             /** Version */
             version: string;
         };
+        /** Kpis */
+        Kpis: {
+            /** Applications Sent */
+            applications_sent: number;
+            /** Interviews */
+            interviews: number;
+            /** Offers */
+            offers: number;
+            /** Response Rate */
+            response_rate: number | null;
+            /** Sent Last 7 Days */
+            sent_last_7_days: number;
+        };
+        /** LLMSettings */
+        LLMSettings: {
+            /** Fallback To Openai */
+            fallback_to_openai: boolean;
+            /** Groq Key Set */
+            groq_key_set: boolean;
+            /** Guard Enabled */
+            guard_enabled: boolean;
+            /** Limits */
+            limits: {
+                [key: string]: number;
+            };
+            /** Models */
+            models: {
+                [key: string]: string;
+            };
+            /** Openai Key Set */
+            openai_key_set: boolean;
+            /** Provider */
+            provider: string;
+        };
+        /** LinkEmail */
+        LinkEmail: {
+            /** Email Id */
+            email_id: number;
+        };
+        /** LoginRequest */
+        LoginRequest: {
+            /** Password */
+            password: string;
+        };
+        /** Overview */
+        Overview: {
+            /** Activity */
+            activity: components["schemas"]["Activity"][];
+            /** Funnel */
+            funnel: components["schemas"]["FunnelStep"][];
+            /** Inbox */
+            inbox: {
+                [key: string]: number;
+            };
+            kpis: components["schemas"]["Kpis"];
+            /** Last Sync At */
+            last_sync_at: string | null;
+            /** Pending Suggestions */
+            pending_suggestions: number;
+            /** Security Alerts */
+            security_alerts: number;
+            /** Status Counts */
+            status_counts: {
+                [key: string]: number;
+            };
+            /** Upcoming Interviews */
+            upcoming_interviews: components["schemas"]["UpcomingInterview"][];
+        };
+        /** Preferences */
+        Preferences: {
+            /**
+             * Daily Send Cap
+             * @default 20
+             */
+            daily_send_cap: number;
+            /**
+             * Locale
+             * @default fr
+             * @enum {string}
+             */
+            locale: "fr" | "en";
+            /**
+             * Timezone
+             * @default Africa/Tunis
+             */
+            timezone: string;
+        };
+        /** Reclassify */
+        Reclassify: {
+            category: components["schemas"]["EmailCategory"];
+        };
         /** ScopeStatus */
         ScopeStatus: {
             /** Account Email */
@@ -182,6 +943,113 @@ export interface components {
             expires_at: string | null;
             /** Scope Set */
             scope_set: string;
+        };
+        /** SecurityReport */
+        SecurityReport: {
+            /** Eval Reports */
+            eval_reports: {
+                [key: string]: unknown;
+            };
+            /** Flagged */
+            flagged: components["schemas"]["FlaggedItem"][];
+            suite: components["schemas"]["SuiteRun"];
+        };
+        /** SessionInfo */
+        SessionInfo: {
+            /** Authenticated */
+            authenticated: boolean;
+            /** Csrf Token */
+            csrf_token?: string | null;
+            /** Password Set */
+            password_set: boolean;
+        };
+        /** SettingsOut */
+        SettingsOut: {
+            /** Gmail */
+            gmail: components["schemas"]["GmailScope"][];
+            /** Job Sources */
+            job_sources: {
+                [key: string]: unknown;
+            }[];
+            llm: components["schemas"]["LLMSettings"];
+            preferences: components["schemas"]["Preferences"];
+            /** Schedules */
+            schedules: {
+                [key: string]: string;
+            };
+            /** Triage */
+            triage: {
+                [key: string]: unknown;
+            };
+        };
+        /** StatusChange */
+        StatusChange: {
+            /** Note */
+            note?: string | null;
+            status: components["schemas"]["ApplicationStatus"];
+        };
+        /** SuggestionOut */
+        SuggestionOut: {
+            /** Application Id */
+            application_id: number;
+            /** Application Role */
+            application_role?: string | null;
+            /** Company Name */
+            company_name?: string | null;
+            /** Confidence */
+            confidence: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Email Id */
+            email_id: number | null;
+            /** Email Subject */
+            email_subject?: string | null;
+            from_status: components["schemas"]["ApplicationStatus"];
+            /** Id */
+            id: number;
+            /** Interview At */
+            interview_at: string | null;
+            /** Rationale */
+            rationale: string | null;
+            status: components["schemas"]["SuggestionStatus"];
+            to_status: components["schemas"]["ApplicationStatus"];
+        };
+        /**
+         * SuggestionStatus
+         * @enum {string}
+         */
+        SuggestionStatus: "pending" | "accepted" | "dismissed" | "auto_applied";
+        /** SuiteRun */
+        SuiteRun: {
+            /** Benign */
+            benign: number;
+            /** By Kind */
+            by_kind: {
+                [key: string]: {
+                    [key: string]: number;
+                };
+            };
+            /** False Positives */
+            false_positives: string[];
+            /** Fn */
+            fn: number;
+            /** Fp */
+            fp: number;
+            /** Injections */
+            injections: number;
+            /** Misses */
+            misses: string[];
+            /** Precision */
+            precision: number;
+            /** Recall */
+            recall: number;
+            /** Tn */
+            tn: number;
+            /** Tp */
+            tp: number;
         };
         /** TaskCreated */
         TaskCreated: {
@@ -214,6 +1082,20 @@ export interface components {
          * @enum {string}
          */
         TaskStatus: "queued" | "running" | "succeeded" | "failed" | "cancelled";
+        /** UpcomingInterview */
+        UpcomingInterview: {
+            /** Application Id */
+            application_id: number;
+            /** Company */
+            company: string | null;
+            /**
+             * Interview At
+             * Format: date-time
+             */
+            interview_at: string;
+            /** Role Title */
+            role_title: string;
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -236,6 +1118,443 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_applications_api_v1_applications_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["ApplicationStatus"][] | null;
+                q?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_application_api_v1_applications_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplicationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_application_api_v1_applications__app_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                app_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_application_api_v1_applications__app_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                app_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_application_api_v1_applications__app_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                app_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplicationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    link_email_api_v1_applications__app_id__emails_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                app_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkEmail"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_status_api_v1_applications__app_id__status_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                app_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StatusChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    login_api_v1_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionInfo"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_api_v1_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    session_info_api_v1_auth_session_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionInfo"];
+                };
+            };
+        };
+    };
+    list_emails_api_v1_emails_get: {
+        parameters: {
+            query?: {
+                category?: components["schemas"]["EmailCategory"][] | null;
+                flagged?: boolean | null;
+                unclassified?: boolean;
+                min_confidence?: number | null;
+                max_confidence?: number | null;
+                q?: string | null;
+                sort?: "received_desc" | "received_asc" | "confidence_asc";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_email_api_v1_emails__email_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reclassify_api_v1_emails__email_id__category_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Reclassify"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailActionResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clear_suspicious_api_v1_emails__email_id__clear_suspicious_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailActionResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     gmail_status_api_v1_gmail_status_get: {
         parameters: {
             query?: never;
@@ -329,6 +1648,224 @@ export interface operations {
             };
         };
     };
+    overview_api_v1_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Overview"];
+                };
+            };
+        };
+    };
+    security_report_api_v1_security_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SecurityReport"];
+                };
+            };
+        };
+    };
+    get_settings_api_v1_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsOut"];
+                };
+            };
+        };
+    };
+    update_preferences_api_v1_settings_preferences_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Preferences"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_suggestions_api_v1_suggestions_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["SuggestionStatus"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_suggestion_api_v1_suggestions__suggestion_id__accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                suggestion_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dismiss_suggestion_api_v1_suggestions__suggestion_id__dismiss_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                suggestion_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recent_tasks_api_v1_tasks_get: {
+        parameters: {
+            query?: {
+                kind?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskEvent"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     enqueue_ping_api_v1_tasks_ping_post: {
         parameters: {
             query?: never;
@@ -345,6 +1882,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskCreated"];
+                };
+            };
+        };
+    };
+    stream_all_api_v1_tasks_stream_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };

@@ -10,13 +10,278 @@
     "jobs": "Jobs",
     "resume": "Resume",
     "templates": "Templates",
-    "review": "Application review",
+    "review": "Review",
     "security": "Security",
-    "settings": "Settings"
+    "settings": "Settings",
+    "soon": "Soon",
+    "menu": "Open menu",
+    "logout": "Sign out",
+    "skip": "Skip to content"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Enter your dashboard password.",
+    "password": "Password",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "invalid": "Wrong password.",
+    "tooMany": "Too many attempts. Try again in a minute.",
+    "notSet": "No password is set. Run `make password` in a terminal, then `make restart`.",
+    "error": "Sign-in failed. Check that the API is running (`make up`)."
+  },
+  "common": {
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "close": "Close",
+    "delete": "Delete",
+    "loadError": "This data could not be loaded. Is the API running?",
+    "openInGmail": "Open in Gmail",
+    "none": "None",
+    "confidence": "Confidence",
+    "search": "Search",
+    "all": "All",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "{from}–{to} of {total}"
+  },
+  "categories": {
+    "Recruteur": "Recruiter",
+    "Entretien": "Interview",
+    "Refus": "Rejection",
+    "Offre": "Offer",
+    "Newsletter": "Newsletter",
+    "Autre": "Other",
+    "unclassified": "Unclassified"
+  },
+  "statuses": {
+    "draft": "Draft",
+    "ready_for_review": "To review",
+    "sent": "Sent",
+    "recruiter_contact": "Recruiter contact",
+    "interview": "Interview",
+    "offer": "Offer",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn",
+    "ghosted": "No reply"
+  },
+  "overview": {
+    "title": "Overview",
+    "lastSync": "Last sync {when}",
+    "neverSynced": "Gmail has not been synced yet",
+    "syncNow": "Sync Gmail",
+    "syncing": "Syncing…",
+    "kpis": {
+      "sent": "Applications sent",
+      "sentWeek": "{count} this week",
+      "responseRate": "Response rate",
+      "interviews": "Interviews",
+      "offers": "Offers"
+    },
+    "route": {
+      "title": "Your route",
+      "sent": "Sent",
+      "recruiter_contact": "Reply",
+      "interview": "Interview",
+      "offer": "Offer",
+      "empty": "Add an application to see your route take shape."
+    },
+    "upcoming": "Upcoming interviews",
+    "noUpcoming": "No interview scheduled.",
+    "activity": "Recent activity",
+    "noActivity": "Nothing yet. Gmail sync runs every 30 minutes.",
+    "attention": "Needs your attention",
+    "suggestionsPending": "{count, plural, =0 {No suggestion} one {# proposed status change} other {# proposed status changes}}",
+    "alerts": "{count, plural, =0 {No suspicious email} one {# suspicious email} other {# suspicious emails}}",
+    "inbox": "Inbox",
+    "events": {
+      "created": "Application added",
+      "status_changed": "Status: {from} → {to}",
+      "email_received": "Email received ({category})",
+      "email_linked": "Email linked",
+      "edited": "Application edited",
+      "triage": "Gmail triage",
+      "triageResult": "{classified, plural, =0 {no email classified} one {# email classified} other {# emails classified}}, {flagged, plural, =0 {none suspicious} one {# suspicious} other {# suspicious}}",
+      "triageFailed": "failed"
+    }
+  },
+  "inbox": {
+    "title": "Inbox",
+    "subtitle": "Emails sorted by JobPilot. Correct a category and the Gmail label follows.",
+    "filters": {
+      "category": "Category",
+      "flagged": "Suspicious only",
+      "lowConfidence": "Low confidence",
+      "search": "Search a sender, a subject…"
+    },
+    "columns": {
+      "from": "From",
+      "subject": "Subject",
+      "category": "Category",
+      "confidence": "Confidence",
+      "received": "Received"
+    },
+    "empty": "No email matches these filters.",
+    "emptyAll": "No email synced yet. Connect Gmail (`make gmail-auth`), then run a sync.",
+    "reclassify": "Change category",
+    "reclassified": "Category changed to {category}. Gmail label updated.",
+    "clearFlag": "Not suspicious",
+    "flagCleared": "Flag removed. Gmail label updated.",
+    "suspicious": "Suspicious",
+    "manual": "Corrected by you",
+    "reason": "Reason",
+    "evidence": "Manipulation evidence",
+    "detail": "Email details",
+    "interviewAt": "Interview on {date}"
+  },
+  "applications": {
+    "title": "Applications",
+    "subtitle": "Drag a card to change its status.",
+    "add": "Add an application",
+    "board": "Board",
+    "table": "List",
+    "emptyColumn": "None",
+    "empty": "No application tracked yet. Add one, or let JobPilot detect them in your emails.",
+    "moved": "Moved to “{status}”",
+    "moveTo": "Move to…",
+    "suggestions": "Proposed changes",
+    "suggestionLine": "{company} — {role}: {from} → {to}",
+    "accept": "Apply",
+    "dismiss": "Dismiss",
+    "accepted": "Status updated",
+    "dismissed": "Suggestion dismissed",
+    "form": {
+      "title": "New application",
+      "company": "Company",
+      "domain": "Company website or domain",
+      "domainHint": "Used to link emails automatically (e.g. acme.tn).",
+      "role": "Role",
+      "status": "Status",
+      "appliedAt": "Applied on",
+      "contact": "Contact email",
+      "source": "Source",
+      "url": "Job posting link",
+      "notes": "Notes",
+      "create": "Add application",
+      "created": "Application added",
+      "required": "Required",
+      "invalidEmail": "Invalid email address"
+    },
+    "detail": {
+      "timeline": "History",
+      "emails": "Emails",
+      "noEmails": "No email linked yet.",
+      "applied": "Applied on {date}",
+      "interview": "Interview on {date}",
+      "notes": "Notes",
+      "saveNotes": "Save notes",
+      "notesSaved": "Notes saved",
+      "delete": "Delete this application",
+      "deleteConfirm": "Delete “{role}” at {company}? Its history will be lost.",
+      "deleted": "Application deleted"
+    },
+    "columns": {
+      "company": "Company",
+      "role": "Role",
+      "status": "Status",
+      "applied": "Sent on",
+      "updated": "Updated"
+    }
+  },
+  "security": {
+    "title": "Security",
+    "subtitle": "Content that tries to give orders to an AI. It is labelled, never acted on automatically.",
+    "flagged": "Flagged items",
+    "noFlagged": "No suspicious item.",
+    "score": "Score {score}",
+    "suite": "Injection test bench",
+    "suiteHint": "{injections} attacks and {benign} legitimate messages (FR/EN/AR), replayed every time this page opens.",
+    "precision": "Precision",
+    "recall": "Recall",
+    "byKind": "By attack type",
+    "kinds": {
+      "direct": "Direct",
+      "hidden": "Hidden",
+      "indirect": "Indirect"
+    },
+    "detected": "{detected}/{total} detected",
+    "evals": "Evaluations with the real model",
+    "noEvals": "Run `make eval` to measure triage and detection with the real model.",
+    "triageAccuracy": "Triage accuracy",
+    "toolCalls": "Tool calls per batch",
+    "tokens": "Tokens per batch",
+    "guardPrecision": "Full detection (precision / recall)",
+    "layers": {
+      "heuristic": "Rules",
+      "guard": "Guard model",
+      "model": "Reported by the agent",
+      "user": "You"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "preferences": "Preferences",
+    "language": "Language",
+    "timezone": "Time zone",
+    "sendCap": "Maximum sends per day",
+    "sendCapHint": "Used once application sending is available (phase 7).",
+    "saved": "Preferences saved",
+    "gmail": "Gmail",
+    "gmailConnected": "Connected: {email}",
+    "gmailNotConnected": "Gmail is not connected. Run `make gmail-auth` in a terminal.",
+    "scopeTriage": "Read and JobPilot labels",
+    "scopeSend": "Send emails",
+    "llm": "Language model",
+    "llmHint": "Provider and models are changed in the .env file.",
+    "provider": "Provider",
+    "keySet": "Key configured",
+    "keyMissing": "Key missing",
+    "limits": "Limits: {tpm} tokens/min, {rpm} requests/min, {tpd} tokens/day",
+    "purposes": {
+      "triage": "Email triage",
+      "guard": "Injection detection",
+      "parse_resume": "Resume parsing",
+      "rerank": "Job ranking",
+      "tailor": "Resume tailoring",
+      "cover_letter": "Cover letter"
+    },
+    "triage": "Automatic triage",
+    "schedule": "Frequency",
+    "query": "Emails included",
+    "batchSize": "Batch size",
+    "autoApply": "Automatic status updates",
+    "autoApplyValue": "Confidence ≥ {value}, never for a suspicious email",
+    "sources": "Job sources",
+    "sourcesSoon": "Job sources arrive in phase 5.",
+    "scheduleValue": "Every 30 minutes (at :05 and :35)"
+  },
+  "soon": {
+    "title": "Not available yet",
+    "jobs": "Multi-source job search arrives in phase 5.",
+    "resume": "Resume analysis and the ATS report arrive in phase 4.",
+    "templates": "Your LaTeX templates arrive in phase 6.",
+    "review": "Application review and sending arrive in phase 7."
+  },
+  "tasks": {
+    "triage": "Gmail triage",
+    "user_label_change": "Gmail label",
+    "ping": "Worker test",
+    "succeeded": "{kind} finished",
+    "failed": "{kind} failed: {error}",
+    "triageSummary": "{classified, plural, =0 {no email classified} one {# email classified} other {# emails classified}}, {flagged, plural, =0 {none suspicious} one {# suspicious} other {# suspicious}}"
+  },
+  "theme": {
+    "toggle": "Toggle theme"
+  },
+  "locale": {
+    "label": "Language",
+    "fr": "Français",
+    "en": "English"
   },
   "status": {
     "title": "System status",
-    "description": "JobPilot foundations: every service should be up.",
+    "description": "Every service should be up.",
     "overall": {
       "ok": "All systems operational",
       "degraded": "Degraded",
@@ -36,16 +301,5 @@
     "pingRunning": "Task running… {progress}%",
     "pingDone": "The worker answered",
     "pingFailed": "The task failed"
-  },
-  "theme": {
-    "toggle": "Toggle theme",
-    "light": "Light",
-    "dark": "Dark",
-    "system": "System"
-  },
-  "locale": {
-    "label": "Language",
-    "fr": "Français",
-    "en": "English"
   }
 }

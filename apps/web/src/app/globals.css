@@ -39,6 +39,15 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-signal: var(--signal);
+  --color-signal-foreground: var(--signal-foreground);
+  --color-success: var(--success);
+  --color-cat-recruteur: var(--cat-recruteur);
+  --color-cat-entretien: var(--cat-entretien);
+  --color-cat-refus: var(--cat-refus);
+  --color-cat-offre: var(--cat-offre);
+  --color-cat-newsletter: var(--cat-newsletter);
+  --color-cat-autre: var(--cat-autre);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -48,73 +57,96 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * JobPilot palette — a calm instrument panel. Colour encodes meaning only:
+ * chart blue = primary action, amber = needs your attention, green/red = outcomes,
+ * one hue per email category (mirrors the JobPilot/* Gmail labels).
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: #f6f7f5;
+  --foreground: #1a2330;
+  --card: #ffffff;
+  --card-foreground: #1a2330;
+  --popover: #ffffff;
+  --popover-foreground: #1a2330;
+  --primary: #2446a6;
+  --primary-foreground: #ffffff;
+  --secondary: #eceeec;
+  --secondary-foreground: #1a2330;
+  --muted: #eceeec;
+  --muted-foreground: #5a6573;
+  --accent: #e8ecf6;
+  --accent-foreground: #1a2330;
+  --destructive: #b42318;
+  --border: #dce1de;
+  --input: #cfd5d2;
+  --ring: #2446a6;
+  --signal: #b26b12;
+  --signal-foreground: #ffffff;
+  --success: #2f7d4f;
+  --cat-recruteur: #2446a6;
+  --cat-entretien: #6b3fa0;
+  --cat-refus: #b42318;
+  --cat-offre: #2f7d4f;
+  --cat-newsletter: #5a6573;
+  --cat-autre: #8a8f86;
+  --chart-1: #2446a6;
+  --chart-2: #6b3fa0;
+  --chart-3: #2f7d4f;
+  --chart-4: #b26b12;
+  --chart-5: #5a6573;
+  --radius: 0.5rem;
+  --sidebar: #eef0ed;
+  --sidebar-foreground: #1a2330;
+  --sidebar-primary: #2446a6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e2e6e3;
+  --sidebar-accent-foreground: #1a2330;
+  --sidebar-border: #dce1de;
+  --sidebar-ring: #2446a6;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #0f151d;
+  --foreground: #e5e9ee;
+  --card: #151c26;
+  --card-foreground: #e5e9ee;
+  --popover: #151c26;
+  --popover-foreground: #e5e9ee;
+  --primary: #86a2ff;
+  --primary-foreground: #0f151d;
+  --secondary: #1d2632;
+  --secondary-foreground: #e5e9ee;
+  --muted: #1d2632;
+  --muted-foreground: #98a3b1;
+  --accent: #1f2a3d;
+  --accent-foreground: #e5e9ee;
+  --destructive: #f07167;
+  --border: #253041;
+  --input: #2d394b;
+  --ring: #86a2ff;
+  --signal: #f0a53a;
+  --signal-foreground: #0f151d;
+  --success: #6fca94;
+  --cat-recruteur: #86a2ff;
+  --cat-entretien: #c4a2f2;
+  --cat-refus: #f07167;
+  --cat-offre: #6fca94;
+  --cat-newsletter: #98a3b1;
+  --cat-autre: #7d8478;
+  --chart-1: #86a2ff;
+  --chart-2: #c4a2f2;
+  --chart-3: #6fca94;
+  --chart-4: #f0a53a;
+  --chart-5: #98a3b1;
+  --sidebar: #121922;
+  --sidebar-foreground: #e5e9ee;
+  --sidebar-primary: #86a2ff;
+  --sidebar-primary-foreground: #0f151d;
+  --sidebar-accent: #1d2632;
+  --sidebar-accent-foreground: #e5e9ee;
+  --sidebar-border: #253041;
+  --sidebar-ring: #86a2ff;
 }
 
 @layer base {
@@ -123,8 +155,20 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "tnum" 1;
   }
   html {
     @apply font-sans;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

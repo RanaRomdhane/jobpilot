@@ -66,6 +66,7 @@ services:
     ports: ["127.0.0.1:8000:8000"]
     volumes:
       - storage:/app/storage
+      - ../storage/eval:/app/storage/eval:ro  # `make eval` reports for the Security page
       - latex-spool:/spool:ro
     depends_on:
       migrate: { condition: service_completed_successfully }

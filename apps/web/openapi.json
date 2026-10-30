@@ -1,6 +1,633 @@
 {
   "components": {
     "schemas": {
+      "Activity": {
+        "properties": {
+          "application_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Application Id"
+          },
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "detail": {
+            "additionalProperties": true,
+            "default": {},
+            "title": "Detail",
+            "type": "object"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "at",
+          "title"
+        ],
+        "title": "Activity",
+        "type": "object"
+      },
+      "ApplicationCreate": {
+        "properties": {
+          "applied_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied At"
+          },
+          "apply_channel": {
+            "$ref": "#/components/schemas/ApplyChannel",
+            "default": "email"
+          },
+          "apply_url": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Url"
+          },
+          "company_domain": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Domain"
+          },
+          "company_name": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Company Name",
+            "type": "string"
+          },
+          "contact_email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Email"
+          },
+          "interview_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview At"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "role_title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Role Title",
+            "type": "string"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ApplicationStatus",
+            "default": "sent"
+          }
+        },
+        "required": [
+          "company_name",
+          "role_title"
+        ],
+        "title": "ApplicationCreate",
+        "type": "object"
+      },
+      "ApplicationDetail": {
+        "properties": {
+          "applied_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied At"
+          },
+          "apply_channel": {
+            "$ref": "#/components/schemas/ApplyChannel"
+          },
+          "apply_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Url"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompanyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contact_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Email"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "emails": {
+            "items": {
+              "$ref": "#/components/schemas/EmailOut"
+            },
+            "title": "Emails",
+            "type": "array"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventOut"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "gmail_thread_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gmail Thread Id"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "interview_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview At"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "pending_suggestions": {
+            "default": 0,
+            "title": "Pending Suggestions",
+            "type": "integer"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ApplicationStatus"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestionOut"
+            },
+            "title": "Suggestions",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "role_title",
+          "status",
+          "apply_channel",
+          "apply_url",
+          "applied_at",
+          "interview_at",
+          "source",
+          "contact_email",
+          "gmail_thread_id",
+          "notes",
+          "created_at",
+          "updated_at",
+          "company",
+          "events",
+          "emails",
+          "suggestions"
+        ],
+        "title": "ApplicationDetail",
+        "type": "object"
+      },
+      "ApplicationOut": {
+        "properties": {
+          "applied_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied At"
+          },
+          "apply_channel": {
+            "$ref": "#/components/schemas/ApplyChannel"
+          },
+          "apply_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Url"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompanyOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "contact_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Email"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "gmail_thread_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gmail Thread Id"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "interview_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview At"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "pending_suggestions": {
+            "default": 0,
+            "title": "Pending Suggestions",
+            "type": "integer"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ApplicationStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "role_title",
+          "status",
+          "apply_channel",
+          "apply_url",
+          "applied_at",
+          "interview_at",
+          "source",
+          "contact_email",
+          "gmail_thread_id",
+          "notes",
+          "created_at",
+          "updated_at",
+          "company"
+        ],
+        "title": "ApplicationOut",
+        "type": "object"
+      },
+      "ApplicationStatus": {
+        "enum": [
+          "draft",
+          "ready_for_review",
+          "sent",
+          "recruiter_contact",
+          "interview",
+          "offer",
+          "rejected",
+          "withdrawn",
+          "ghosted"
+        ],
+        "title": "ApplicationStatus",
+        "type": "string"
+      },
+      "ApplicationUpdate": {
+        "properties": {
+          "applied_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Applied At"
+          },
+          "apply_url": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Url"
+          },
+          "company_domain": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Domain"
+          },
+          "contact_email": {
+            "anyOf": [
+              {
+                "format": "email",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contact Email"
+          },
+          "interview_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview At"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "role_title": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Title"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "title": "ApplicationUpdate",
+        "type": "object"
+      },
+      "ApplyChannel": {
+        "enum": [
+          "email",
+          "link"
+        ],
+        "title": "ApplyChannel",
+        "type": "string"
+      },
+      "CompanyOut": {
+        "properties": {
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "domain",
+          "website"
+        ],
+        "title": "CompanyOut",
+        "type": "object"
+      },
       "ComponentStatus": {
         "properties": {
           "critical": {
@@ -44,6 +671,582 @@
           "critical"
         ],
         "title": "ComponentStatus",
+        "type": "object"
+      },
+      "EmailActionResult": {
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/EmailDetail"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          }
+        },
+        "required": [
+          "email",
+          "task_id"
+        ],
+        "title": "EmailActionResult",
+        "type": "object"
+      },
+      "EmailCategory": {
+        "enum": [
+          "Recruteur",
+          "Entretien",
+          "Refus",
+          "Offre",
+          "Newsletter",
+          "Autre"
+        ],
+        "title": "EmailCategory",
+        "type": "string"
+      },
+      "EmailDetail": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmailCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "classification_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classification Reason"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "extracted": {
+            "additionalProperties": true,
+            "title": "Extracted",
+            "type": "object"
+          },
+          "from_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Address"
+          },
+          "from_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Name"
+          },
+          "gmail_url": {
+            "title": "Gmail Url",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "injection_flag": {
+            "title": "Injection Flag",
+            "type": "boolean"
+          },
+          "injection_reasons": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Injection Reasons",
+            "type": "array"
+          },
+          "injection_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Injection Score"
+          },
+          "label_applied": {
+            "title": "Label Applied",
+            "type": "boolean"
+          },
+          "manual_category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmailCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "processed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processed At"
+          },
+          "received_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Received At"
+          },
+          "snippet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snippet"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          },
+          "thread_id": {
+            "title": "Thread Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "thread_id",
+          "from_address",
+          "from_name",
+          "subject",
+          "snippet",
+          "received_at",
+          "category",
+          "manual_category",
+          "confidence",
+          "classification_reason",
+          "label_applied",
+          "injection_flag",
+          "injection_score",
+          "processed_at",
+          "injection_reasons",
+          "extracted",
+          "gmail_url"
+        ],
+        "title": "EmailDetail",
+        "type": "object"
+      },
+      "EmailOut": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmailCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "classification_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classification Reason"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "from_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Address"
+          },
+          "from_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Name"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "injection_flag": {
+            "title": "Injection Flag",
+            "type": "boolean"
+          },
+          "injection_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Injection Score"
+          },
+          "label_applied": {
+            "title": "Label Applied",
+            "type": "boolean"
+          },
+          "manual_category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmailCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "processed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processed At"
+          },
+          "received_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Received At"
+          },
+          "snippet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snippet"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          },
+          "thread_id": {
+            "title": "Thread Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "thread_id",
+          "from_address",
+          "from_name",
+          "subject",
+          "snippet",
+          "received_at",
+          "category",
+          "manual_category",
+          "confidence",
+          "classification_reason",
+          "label_applied",
+          "injection_flag",
+          "injection_score",
+          "processed_at"
+        ],
+        "title": "EmailOut",
+        "type": "object"
+      },
+      "EmailPage": {
+        "properties": {
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EmailOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "counts"
+        ],
+        "title": "EmailPage",
+        "type": "object"
+      },
+      "EventOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "source_email_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Email Id"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "payload",
+          "occurred_at",
+          "source_email_id"
+        ],
+        "title": "EventOut",
+        "type": "object"
+      },
+      "FlaggedItem": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EmailCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "reasons": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "received_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Received At"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "title",
+          "source",
+          "category",
+          "score",
+          "received_at",
+          "reasons"
+        ],
+        "title": "FlaggedItem",
+        "type": "object"
+      },
+      "FunnelStep": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ApplicationStatus"
+          }
+        },
+        "required": [
+          "status",
+          "count"
+        ],
+        "title": "FunnelStep",
+        "type": "object"
+      },
+      "GmailScope": {
+        "properties": {
+          "account_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Account Email"
+          },
+          "scope_set": {
+            "title": "Scope Set",
+            "type": "string"
+          }
+        },
+        "required": [
+          "scope_set",
+          "account_email"
+        ],
+        "title": "GmailScope",
         "type": "object"
       },
       "GmailStatus": {
@@ -150,6 +1353,238 @@
         "title": "HealthResponse",
         "type": "object"
       },
+      "Kpis": {
+        "properties": {
+          "applications_sent": {
+            "title": "Applications Sent",
+            "type": "integer"
+          },
+          "interviews": {
+            "title": "Interviews",
+            "type": "integer"
+          },
+          "offers": {
+            "title": "Offers",
+            "type": "integer"
+          },
+          "response_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Rate"
+          },
+          "sent_last_7_days": {
+            "title": "Sent Last 7 Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "applications_sent",
+          "response_rate",
+          "interviews",
+          "offers",
+          "sent_last_7_days"
+        ],
+        "title": "Kpis",
+        "type": "object"
+      },
+      "LLMSettings": {
+        "properties": {
+          "fallback_to_openai": {
+            "title": "Fallback To Openai",
+            "type": "boolean"
+          },
+          "groq_key_set": {
+            "title": "Groq Key Set",
+            "type": "boolean"
+          },
+          "guard_enabled": {
+            "title": "Guard Enabled",
+            "type": "boolean"
+          },
+          "limits": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Limits",
+            "type": "object"
+          },
+          "models": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Models",
+            "type": "object"
+          },
+          "openai_key_set": {
+            "title": "Openai Key Set",
+            "type": "boolean"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          }
+        },
+        "required": [
+          "provider",
+          "models",
+          "groq_key_set",
+          "openai_key_set",
+          "fallback_to_openai",
+          "limits",
+          "guard_enabled"
+        ],
+        "title": "LLMSettings",
+        "type": "object"
+      },
+      "LinkEmail": {
+        "properties": {
+          "email_id": {
+            "title": "Email Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "email_id"
+        ],
+        "title": "LinkEmail",
+        "type": "object"
+      },
+      "LoginRequest": {
+        "properties": {
+          "password": {
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ],
+        "title": "LoginRequest",
+        "type": "object"
+      },
+      "Overview": {
+        "properties": {
+          "activity": {
+            "items": {
+              "$ref": "#/components/schemas/Activity"
+            },
+            "title": "Activity",
+            "type": "array"
+          },
+          "funnel": {
+            "items": {
+              "$ref": "#/components/schemas/FunnelStep"
+            },
+            "title": "Funnel",
+            "type": "array"
+          },
+          "inbox": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Inbox",
+            "type": "object"
+          },
+          "kpis": {
+            "$ref": "#/components/schemas/Kpis"
+          },
+          "last_sync_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Sync At"
+          },
+          "pending_suggestions": {
+            "title": "Pending Suggestions",
+            "type": "integer"
+          },
+          "security_alerts": {
+            "title": "Security Alerts",
+            "type": "integer"
+          },
+          "status_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Status Counts",
+            "type": "object"
+          },
+          "upcoming_interviews": {
+            "items": {
+              "$ref": "#/components/schemas/UpcomingInterview"
+            },
+            "title": "Upcoming Interviews",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kpis",
+          "funnel",
+          "status_counts",
+          "upcoming_interviews",
+          "activity",
+          "inbox",
+          "security_alerts",
+          "pending_suggestions",
+          "last_sync_at"
+        ],
+        "title": "Overview",
+        "type": "object"
+      },
+      "Preferences": {
+        "properties": {
+          "daily_send_cap": {
+            "default": 20,
+            "maximum": 200.0,
+            "minimum": 1.0,
+            "title": "Daily Send Cap",
+            "type": "integer"
+          },
+          "locale": {
+            "default": "fr",
+            "enum": [
+              "fr",
+              "en"
+            ],
+            "title": "Locale",
+            "type": "string"
+          },
+          "timezone": {
+            "default": "Africa/Tunis",
+            "maxLength": 64,
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "title": "Preferences",
+        "type": "object"
+      },
+      "Reclassify": {
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/EmailCategory"
+          }
+        },
+        "required": [
+          "category"
+        ],
+        "title": "Reclassify",
+        "type": "object"
+      },
       "ScopeStatus": {
         "properties": {
           "account_email": {
@@ -186,6 +1621,328 @@
           "expires_at"
         ],
         "title": "ScopeStatus",
+        "type": "object"
+      },
+      "SecurityReport": {
+        "properties": {
+          "eval_reports": {
+            "additionalProperties": true,
+            "title": "Eval Reports",
+            "type": "object"
+          },
+          "flagged": {
+            "items": {
+              "$ref": "#/components/schemas/FlaggedItem"
+            },
+            "title": "Flagged",
+            "type": "array"
+          },
+          "suite": {
+            "$ref": "#/components/schemas/SuiteRun"
+          }
+        },
+        "required": [
+          "flagged",
+          "suite",
+          "eval_reports"
+        ],
+        "title": "SecurityReport",
+        "type": "object"
+      },
+      "SessionInfo": {
+        "properties": {
+          "authenticated": {
+            "title": "Authenticated",
+            "type": "boolean"
+          },
+          "csrf_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Csrf Token"
+          },
+          "password_set": {
+            "title": "Password Set",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "authenticated",
+          "password_set"
+        ],
+        "title": "SessionInfo",
+        "type": "object"
+      },
+      "SettingsOut": {
+        "properties": {
+          "gmail": {
+            "items": {
+              "$ref": "#/components/schemas/GmailScope"
+            },
+            "title": "Gmail",
+            "type": "array"
+          },
+          "job_sources": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Job Sources",
+            "type": "array"
+          },
+          "llm": {
+            "$ref": "#/components/schemas/LLMSettings"
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/Preferences"
+          },
+          "schedules": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Schedules",
+            "type": "object"
+          },
+          "triage": {
+            "additionalProperties": true,
+            "title": "Triage",
+            "type": "object"
+          }
+        },
+        "required": [
+          "llm",
+          "gmail",
+          "schedules",
+          "triage",
+          "job_sources",
+          "preferences"
+        ],
+        "title": "SettingsOut",
+        "type": "object"
+      },
+      "StatusChange": {
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ApplicationStatus"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "StatusChange",
+        "type": "object"
+      },
+      "SuggestionOut": {
+        "properties": {
+          "application_id": {
+            "title": "Application Id",
+            "type": "integer"
+          },
+          "application_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Application Role"
+          },
+          "company_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Name"
+          },
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "email_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Id"
+          },
+          "email_subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Subject"
+          },
+          "from_status": {
+            "$ref": "#/components/schemas/ApplicationStatus"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "interview_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interview At"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SuggestionStatus"
+          },
+          "to_status": {
+            "$ref": "#/components/schemas/ApplicationStatus"
+          }
+        },
+        "required": [
+          "id",
+          "application_id",
+          "email_id",
+          "from_status",
+          "to_status",
+          "confidence",
+          "interview_at",
+          "rationale",
+          "status",
+          "created_at"
+        ],
+        "title": "SuggestionOut",
+        "type": "object"
+      },
+      "SuggestionStatus": {
+        "enum": [
+          "pending",
+          "accepted",
+          "dismissed",
+          "auto_applied"
+        ],
+        "title": "SuggestionStatus",
+        "type": "string"
+      },
+      "SuiteRun": {
+        "properties": {
+          "benign": {
+            "title": "Benign",
+            "type": "integer"
+          },
+          "by_kind": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "type": "integer"
+              },
+              "type": "object"
+            },
+            "title": "By Kind",
+            "type": "object"
+          },
+          "false_positives": {
+            "items": {
+              "type": "string"
+            },
+            "title": "False Positives",
+            "type": "array"
+          },
+          "fn": {
+            "title": "Fn",
+            "type": "integer"
+          },
+          "fp": {
+            "title": "Fp",
+            "type": "integer"
+          },
+          "injections": {
+            "title": "Injections",
+            "type": "integer"
+          },
+          "misses": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Misses",
+            "type": "array"
+          },
+          "precision": {
+            "title": "Precision",
+            "type": "number"
+          },
+          "recall": {
+            "title": "Recall",
+            "type": "number"
+          },
+          "tn": {
+            "title": "Tn",
+            "type": "integer"
+          },
+          "tp": {
+            "title": "Tp",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "precision",
+          "recall",
+          "tp",
+          "fp",
+          "fn",
+          "tn",
+          "injections",
+          "benign",
+          "by_kind",
+          "misses",
+          "false_positives"
+        ],
+        "title": "SuiteRun",
         "type": "object"
       },
       "TaskCreated": {
@@ -274,6 +2031,42 @@
         "title": "TaskStatus",
         "type": "string"
       },
+      "UpcomingInterview": {
+        "properties": {
+          "application_id": {
+            "title": "Application Id",
+            "type": "integer"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "interview_at": {
+            "format": "date-time",
+            "title": "Interview At",
+            "type": "string"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "application_id",
+          "role_title",
+          "company",
+          "interview_at"
+        ],
+        "title": "UpcomingInterview",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -322,6 +2115,732 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/applications": {
+      "get": {
+        "operationId": "list_applications_api_v1_applications_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/components/schemas/ApplicationStatus"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ApplicationOut"
+                  },
+                  "title": "Response List Applications Api V1 Applications Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Applications",
+        "tags": [
+          "applications"
+        ]
+      },
+      "post": {
+        "operationId": "create_application_api_v1_applications_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Application",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/applications/{app_id}": {
+      "delete": {
+        "operationId": "delete_application_api_v1_applications__app_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Application",
+        "tags": [
+          "applications"
+        ]
+      },
+      "get": {
+        "operationId": "get_application_api_v1_applications__app_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Application",
+        "tags": [
+          "applications"
+        ]
+      },
+      "patch": {
+        "operationId": "update_application_api_v1_applications__app_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Application",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/applications/{app_id}/emails": {
+      "post": {
+        "description": "Attach an email (and its thread) to an application; future replies link automatically.",
+        "operationId": "link_email_api_v1_applications__app_id__emails_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkEmail"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Link Email",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/applications/{app_id}/status": {
+      "patch": {
+        "description": "Kanban drag & drop: change the status and record an event.",
+        "operationId": "change_status_api_v1_applications__app_id__status_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "app_id",
+            "required": true,
+            "schema": {
+              "title": "App Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StatusChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Change Status",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "logout_api_v1_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/session": {
+      "get": {
+        "operationId": "session_info_api_v1_auth_session_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Session Info",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/emails": {
+      "get": {
+        "operationId": "list_emails_api_v1_emails_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "$ref": "#/components/schemas/EmailCategory"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "in": "query",
+            "name": "flagged",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Flagged"
+            }
+          },
+          {
+            "in": "query",
+            "name": "unclassified",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Unclassified",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "min_confidence",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Confidence"
+            }
+          },
+          {
+            "in": "query",
+            "name": "max_confidence",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 1,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Confidence"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "received_desc",
+              "enum": [
+                "received_desc",
+                "received_asc",
+                "confidence_asc"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Emails",
+        "tags": [
+          "emails"
+        ]
+      }
+    },
+    "/api/v1/emails/{email_id}": {
+      "get": {
+        "operationId": "get_email_api_v1_emails__email_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "email_id",
+            "required": true,
+            "schema": {
+              "title": "Email Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Email",
+        "tags": [
+          "emails"
+        ]
+      }
+    },
+    "/api/v1/emails/{email_id}/category": {
+      "patch": {
+        "description": "Your correction wins: stored as `manual_category` (eval feed) and synced to Gmail.",
+        "operationId": "reclassify_api_v1_emails__email_id__category_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "email_id",
+            "required": true,
+            "schema": {
+              "title": "Email Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reclassify"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reclassify",
+        "tags": [
+          "emails"
+        ]
+      }
+    },
+    "/api/v1/emails/{email_id}/clear-suspicious": {
+      "post": {
+        "description": "You reviewed it and it is fine: unflag and remove the \u26a0 Suspicious label in Gmail.",
+        "operationId": "clear_suspicious_api_v1_emails__email_id__clear_suspicious_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "email_id",
+            "required": true,
+            "schema": {
+              "title": "Email Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailActionResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Clear Suspicious",
+        "tags": [
+          "emails"
+        ]
+      }
+    },
     "/api/v1/gmail/status": {
       "get": {
         "operationId": "gmail_status_api_v1_gmail_status_get",
@@ -432,6 +2951,303 @@
         ]
       }
     },
+    "/api/v1/overview": {
+      "get": {
+        "operationId": "overview_api_v1_overview_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Overview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Overview",
+        "tags": [
+          "overview"
+        ]
+      }
+    },
+    "/api/v1/security": {
+      "get": {
+        "operationId": "security_report_api_v1_security_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecurityReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Security Report",
+        "tags": [
+          "security"
+        ]
+      }
+    },
+    "/api/v1/settings": {
+      "get": {
+        "operationId": "get_settings_api_v1_settings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Settings",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/settings/preferences": {
+      "put": {
+        "operationId": "update_preferences_api_v1_settings_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Preferences"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preferences"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Preferences",
+        "tags": [
+          "settings"
+        ]
+      }
+    },
+    "/api/v1/suggestions": {
+      "get": {
+        "operationId": "list_suggestions_api_v1_suggestions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/SuggestionStatus",
+              "default": "pending"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SuggestionOut"
+                  },
+                  "title": "Response List Suggestions Api V1 Suggestions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Suggestions",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/suggestions/{suggestion_id}/accept": {
+      "post": {
+        "operationId": "accept_suggestion_api_v1_suggestions__suggestion_id__accept_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "title": "Suggestion Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Accept Suggestion",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/suggestions/{suggestion_id}/dismiss": {
+      "post": {
+        "operationId": "dismiss_suggestion_api_v1_suggestions__suggestion_id__dismiss_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "title": "Suggestion Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Dismiss Suggestion",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
+    "/api/v1/tasks": {
+      "get": {
+        "operationId": "recent_tasks_api_v1_tasks_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TaskEvent"
+                  },
+                  "title": "Response Recent Tasks Api V1 Tasks Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Recent Tasks",
+        "tags": [
+          "tasks"
+        ]
+      }
+    },
     "/api/v1/tasks/ping": {
       "post": {
         "operationId": "enqueue_ping_api_v1_tasks_ping_post",
@@ -448,6 +3264,25 @@
           }
         },
         "summary": "Enqueue a demo task that exercises worker + progress streaming",
+        "tags": [
+          "tasks"
+        ]
+      }
+    },
+    "/api/v1/tasks/stream": {
+      "get": {
+        "operationId": "stream_all_api_v1_tasks_stream_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Stream every task event (dashboard toasts) as SSE",
         "tags": [
           "tasks"
         ]

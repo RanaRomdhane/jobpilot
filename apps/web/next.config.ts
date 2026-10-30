@@ -1,3 +1,6 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -13,6 +16,8 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // pin the workspace root: a stray lockfile higher up (e.g. in the home folder) would be picked
+  outputFileTracingRoot: path.dirname(fileURLToPath(import.meta.url)),
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {
