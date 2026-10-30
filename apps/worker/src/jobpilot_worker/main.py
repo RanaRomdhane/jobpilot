@@ -157,12 +157,14 @@ def resume_pipeline(ctx: Ctx, rep: TaskReporter) -> ResumePipeline:
     )
 
 
-async def parse_resume(ctx: Ctx, task_id: str, resume_id: int) -> dict[str, Any]:
+async def parse_resume(
+    ctx: Ctx, task_id: str, resume_id: int, locale: str | None = None
+) -> dict[str, Any]:
     """Extract, scan, parse and grade an uploaded CV."""
     rep = reporter(ctx, task_id)
     await rep.start("CV received")
     try:
-        result = await resume_pipeline(ctx, rep).process(resume_id)
+        result = await resume_pipeline(ctx, rep).process(resume_id, locale=locale)
     except Exception as exc:
         await rep.fail(f"{type(exc).__name__}: {exc}")
         raise
@@ -174,14 +176,19 @@ async def parse_resume(ctx: Ctx, task_id: str, resume_id: int) -> dict[str, Any]
 
 
 async def ats_report(
-    ctx: Ctx, task_id: str, resume_id: int, job_text: str | None, job_title: str | None
+    ctx: Ctx,
+    task_id: str,
+    resume_id: int,
+    job_text: str | None,
+    job_title: str | None,
+    locale: str | None = None,
 ) -> dict[str, Any]:
     """A new ATS report for an already-parsed CV, optionally against a pasted job posting."""
     rep = reporter(ctx, task_id)
     await rep.start("ATS analysis")
     try:
         report_id, score = await resume_pipeline(ctx, rep).ats(
-            resume_id, job_text=job_text, job_title=job_title
+            resume_id, job_text=job_text, job_title=job_title, locale=locale
         )
     except Exception as exc:
         await rep.fail(f"{type(exc).__name__}: {exc}")

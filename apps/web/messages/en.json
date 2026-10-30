@@ -355,7 +355,14 @@
     },
     "progress": {
       "title": "Analysing the CV",
-      "waiting": "Waiting for the worker…"
+      "waiting": "Waiting for the worker…",
+      "steps": {
+        "received": "CV received",
+        "extract": "Extracting text",
+        "scan": "Scanning for prompt injection",
+        "parse": "Reading the CV (model)",
+        "ats": "Building the ATS report"
+      }
     },
     "tabs": {
       "report": "ATS report",

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
@@ -31,6 +31,7 @@ class AtsRequest(BaseModel):
     # the posting is untrusted text: bounded here, injection-scanned and spotlighted in the worker
     job_text: str | None = Field(default=None, max_length=20_000)
     job_title: str | None = Field(default=None, max_length=200)
+    locale: Literal["fr", "en"] | None = None  # language of the LLM review
 
 
 class AtsTask(BaseModel):
@@ -82,6 +83,7 @@ async def request_report(
         resume.id,
         job_text,
         (body.job_title or "").strip() or None,
+        body.locale,
         _job_id=str(task.id),
     )
     return AtsTask(task_id=str(task.id))

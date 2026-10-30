@@ -88,7 +88,7 @@ class ResumePipeline:
     def tpm(self) -> int:
         return self.settings.limits_for(self.provider.name)[0] if self.provider else 0
 
-    async def process(self, resume_id: int) -> dict[str, Any]:
+    async def process(self, resume_id: int, *, locale: str | None = None) -> dict[str, Any]:
         async with self.sm() as session:
             row = await session.get(Resume, resume_id)
             if row is None or row.file_path is None:
@@ -167,11 +167,16 @@ class ResumePipeline:
             status, error = row.status, row.error
 
         await self.rep.progress(0.7, "building the ATS report")
-        report_id, score = await self.ats(resume_id)
+        report_id, score = await self.ats(resume_id, locale=locale)
         return {"status": status, "error": error, "ats_report_id": report_id, "score": score}
 
     async def ats(
-        self, resume_id: int, *, job_text: str | None = None, job_title: str | None = None
+        self,
+        resume_id: int,
+        *,
+        job_text: str | None = None,
+        job_title: str | None = None,
+        locale: str | None = None,
     ) -> tuple[int, int]:
         async with self.sm() as session:
             row = await session.get(Resume, resume_id)
@@ -179,7 +184,8 @@ class ResumePipeline:
                 raise LookupError(f"resume {resume_id} not found")
             doc = stored_document(row)
             profile = ResumeProfile.model_validate(row.parsed) if row.parsed else None
-            locale = await user_locale(session)
+            if locale not in ("fr", "en"):
+                locale = await user_locale(session)
 
         target: dict[str, Any] | None = None
         if job_text:

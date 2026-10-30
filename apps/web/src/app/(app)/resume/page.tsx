@@ -51,6 +51,16 @@ const PARSE_ERRORS = [
 
 type Active = { taskId: string; progress: number; message: string | null };
 
+/** Worker progress messages (English, stable) -> translated step labels. */
+const STEPS: Record<string, string> = {
+  "CV received": "received",
+  "extracting text": "extract",
+  "scanning for prompt injection": "scan",
+  "reading the CV (LLM)": "parse",
+  "building the ATS report": "ats",
+  "ATS analysis": "ats",
+};
+
 function StatusLabel({ status }: { status: string }) {
   const t = useTranslations("resume.file.status");
   const tone =
@@ -66,12 +76,13 @@ function StatusLabel({ status }: { status: string }) {
 function Progress({ active, busy }: { active: Active | null; busy: boolean }) {
   const t = useTranslations("resume.progress");
   if (!active && !busy) return null;
+  const step = active?.message ? STEPS[active.message] : undefined;
   const pct = Math.round((active?.progress ?? 0) * 100);
   return (
     <div role="status" className="rounded-lg border p-4">
       <div className="mb-2 flex items-baseline justify-between gap-3 text-sm">
         <span className="font-medium">{t("title")}</span>
-        <span className="text-muted-foreground">{active?.message ?? t("waiting")}</span>
+        <span className="text-muted-foreground">{step ? t(`steps.${step}`) : t("waiting")}</span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-muted">
         <div
@@ -161,7 +172,7 @@ export default function ResumePage() {
     mutationFn: (id: number) =>
       unwrap(
         api.POST("/api/v1/resume/uploads/{resume_id}/reparse", {
-          params: { path: { resume_id: id } },
+          params: { path: { resume_id: id }, query: { locale: locale as "fr" | "en" } },
         }),
       ),
     onSuccess: async (r) => {

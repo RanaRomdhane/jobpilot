@@ -801,6 +801,8 @@ export interface components {
             job_text?: string | null;
             /** Job Title */
             job_title?: string | null;
+            /** Locale */
+            locale?: ("fr" | "en") | null;
             /** Resume Id */
             resume_id: number;
         };
@@ -816,6 +818,8 @@ export interface components {
              * @description PDF or DOCX, up to the configured size
              */
             file: string;
+            /** Locale */
+            locale?: ("fr" | "en") | null;
         };
         /** Bullet */
         Bullet: {
@@ -2453,7 +2457,9 @@ export interface operations {
     };
     reparse_upload_api_v1_resume_uploads__resume_id__reparse_post: {
         parameters: {
-            query?: never;
+            query?: {
+                locale?: ("fr" | "en") | null;
+            };
             header?: never;
             path: {
                 resume_id: number;

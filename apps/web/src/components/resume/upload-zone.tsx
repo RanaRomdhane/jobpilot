@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileUp, Lock } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState, type DragEvent } from "react";
 import { toast } from "sonner";
 
@@ -16,6 +16,7 @@ const ACCEPT =
 
 export function useUploadResume(onStarted: (resumeId: number, taskId: string) => void) {
   const t = useTranslations("resume.upload");
+  const locale = useLocale() as "fr" | "en";
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (file: File) => {
@@ -24,10 +25,11 @@ export function useUploadResume(onStarted: (resumeId: number, taskId: string) =>
       }
       return unwrap(
         api.POST("/api/v1/resume/uploads", {
-          body: { file: file as unknown as string },
+          body: { file: file as unknown as string, locale },
           bodySerializer: (body) => {
             const data = new FormData();
             data.append("file", body.file as unknown as Blob);
+            if (body.locale) data.append("locale", body.locale);
             return data;
           },
         }),

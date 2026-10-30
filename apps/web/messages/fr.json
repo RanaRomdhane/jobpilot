@@ -355,7 +355,14 @@
     },
     "progress": {
       "title": "Analyse du CV",
-      "waiting": "En attente du worker…"
+      "waiting": "En attente du worker…",
+      "steps": {
+        "received": "CV reçu",
+        "extract": "Extraction du texte",
+        "scan": "Recherche d'injections",
+        "parse": "Lecture du CV par le modèle",
+        "ats": "Calcul du rapport ATS"
+      }
     },
     "tabs": {
       "report": "Rapport ATS",

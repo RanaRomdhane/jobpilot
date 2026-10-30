@@ -37,6 +37,7 @@ const DROP_RESPONSE_HEADERS = new Set([
 ]);
 
 const SAFE_SEGMENT = /^[A-Za-z0-9._~-]+$/;
+const NULL_BODY_STATUSES = new Set([101, 204, 205, 304]);
 
 async function proxy(
   request: NextRequest,
@@ -84,7 +85,9 @@ async function proxy(
     responseHeaders.set("cache-control", "no-cache, no-transform");
     responseHeaders.set("x-accel-buffering", "no");
   }
-  return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
+  // 204/205/304 must not carry a body: passing the (empty) upstream stream makes the response fail
+  const body = NULL_BODY_STATUSES.has(upstream.status) ? null : upstream.body;
+  return new Response(body, { status: upstream.status, headers: responseHeaders });
 }
 
 export { proxy as DELETE, proxy as GET, proxy as PATCH, proxy as POST, proxy as PUT };

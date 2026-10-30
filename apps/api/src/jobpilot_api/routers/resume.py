@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import hashlib
 from datetime import datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, File, HTTPException, Response, UploadFile, status
+from fastapi import APIRouter, File, Form, HTTPException, Query, Response, UploadFile, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy import func, select
@@ -25,6 +25,9 @@ from jobpilot_resume import UploadRejectedError, validate_upload
 from jobpilot_resume.storage import new_relative_path, resume_path
 
 router = APIRouter(prefix="/resume", tags=["resume"])
+
+# the dashboard's current language: the LLM review is written in it
+Locale = Literal["fr", "en"]
 
 
 class ResumeUploadOut(BaseModel):
@@ -113,9 +116,9 @@ async def _upload(session: Session, resume_id: int) -> Resume:
     return row
 
 
-async def _enqueue_parse(session: Session, state: State, row: Resume) -> str:
+async def _enqueue_parse(session: Session, state: State, row: Resume, locale: Locale | None) -> str:
     task = await create_task_run(session, "parse_resume", {"resume_id": row.id})
-    await state.arq.enqueue_job("parse_resume", str(task.id), row.id, _job_id=str(task.id))
+    await state.arq.enqueue_job("parse_resume", str(task.id), row.id, locale, _job_id=str(task.id))
     return str(task.id)
 
 
@@ -125,6 +128,7 @@ async def upload_resume(
     session: Session,
     state: State,
     file: Annotated[UploadFile, File(description="PDF or DOCX, up to the configured size")],
+    locale: Annotated[Locale | None, Form()] = None,
 ) -> UploadResult:
     max_bytes = state.settings.resume_max_upload_mb * 1024 * 1024
     data = await file.read(max_bytes + 1)
@@ -155,7 +159,7 @@ async def upload_resume(
     )
     session.add(row)
     await session.commit()
-    task_id = await _enqueue_parse(session, state, row)
+    task_id = await _enqueue_parse(session, state, row, locale)
     return UploadResult(resume=_out(row), task_id=task_id)
 
 
@@ -198,12 +202,16 @@ async def download_upload(
 
 @router.post("/uploads/{resume_id}/reparse", response_model=TaskStarted)
 async def reparse_upload(
-    resume_id: int, _: Authenticated, session: Session, state: State
+    resume_id: int,
+    _: Authenticated,
+    session: Session,
+    state: State,
+    locale: Annotated[Locale | None, Query()] = None,
 ) -> TaskStarted:
     row = await _upload(session, resume_id)
     if row.file_path is None:
         raise HTTPException(status.HTTP_409_CONFLICT, "file not kept")
-    return TaskStarted(task_id=await _enqueue_parse(session, state, row))
+    return TaskStarted(task_id=await _enqueue_parse(session, state, row, locale))
 
 
 @router.delete("/uploads/{resume_id}", status_code=status.HTTP_204_NO_CONTENT)

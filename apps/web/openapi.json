@@ -663,6 +663,21 @@
             ],
             "title": "Job Title"
           },
+          "locale": {
+            "anyOf": [
+              {
+                "enum": [
+                  "fr",
+                  "en"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locale"
+          },
           "resume_id": {
             "title": "Resume Id",
             "type": "integer"
@@ -694,6 +709,21 @@
             "description": "PDF or DOCX, up to the configured size",
             "title": "File",
             "type": "string"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "enum": [
+                  "fr",
+                  "en"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locale"
           }
         },
         "required": [
@@ -4550,6 +4580,26 @@
             "schema": {
               "title": "Resume Id",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "locale",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "fr",
+                    "en"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Locale"
             }
           }
         ],

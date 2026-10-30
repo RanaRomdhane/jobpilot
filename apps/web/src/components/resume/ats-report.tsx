@@ -225,6 +225,7 @@ export function JobAdForm({
   onStarted: (taskId: string) => void;
 }) {
   const t = useTranslations("resume.report.job");
+  const locale = useLocale() as "fr" | "en";
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
@@ -232,7 +233,7 @@ export function JobAdForm({
 
   const run = useMutation({
     mutationFn: (body: { job_text: string | null; job_title: string | null }) =>
-      unwrap(api.POST("/api/v1/ats/reports", { body: { resume_id: resumeId, ...body } })),
+      unwrap(api.POST("/api/v1/ats/reports", { body: { resume_id: resumeId, locale, ...body } })),
     onSuccess: (r) => {
       toast.success(t("started"));
       onStarted(r.task_id);
