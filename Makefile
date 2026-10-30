@@ -32,8 +32,8 @@ up: env ## Build and start the whole stack (postgres, redis, migrate, api, worke
 down: ## Stop the stack (data volumes are kept)
 	$(COMPOSE) down
 
-restart: ## Restart api and worker
-	$(COMPOSE) restart api worker
+restart: ## Recreate api and worker so they reload .env (plain `docker compose restart` does not)
+	$(COMPOSE) up -d --force-recreate --no-deps --wait api worker
 
 logs: ## Follow logs (s=<service> to filter)
 	$(COMPOSE) logs -f --tail=100 $(s)
@@ -53,8 +53,8 @@ migrate-local: ## Apply migrations from the host against DATABASE_URL
 revision: ## Autogenerate a migration: make revision m="add something"
 	$(UV) run alembic -c packages/core/alembic.ini revision --autogenerate -m "$(m)"
 
-password: ## Set the dashboard password (only its Argon2 hash is stored in .env)
-	$(UV) run python scripts/set_password.py
+password: ## Set the dashboard password (hash only, in .env); SHOW=1 echoes what you type
+	$(UV) run python scripts/set_password.py $(if $(SHOW),--show,)
 
 # ---------------------------------------------------------------- gmail
 gmail-auth: ## Connect Gmail (opens Google's consent page; see docs/setup/google-oauth.md)
