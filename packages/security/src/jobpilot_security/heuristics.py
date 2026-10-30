@@ -179,7 +179,7 @@ RULES: tuple[Rule, ...] = (
     _r(
         "tool.generic",
         Category.TOOL_MENTION,
-        0.45,
+        0.3,  # product newsletters talk about "tool calls"; needs corroboration to flag
         r"\b(?:call|invoke|use|execute|appelle[rz]?|utilise[rz]?) (?:the |a |le |la |l.)?"
         r"(?:tool|function|outil|fonction)\b|\b(?:function|tool)[ _]call\b",
     ),
@@ -203,6 +203,8 @@ RULES: tuple[Rule, ...] = (
     ),
 )
 
+# URLs are matched as a placeholder: query strings ("verify-email?token=…") are not instructions
+_URL = re.compile(r"https?://\S+|www\.\S+", re.IGNORECASE)
 _BASE64 = re.compile(r"(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{80,}={0,2}(?![A-Za-z0-9+/])")
 
 
@@ -221,7 +223,7 @@ def _decode_blob(blob: str) -> str | None:
 
 
 def match_rules(text: str, *, decode: bool = True) -> list[Match]:
-    folded = fold(text)
+    folded = _URL.sub(" [url] ", fold(text))
     found: list[Match] = []
     for rule in RULES:
         for m in rule.pattern.finditer(folded):
@@ -234,7 +236,9 @@ def match_rules(text: str, *, decode: bool = True) -> list[Match]:
             Match(
                 "encoding.base64_blob",
                 Category.ENCODING,
-                0.35,
+                # opaque blobs are everywhere in real mail (tracking tokens, data URIs): weak on
+                # their own; a blob that decodes to an instruction scores through `decoded.*`
+                0.1,
                 _excerpt(text, m.start(), min(m.end(), m.start() + 40), 10),
             )
         )

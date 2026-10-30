@@ -57,13 +57,16 @@ def heuristic_reasons(content: CleanText) -> list[InjectionReason]:
     hidden = "\n".join(content.hidden)
     if hidden:
         hidden_matches = match_rules(hidden)
+        # encoded data alone is not an instruction; only real patterns get the hidden-text boost
+        signals = [m for m in hidden_matches if m.category != Category.ENCODING]
         for m in hidden_matches:
+            boost = HIDDEN_PATTERN_BOOST if m.category != Category.ENCODING else 0.0
             reasons.append(
                 InjectionReason(
                     layer=Layer.HEURISTIC,
                     rule=f"hidden.{m.rule}",
                     category=m.category,
-                    weight=min(1.0, m.weight + HIDDEN_PATTERN_BOOST),
+                    weight=min(1.0, m.weight + boost),
                     excerpt=m.excerpt[:160],
                 )
             )
@@ -74,7 +77,7 @@ def heuristic_reasons(content: CleanText) -> list[InjectionReason]:
                     layer=Layer.HEURISTIC,
                     rule="hidden.text_present",
                     category=Category.HIDDEN_CONTENT,
-                    weight=0.15 if not hidden_matches else 0.3,
+                    weight=0.3 if signals else 0.15,
                     excerpt=hidden[:120],
                 )
             )
@@ -158,3 +161,45 @@ class InjectionDetector:
             excerpt=(reason or "")[:160] or None,
         )
         return InjectionReport(score=0.6, flagged=self.threshold <= 0.6, reasons=[r])
+
+
+def _rule_weights() -> dict[str, tuple[float, str]]:
+    from jobpilot_security.heuristics import RULES
+
+    return {r.id: (r.weight, r.category.value) for r in RULES}
+
+
+def reweigh(report: InjectionReport, threshold: float = DEFAULT_FLAG_THRESHOLD) -> InjectionReport:
+    """Recompute a stored report with the *current* heuristic weights (after a recalibration).
+
+    Bodies are not stored, but every reason keeps its rule id, so heuristic evidence can be
+    re-scored. Guard and model evidence is kept as recorded.
+    """
+    base = _rule_weights()
+    base["encoding.base64_blob"] = (0.1, Category.ENCODING.value)
+    reasons: list[InjectionReason] = []
+    hidden_signal = any(
+        r.layer == Layer.HEURISTIC
+        and r.rule.startswith("hidden.")
+        and r.category not in (Category.ENCODING, Category.HIDDEN_CONTENT)
+        for r in report.reasons
+    )
+    for r in report.reasons:
+        weight = r.weight
+        if r.layer == Layer.HEURISTIC:
+            rule = r.rule
+            prefix = ""
+            for p in ("hidden.", "decoded."):
+                if rule.startswith(p) and rule[len(p) :] in base:
+                    prefix, rule = p, rule[len(p) :]
+            if rule in base:
+                weight, category = base[rule]
+                if prefix == "decoded.":
+                    weight = min(1.0, weight + 0.1)
+                elif prefix == "hidden." and category != Category.ENCODING:
+                    weight = min(1.0, weight + HIDDEN_PATTERN_BOOST)
+            elif r.rule == "hidden.text_present":
+                weight = 0.3 if hidden_signal else 0.15
+        reasons.append(r.model_copy(update={"weight": weight}))
+    score = combine([r.weight for r in reasons])
+    return InjectionReport(score=score, flagged=score >= threshold, reasons=reasons)

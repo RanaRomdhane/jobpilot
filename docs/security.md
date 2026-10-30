@@ -45,7 +45,19 @@ white 1px text, an HTML comment, zero-width characters or base64.
 Flagged emails keep their real category label **plus** `JobPilot/⚠ Suspicious`, are listed in the
 Security panel (Phase 3) and are **excluded from automatic pipeline changes**.
 
-Measured on the regression suite (32 injections, 32 look-alike benign samples, FR/EN/AR):
+**Real-inbox calibration (first backfill, 145 emails):** the first scoring flagged 12 emails
+(8 %). Nine were false positives: opaque base64 tracking tokens hidden in marketing HTML,
+`verify-email?token=…` links matching the exfiltration rule, and a newsletter mentioning "tool
+calls". Opaque blobs now weigh 0.1 (a blob that *decodes* to an instruction still scores high),
+the hidden-text boost only applies to real instruction patterns, URLs are matched as a
+placeholder, and the generic tool-call rule needs corroboration. Representative samples were added
+to the benign suite. After `scripts/rescore_injection.py --rescan-flagged`: 3 flagged (2 %) — an
+email that literally contains instructions for an AI, and two AI-industry newsletters that the
+guard model scores at 0.994 (its known weak spot: prompt-like marketing copy). JobPilot never
+removes labels, so emails that are no longer flagged keep `JobPilot/⚠ Suspicious` until the user
+removes it in Gmail.
+
+Measured on the regression suite (32 injections, 36 look-alike benign samples, FR/EN/AR):
 heuristics alone P = R = 1.00 *on the tuning set*; all layers with the real guard model
 P = 0.97, R = 1.00 (`make eval`, `storage/eval/injection_eval.json`). The baseline injection from
 the brief is classified as *Newsletter* and flagged.

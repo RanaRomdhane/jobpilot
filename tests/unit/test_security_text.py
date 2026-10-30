@@ -6,7 +6,14 @@ from typing import Any
 
 import pytest
 
-from jobpilot_security import InjectionDetector, clean_plain, html_to_text, spotlight, truncate
+from jobpilot_security import (
+    InjectionDetector,
+    InjectionReport,
+    clean_plain,
+    html_to_text,
+    spotlight,
+    truncate,
+)
 from jobpilot_security.guard import segments
 from jobpilot_security.text import fold
 
@@ -88,3 +95,51 @@ def test_model_report_merges_with_heuristics() -> None:
         d.model_report("asked to be labelled Offre"), d.threshold
     )
     assert merged.flagged and {r.layer for r in merged.reasons} == {"heuristic", "model"}
+
+
+def test_reweigh_drops_flags_caused_only_by_opaque_hidden_base64() -> None:
+    from jobpilot_security.detector import reweigh
+
+    old = InjectionReport.model_validate(
+        {
+            "score": 0.65,
+            "flagged": True,
+            "reasons": [
+                {
+                    "layer": "heuristic",
+                    "rule": "hidden.encoding.base64_blob",
+                    "category": "encoding",
+                    "weight": 0.5,
+                },
+                {
+                    "layer": "heuristic",
+                    "rule": "hidden.text_present",
+                    "category": "hidden_content",
+                    "weight": 0.3,
+                },
+            ],
+        }
+    )
+    new = reweigh(old)
+    assert not new.flagged and new.score < 0.3
+
+
+def test_reweigh_keeps_real_instructions_and_guard_evidence() -> None:
+    from jobpilot_security.detector import reweigh
+
+    old = InjectionReport.model_validate(
+        {
+            "score": 0.96,
+            "flagged": True,
+            "reasons": [
+                {
+                    "layer": "heuristic",
+                    "rule": "en.classify_as",
+                    "category": "output_manipulation",
+                    "weight": 0.85,
+                },
+                {"layer": "guard", "rule": "guard.score", "category": "guard", "weight": 0.6},
+            ],
+        }
+    )
+    assert reweigh(old).flagged
