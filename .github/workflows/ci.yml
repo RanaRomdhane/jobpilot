@@ -38,7 +38,8 @@ jobs:
       DATABASE_URL: postgresql+asyncpg://jobpilot:jobpilot@127.0.0.1:5433/jobpilot
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      # setup-uv publishes full version tags only (no moving major tag)
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           version: "0.13.6"
           enable-cache: true
@@ -102,6 +103,9 @@ jobs:
   secrets:
     name: Secret scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read  # gitleaks-action lists the PR's commits to scan
     steps:
       - uses: actions/checkout@v7
         with:
