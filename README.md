@@ -4,8 +4,8 @@ Local-first, AI-powered job-search copilot: it triages your Gmail inbox, tracks 
 analyses your CV for ATS-friendliness, aggregates job offers, tailors your LaTeX CV and cover letter
 per job, and sends applications from your Gmail **only after you approve them**.
 
-> **Status:** Phase 2 — inbox triage (Gmail MCP server, TriageAgent, injection detection).
-> See [docs/plan.md](docs/plan.md).
+> **Status:** Phase 3 — dashboard (sign-in, overview, inbox, applications Kanban, security,
+> settings). See [docs/plan.md](docs/plan.md).
 
 ## Principles
 
@@ -23,10 +23,11 @@ Prerequisites: Docker Desktop, [uv](https://docs.astral.sh/uv/), Node 20+ with p
 make install   # Python + web dependencies, git hooks
 make env       # creates .env with generated DB password and encryption key
 # edit .env and paste your GROQ_API_KEY (https://console.groq.com/keys)
+make password  # sets your dashboard password (only an Argon2 hash is stored in .env)
 make up        # builds and starts everything, waits until healthy
 ```
 
-- Dashboard: <http://localhost:3000> (status page; the real dashboard lands in Phase 3)
+- Dashboard: <http://localhost:3000> — sign in with the password from `make password`
 - API docs: <http://localhost:8000/api/v1/docs>
 
 Everything binds to `127.0.0.1`. PostgreSQL is published on **5433** so it never clashes with a

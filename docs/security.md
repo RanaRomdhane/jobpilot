@@ -1,6 +1,6 @@
 # JobPilot — Security model
 
-Status: v1 (Phase 2: inbox triage). Extended in later phases and finalised in Phase 8.
+Status: v1.1 (Phase 3: dashboard). Extended in later phases and finalised in Phase 8.
 
 JobPilot reads attacker-controllable text (anyone can email you or publish a job post) and holds
 credentials that can act in your name. The design goal is that **a successful prompt injection can
@@ -99,7 +99,20 @@ pre-commit and CI.
 A global Redis token bucket enforces the Groq free-tier limits (TPM/RPM/TPD) across every process,
 with provider-wide pauses on 429. The guard model has its own budget.
 
-### T7 — LaTeX code execution (Phase 6)
+### T7 — Unauthorised use of the dashboard (Phase 3)
+
+- Single-user sign-in: the password is verified against an Argon2 hash in `.env` (`make
+  password`); the password itself is never stored.
+- Sessions live in Redis; the browser holds a random id in an `httpOnly`, `SameSite=Strict`
+  cookie, Redis keeps only its SHA-256; sign-out deletes the session server-side.
+- Every mutating request needs an `X-CSRF-Token` matching the session; login attempts are rate
+  limited (5/minute); every API route except health and auth requires a session.
+- The browser only talks to the Next.js origin; its server-side proxy forwards nothing but the
+  session cookie, and the API's CORS allow-list contains only the dashboard origin.
+- User-initiated Gmail label changes (re-classify, clear the suspicious flag) run in a separate
+  worker service limited to `JobPilot/*` labels and unreachable from any agent (ADR-0005).
+
+### T8 — LaTeX code execution (Phase 6)
 
 Compilation runs in a container with no network, read-only root fs, no capabilities, pids/memory/
 CPU limits and shell-escape disabled; it is driven through a spool volume.

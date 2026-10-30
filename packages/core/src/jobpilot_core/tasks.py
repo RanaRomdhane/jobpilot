@@ -23,6 +23,9 @@ if TYPE_CHECKING:
 TERMINAL_STATUSES = frozenset({TaskStatus.SUCCEEDED, TaskStatus.FAILED, TaskStatus.CANCELLED})
 
 
+ALL_TASKS_CHANNEL = "tasks:all"
+
+
 def task_channel(task_id: uuid.UUID | str) -> str:
     return f"task:{task_id}"
 
@@ -79,7 +82,9 @@ class TaskReporter:
                 setattr(row, k, v)
             await session.commit()
             event = TaskEvent.from_row(row)
-        await self._redis.publish(task_channel(self.task_id), event.model_dump_json())
+        payload = event.model_dump_json()
+        await self._redis.publish(task_channel(self.task_id), payload)
+        await self._redis.publish(ALL_TASKS_CHANNEL, payload)
         return event
 
     async def start(self, message: str | None = None) -> TaskEvent:

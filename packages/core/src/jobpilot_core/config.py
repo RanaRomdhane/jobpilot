@@ -47,6 +47,11 @@ class Settings(BaseSettings):
 
     # --- security
     fernet_key: SecretStr | None = None
+    # dashboard login: Argon2 hash set by `make password` (the password itself is never stored)
+    dashboard_password_hash: SecretStr | None = None
+    session_ttl_hours: int = Field(default=168, ge=1, le=24 * 90)
+    session_cookie_secure: bool = False  # True when served over HTTPS
+    login_max_attempts_per_minute: int = 5
     cors_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["http://localhost:3000"]
     )

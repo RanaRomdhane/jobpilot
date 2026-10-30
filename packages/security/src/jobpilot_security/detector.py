@@ -22,6 +22,7 @@ class Layer(StrEnum):
     HEURISTIC = "heuristic"
     GUARD = "guard"
     MODEL = "model"  # the task model itself reported a manipulation attempt
+    USER = "user"  # the user reviewed the item in the dashboard (e.g. cleared the flag)
 
 
 class InjectionReason(BaseModel):

@@ -53,6 +53,9 @@ migrate-local: ## Apply migrations from the host against DATABASE_URL
 revision: ## Autogenerate a migration: make revision m="add something"
 	$(UV) run alembic -c packages/core/alembic.ini revision --autogenerate -m "$(m)"
 
+password: ## Set the dashboard password (only its Argon2 hash is stored in .env)
+	$(UV) run python scripts/set_password.py
+
 # ---------------------------------------------------------------- gmail
 gmail-auth: ## Connect Gmail (opens Google's consent page; see docs/setup/google-oauth.md)
 	$(UV) run python -m jobpilot_mcp_gmail.auth --scope triage

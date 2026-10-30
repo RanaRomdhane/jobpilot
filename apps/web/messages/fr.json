@@ -10,13 +10,278 @@
     "jobs": "Offres",
     "resume": "CV",
     "templates": "Templates",
-    "review": "Revue de candidature",
+    "review": "Revue",
     "security": "Sécurité",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "soon": "Bientôt",
+    "menu": "Ouvrir le menu",
+    "logout": "Se déconnecter",
+    "skip": "Aller au contenu"
+  },
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Entrez le mot de passe de votre tableau de bord.",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "submitting": "Connexion…",
+    "invalid": "Mot de passe incorrect.",
+    "tooMany": "Trop de tentatives. Réessayez dans une minute.",
+    "notSet": "Aucun mot de passe n'est défini. Lancez `make password` dans un terminal, puis `make restart`.",
+    "error": "La connexion a échoué. Vérifiez que l'API tourne (`make up`)."
+  },
+  "common": {
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "close": "Fermer",
+    "delete": "Supprimer",
+    "loadError": "Impossible de charger ces données. L'API répond-elle ?",
+    "openInGmail": "Ouvrir dans Gmail",
+    "none": "Aucun",
+    "confidence": "Confiance",
+    "search": "Rechercher",
+    "all": "Tout",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "pageOf": "{from}–{to} sur {total}"
+  },
+  "categories": {
+    "Recruteur": "Recruteur",
+    "Entretien": "Entretien",
+    "Refus": "Refus",
+    "Offre": "Offre",
+    "Newsletter": "Newsletter",
+    "Autre": "Autre",
+    "unclassified": "Non classé"
+  },
+  "statuses": {
+    "draft": "Brouillon",
+    "ready_for_review": "À relire",
+    "sent": "Envoyée",
+    "recruiter_contact": "Contact recruteur",
+    "interview": "Entretien",
+    "offer": "Offre",
+    "rejected": "Refus",
+    "withdrawn": "Retirée",
+    "ghosted": "Sans réponse"
+  },
+  "overview": {
+    "title": "Vue d'ensemble",
+    "lastSync": "Dernière synchronisation {when}",
+    "neverSynced": "Gmail n'a pas encore été synchronisé",
+    "syncNow": "Synchroniser Gmail",
+    "syncing": "Synchronisation…",
+    "kpis": {
+      "sent": "Candidatures envoyées",
+      "sentWeek": "{count} cette semaine",
+      "responseRate": "Taux de réponse",
+      "interviews": "Entretiens",
+      "offers": "Offres"
+    },
+    "route": {
+      "title": "Votre parcours",
+      "sent": "Envoyées",
+      "recruiter_contact": "Réponse",
+      "interview": "Entretien",
+      "offer": "Offre",
+      "empty": "Ajoutez une candidature pour voir votre parcours se dessiner."
+    },
+    "upcoming": "Entretiens à venir",
+    "noUpcoming": "Aucun entretien prévu.",
+    "activity": "Activité récente",
+    "noActivity": "Rien pour l'instant. La synchronisation Gmail tourne toutes les 30 minutes.",
+    "attention": "À traiter",
+    "suggestionsPending": "{count, plural, =0 {Aucune suggestion} one {# changement de statut proposé} other {# changements de statut proposés}}",
+    "alerts": "{count, plural, =0 {Aucun email suspect} one {# email suspect} other {# emails suspects}}",
+    "inbox": "Boîte de réception",
+    "events": {
+      "created": "Candidature ajoutée",
+      "status_changed": "Statut : {from} → {to}",
+      "email_received": "Email reçu ({category})",
+      "email_linked": "Email lié",
+      "edited": "Candidature modifiée",
+      "triage": "Tri Gmail",
+      "triageResult": "{classified, plural, =0 {aucun email classé} one {# email classé} other {# emails classés}}, {flagged, plural, =0 {aucun suspect} one {# suspect} other {# suspects}}",
+      "triageFailed": "échec"
+    }
+  },
+  "inbox": {
+    "title": "Boîte de réception",
+    "subtitle": "Emails triés par JobPilot. Corrigez une catégorie : le libellé Gmail suit.",
+    "filters": {
+      "category": "Catégorie",
+      "flagged": "Suspects uniquement",
+      "lowConfidence": "Confiance faible",
+      "search": "Rechercher un expéditeur, un objet…"
+    },
+    "columns": {
+      "from": "Expéditeur",
+      "subject": "Objet",
+      "category": "Catégorie",
+      "confidence": "Confiance",
+      "received": "Reçu"
+    },
+    "empty": "Aucun email ne correspond à ces filtres.",
+    "emptyAll": "Aucun email synchronisé. Connectez Gmail (`make gmail-auth`) puis lancez une synchronisation.",
+    "reclassify": "Changer de catégorie",
+    "reclassified": "Catégorie changée en {category}. Libellé Gmail mis à jour.",
+    "clearFlag": "Ce n'est pas suspect",
+    "flagCleared": "Signalement retiré. Libellé Gmail mis à jour.",
+    "suspicious": "Suspect",
+    "manual": "Corrigé par vous",
+    "reason": "Raison",
+    "evidence": "Indices de manipulation",
+    "detail": "Détail de l'email",
+    "interviewAt": "Entretien prévu le {date}"
+  },
+  "applications": {
+    "title": "Candidatures",
+    "subtitle": "Glissez une carte pour changer son statut.",
+    "add": "Ajouter une candidature",
+    "board": "Tableau",
+    "table": "Liste",
+    "emptyColumn": "Aucune",
+    "empty": "Aucune candidature suivie. Ajoutez-en une, ou attendez que JobPilot en détecte dans vos emails.",
+    "moved": "Déplacée vers « {status} »",
+    "moveTo": "Déplacer vers…",
+    "suggestions": "Changements proposés",
+    "suggestionLine": "{company} — {role} : {from} → {to}",
+    "accept": "Appliquer",
+    "dismiss": "Ignorer",
+    "accepted": "Statut mis à jour",
+    "dismissed": "Suggestion ignorée",
+    "form": {
+      "title": "Nouvelle candidature",
+      "company": "Entreprise",
+      "domain": "Site ou domaine de l'entreprise",
+      "domainHint": "Sert à rattacher automatiquement les emails (ex. acme.tn).",
+      "role": "Poste",
+      "status": "Statut",
+      "appliedAt": "Date de candidature",
+      "contact": "Email du contact",
+      "source": "Source",
+      "url": "Lien de l'offre",
+      "notes": "Notes",
+      "create": "Ajouter la candidature",
+      "created": "Candidature ajoutée",
+      "required": "Champ obligatoire",
+      "invalidEmail": "Adresse email invalide"
+    },
+    "detail": {
+      "timeline": "Historique",
+      "emails": "Emails",
+      "noEmails": "Aucun email lié pour l'instant.",
+      "applied": "Candidature le {date}",
+      "interview": "Entretien le {date}",
+      "notes": "Notes",
+      "saveNotes": "Enregistrer les notes",
+      "notesSaved": "Notes enregistrées",
+      "delete": "Supprimer cette candidature",
+      "deleteConfirm": "Supprimer « {role} » chez {company} ? L'historique sera perdu.",
+      "deleted": "Candidature supprimée"
+    },
+    "columns": {
+      "company": "Entreprise",
+      "role": "Poste",
+      "status": "Statut",
+      "applied": "Envoyée le",
+      "updated": "Mise à jour"
+    }
+  },
+  "security": {
+    "title": "Sécurité",
+    "subtitle": "Contenus qui tentent de donner des ordres à une IA. Ils sont étiquetés, jamais traités automatiquement.",
+    "flagged": "Éléments signalés",
+    "noFlagged": "Aucun élément suspect.",
+    "score": "Score {score}",
+    "suite": "Banc de test anti-injection",
+    "suiteHint": "{injections} attaques et {benign} messages légitimes (FR/EN/AR), rejoués à chaque ouverture de cette page.",
+    "precision": "Précision",
+    "recall": "Rappel",
+    "byKind": "Par type d'attaque",
+    "kinds": {
+      "direct": "Directe",
+      "hidden": "Cachée",
+      "indirect": "Indirecte"
+    },
+    "detected": "{detected}/{total} détectées",
+    "evals": "Évaluations avec le vrai modèle",
+    "noEvals": "Lancez `make eval` pour mesurer le tri et la détection avec le modèle réel.",
+    "triageAccuracy": "Précision du tri",
+    "toolCalls": "Appels d'outils par lot",
+    "tokens": "Tokens par lot",
+    "guardPrecision": "Détection complète (précision / rappel)",
+    "layers": {
+      "heuristic": "Règles",
+      "guard": "Modèle de garde",
+      "model": "Signalé par l'agent",
+      "user": "Vous"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "preferences": "Préférences",
+    "language": "Langue",
+    "timezone": "Fuseau horaire",
+    "sendCap": "Envois maximum par jour",
+    "sendCapHint": "Utilisé à partir de l'envoi de candidatures (phase 7).",
+    "saved": "Préférences enregistrées",
+    "gmail": "Gmail",
+    "gmailConnected": "Connecté : {email}",
+    "gmailNotConnected": "Gmail n'est pas connecté. Lancez `make gmail-auth` dans un terminal.",
+    "scopeTriage": "Lecture et libellés JobPilot",
+    "scopeSend": "Envoi d'emails",
+    "llm": "Modèle de langage",
+    "llmHint": "Le fournisseur et les modèles se changent dans le fichier .env.",
+    "provider": "Fournisseur",
+    "keySet": "Clé configurée",
+    "keyMissing": "Clé manquante",
+    "limits": "Limites : {tpm} tokens/min, {rpm} requêtes/min, {tpd} tokens/jour",
+    "purposes": {
+      "triage": "Tri des emails",
+      "guard": "Détection d'injection",
+      "parse_resume": "Lecture du CV",
+      "rerank": "Classement des offres",
+      "tailor": "Adaptation du CV",
+      "cover_letter": "Lettre de motivation"
+    },
+    "triage": "Tri automatique",
+    "schedule": "Fréquence",
+    "query": "Emails concernés",
+    "batchSize": "Taille des lots",
+    "autoApply": "Application automatique des statuts",
+    "autoApplyValue": "Confiance ≥ {value}, jamais pour un email suspect",
+    "sources": "Sources d'offres",
+    "sourcesSoon": "Les sources d'offres arrivent en phase 5.",
+    "scheduleValue": "Toutes les 30 minutes (à :05 et :35)"
+  },
+  "soon": {
+    "title": "Pas encore disponible",
+    "jobs": "La recherche d'offres multi-sources arrive en phase 5.",
+    "resume": "L'analyse de CV et le rapport ATS arrivent en phase 4.",
+    "templates": "Vos templates LaTeX arrivent en phase 6.",
+    "review": "La revue et l'envoi des candidatures arrivent en phase 7."
+  },
+  "tasks": {
+    "triage": "Tri Gmail",
+    "user_label_change": "Libellé Gmail",
+    "ping": "Test du worker",
+    "succeeded": "{kind} terminé",
+    "failed": "{kind} a échoué : {error}",
+    "triageSummary": "{classified, plural, =0 {aucun email classé} one {# email classé} other {# emails classés}}, {flagged, plural, =0 {aucun suspect} one {# suspect} other {# suspects}}"
+  },
+  "theme": {
+    "toggle": "Changer de thème"
+  },
+  "locale": {
+    "label": "Langue",
+    "fr": "Français",
+    "en": "English"
   },
   "status": {
     "title": "État du système",
-    "description": "Fondations de JobPilot : chaque service doit être opérationnel.",
+    "description": "Chaque service doit être opérationnel.",
     "overall": {
       "ok": "Tout est opérationnel",
       "degraded": "Fonctionnement dégradé",
@@ -36,16 +301,5 @@
     "pingRunning": "Tâche en cours… {progress} %",
     "pingDone": "Le worker a répondu",
     "pingFailed": "La tâche a échoué"
-  },
-  "theme": {
-    "toggle": "Changer de thème",
-    "light": "Clair",
-    "dark": "Sombre",
-    "system": "Système"
-  },
-  "locale": {
-    "label": "Langue",
-    "fr": "Français",
-    "en": "English"
   }
 }

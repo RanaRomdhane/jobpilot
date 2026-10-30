@@ -11,19 +11,21 @@ from typing import Any
 from arq import cron
 from arq.connections import RedisSettings
 from redis.asyncio import Redis
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from jobpilot_agents.tracing import configure_local_tracing
 from jobpilot_core.config import get_settings
+from jobpilot_core.crypto import SecretBox
 from jobpilot_core.db import create_engine, create_sessionmaker
-from jobpilot_core.enums import OAuthScopeSet
+from jobpilot_core.enums import EmailCategory, OAuthScopeSet
 from jobpilot_core.health import WORKER_HEARTBEAT_KEY, WORKER_HEARTBEAT_TTL_S
 from jobpilot_core.log import configure_logging
-from jobpilot_core.models import OAuthCredential
+from jobpilot_core.models import EmailMessage, OAuthCredential
 from jobpilot_core.tasks import TaskReporter, create_task_run
-from jobpilot_mcp_gmail.credentials import GmailNotConnectedError
-from jobpilot_mcp_gmail.gmail_client import GmailAuthExpiredError
+from jobpilot_mcp_gmail.credentials import CredentialStore, GmailNotConnectedError
+from jobpilot_mcp_gmail.gmail_client import GmailAuthExpiredError, GmailClient
 from jobpilot_worker.triage import run_triage
+from jobpilot_worker.user_labels import UserLabelActions
 
 log = logging.getLogger("jobpilot.worker")
 
@@ -100,6 +102,44 @@ async def triage(ctx: Ctx, task_id: str, sync: bool = True) -> dict[str, Any]:
         await lock.release()
 
 
+async def user_label_change(
+    ctx: Ctx, task_id: str, gmail_id: str, action: str, old: str | None, new: str | None
+) -> dict[str, Any]:
+    """Apply a dashboard re-classification / un-flag to Gmail labels (ADR-0005)."""
+    rep = reporter(ctx, task_id)
+    await rep.start(action)
+    settings = ctx["settings"]
+    store = CredentialStore(ctx["sessionmaker"], SecretBox.from_settings(settings))
+    try:
+        token, _ = await store.load(OAuthScopeSet.TRIAGE)
+        gmail = GmailClient(token, on_token_refresh=lambda t: store.save(OAuthScopeSet.TRIAGE, t))
+        try:
+            actions = UserLabelActions(gmail)
+            if action == "reclassify" and new is not None:
+                await actions.reclassify(
+                    gmail_id, EmailCategory(old) if old else None, EmailCategory(new)
+                )
+            elif action == "clear_suspicious":
+                await actions.clear_suspicious(gmail_id)
+            else:
+                raise ValueError(f"unknown action {action!r}")
+        finally:
+            await gmail.aclose()
+    except Exception as exc:
+        await rep.fail(f"{type(exc).__name__}: {exc}")
+        return {"ok": False}
+    if action == "reclassify":
+        async with ctx["sessionmaker"]() as session:
+            await session.execute(
+                update(EmailMessage)
+                .where(EmailMessage.gmail_id == gmail_id)
+                .values(label_applied=True)
+            )
+            await session.commit()
+    await rep.succeed({"ok": True}, "Gmail labels updated")
+    return {"ok": True}
+
+
 async def scheduled_triage(ctx: Ctx) -> None:
     """Cron: incremental sync + triage, only once Gmail is connected."""
     async with ctx["sessionmaker"]() as session:
@@ -115,7 +155,7 @@ async def scheduled_triage(ctx: Ctx) -> None:
 class WorkerSettings:
     """arq reads these plain class attributes directly."""
 
-    functions = [ping, triage]  # noqa: RUF012
+    functions = [ping, triage, user_label_change]  # noqa: RUF012
     cron_jobs = [  # noqa: RUF012
         cron(heartbeat, second={0, 15, 30, 45}, run_at_startup=True),
         cron(scheduled_triage, minute={5, 35}, unique=True, timeout=3600),

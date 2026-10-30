@@ -11,6 +11,7 @@ import os
 from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
 
+import httpx
 import pytest
 from alembic import command
 from alembic.config import Config
@@ -96,3 +97,39 @@ async def real_redis(integration_settings: Settings) -> AsyncIterator[Redis]:
     yield client
     await client.flushdb()
     await client.aclose()
+
+
+TEST_PASSWORD = "correct horse battery staple"
+
+
+@pytest.fixture(scope="session")
+def api_settings(integration_settings: Settings) -> Settings:
+    from pydantic import SecretStr
+
+    from jobpilot_api.auth import hash_password
+
+    return integration_settings.model_copy(
+        update={"dashboard_password_hash": SecretStr(hash_password(TEST_PASSWORD))}
+    )
+
+
+@pytest.fixture
+async def anon_client(
+    api_settings: Settings, real_redis: Redis
+) -> AsyncIterator[httpx.AsyncClient]:
+    from jobpilot_api.main import create_app
+
+    app = create_app(api_settings)
+    async with app.router.lifespan_context(app):
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as c:
+            yield c
+
+
+@pytest.fixture
+async def client(anon_client: httpx.AsyncClient) -> httpx.AsyncClient:
+    """Logged-in client that sends the CSRF header on every request."""
+    r = await anon_client.post("/api/v1/auth/login", json={"password": TEST_PASSWORD})
+    assert r.status_code == 200, r.text
+    anon_client.headers["X-CSRF-Token"] = r.json()["csrf_token"]
+    return anon_client

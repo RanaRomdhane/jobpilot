@@ -33,7 +33,7 @@ Prerequisites, repo, brief, architecture, ADRs 0001–0004, this plan.
 - **Asks:** Groq API key (+ optional OpenAI key) → written by you into `.env`, never pasted in git.
 - ✅ `make up` starts everything, health checks pass, CI green.
 
-## Phase 2 — Inbox triage (`phase/2-triage`) — in review
+## Phase 2 — Inbox triage (`phase/2-triage`) ✅ merged in #2
 
 - Google OAuth installed-app flow → encrypted `oauth_credentials` (scope set `triage`).
 - `packages/security` v1: HTML→text, zero-width/hidden-text detection, FR/EN/AR heuristic patterns,
@@ -48,7 +48,7 @@ Prerequisites, repo, brief, architecture, ADRs 0001–0004, this plan.
 - **Asks:** Google Cloud project/OAuth client (step-by-step guide provided if you have none).
 - ✅ Acceptance criteria from the brief, plus a report: tool calls/batch, tokens/batch, accuracy.
 
-## Phase 3 — Dashboard v1 (`phase/3-dashboard`)
+## Phase 3 — Dashboard v1 (`phase/3-dashboard`) — in review
 
 Auth, app shell, Overview, Inbox (re-classify → eval set), Applications Kanban (dnd-kit) + table +
 drawer, Security panel, Settings; SSE progress toasts; skeletons, empty states, a11y, 375px → desktop.

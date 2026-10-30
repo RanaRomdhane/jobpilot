@@ -14,7 +14,10 @@ from redis.asyncio import Redis
 from jobpilot_core.config import Settings, get_settings
 from jobpilot_core.llm import MemoryUsageSink, build_provider
 from jobpilot_security.factory import build_detector
-from tests.security.test_injection_suite import BENIGN, INJECTIONS, to_clean
+from jobpilot_security.suite import load_samples, to_clean
+
+INJECTIONS = load_samples()["injections"]
+BENIGN = load_samples()["benign"]
 
 pytestmark = pytest.mark.eval
 

@@ -164,8 +164,9 @@ DB transaction, then sends with the separate `gmail.send` credential, labels the
 
 The browser only talks to the Next.js origin. `apps/web/src/app/api/v1/[...path]/route.ts` is a
 server-side proxy to the API on the internal Docker network (`API_INTERNAL_URL`), streaming responses
-(SSE included). It is where dashboard authentication is enforced from Phase 3, and it never forwards
-browser cookies to the API. The API's CORS allow-list contains only the dashboard origin(s).
+(SSE included). It forwards only the `jp_session` cookie (and the API's `Set-Cookie` for it);
+authentication itself is enforced by the API (Argon2 password, Redis sessions, CSRF header, see
+`docs/security.md` T7). A Next middleware redirects to `/login` when no session cookie exists. The API's CORS allow-list contains only the dashboard origin(s).
 
 Background work follows one pattern: the API creates a `task_run` row, enqueues an arq job with the
 same id and returns `202 {task_id}`; the worker reports progress through `TaskReporter` (DB row +
