@@ -4,6 +4,40 @@
  */
 
 export interface paths {
+    "/api/v1/gmail/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gmail Status */
+        get: operations["gmail_status_api_v1_gmail_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gmail/triage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sync Gmail and classify unprocessed emails (background task) */
+        post: operations["start_triage_api_v1_gmail_triage_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -106,6 +140,23 @@ export interface components {
             /** Ok */
             ok: boolean;
         };
+        /** GmailStatus */
+        GmailStatus: {
+            /** Connected */
+            connected: boolean;
+            /** Emails */
+            emails: number;
+            /** Flagged */
+            flagged: number;
+            /** Last Full Sync At */
+            last_full_sync_at?: string | null;
+            /** Last Incremental Sync At */
+            last_incremental_sync_at?: string | null;
+            /** Scopes */
+            scopes: components["schemas"]["ScopeStatus"][];
+            /** Unprocessed */
+            unprocessed: number;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -122,6 +173,15 @@ export interface components {
             status: "ok" | "degraded" | "down";
             /** Version */
             version: string;
+        };
+        /** ScopeStatus */
+        ScopeStatus: {
+            /** Account Email */
+            account_email: string | null;
+            /** Expires At */
+            expires_at: string | null;
+            /** Scope Set */
+            scope_set: string;
         };
         /** TaskCreated */
         TaskCreated: {
@@ -176,6 +236,57 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    gmail_status_api_v1_gmail_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GmailStatus"];
+                };
+            };
+        };
+    };
+    start_triage_api_v1_gmail_triage_post: {
+        parameters: {
+            query?: {
+                sync?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     health_api_v1_health_get: {
         parameters: {
             query?: never;

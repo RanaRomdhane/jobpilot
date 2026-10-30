@@ -12,7 +12,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from redis.asyncio import Redis
 
-from jobpilot_api.routers import health, tasks
+from jobpilot_api.routers import gmail, health, tasks
 from jobpilot_api.state import AppState
 from jobpilot_core.config import Settings, get_settings
 from jobpilot_core.db import create_engine, create_sessionmaker
@@ -65,6 +65,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     v1 = APIRouter(prefix=API_PREFIX)
     v1.include_router(health.router)
     v1.include_router(tasks.router)
+    v1.include_router(gmail.router)
     app.include_router(v1)
     return app
 

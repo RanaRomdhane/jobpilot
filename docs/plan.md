@@ -15,7 +15,7 @@ Status: **awaiting approval**. Each phase lives on its own branch, lands through
 
 Prerequisites, repo, brief, architecture, ADRs 0001–0004, this plan.
 
-## Phase 1 — Foundation (`phase/1-foundation`)
+## Phase 1 — Foundation (`phase/1-foundation`) ✅ merged in #1
 
 - uv workspace: `packages/{core,security,jobs_sources,latex}`, `apps/{api,worker,mcp_gmail,agents}`.
 - `packages/core`: `Settings` (pydantic-settings, `.env`), async engine/session, logging with
@@ -33,7 +33,7 @@ Prerequisites, repo, brief, architecture, ADRs 0001–0004, this plan.
 - **Asks:** Groq API key (+ optional OpenAI key) → written by you into `.env`, never pasted in git.
 - ✅ `make up` starts everything, health checks pass, CI green.
 
-## Phase 2 — Inbox triage (`phase/2-triage`)
+## Phase 2 — Inbox triage (`phase/2-triage`) — in review
 
 - Google OAuth installed-app flow → encrypted `oauth_credentials` (scope set `triage`).
 - `packages/security` v1: HTML→text, zero-width/hidden-text detection, FR/EN/AR heuristic patterns,

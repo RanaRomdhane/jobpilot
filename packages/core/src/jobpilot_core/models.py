@@ -148,6 +148,7 @@ class TriageBatch(Base):
     )
     email_count: Mapped[int] = mapped_column(Integer, default=0)
     tool_calls: Mapped[int] = mapped_column(Integer, default=0)
+    validation_failures: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     llm_calls: Mapped[int] = mapped_column(Integer, default=0)
     input_tokens: Mapped[int] = mapped_column(Integer, default=0)
     output_tokens: Mapped[int] = mapped_column(Integer, default=0)
@@ -184,6 +185,8 @@ class EmailMessage(Base):
     )
     confidence: Mapped[float | None] = mapped_column(Float)
     classification_reason: Mapped[str | None] = mapped_column(Text)
+    # structured details the classifier extracted (e.g. interview_at), used for pipeline linking
+    extracted: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict, server_default="{}")
     manual_category: Mapped[EmailCategory | None] = mapped_column(
         enum_type(EmailCategory, "email_manual_category")
     )

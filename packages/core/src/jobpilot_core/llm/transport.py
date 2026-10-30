@@ -82,6 +82,7 @@ class RateLimitedTransport(httpx2.AsyncBaseTransport):
         usage_sink: UsageSink | None = None,
         max_retries: int = 4,
         output_reserve: int = 1024,
+        request_overhead: int = 0,
         max_wait_s: float | None = None,
         base_backoff_s: float = 1.0,
         inner: httpx2.AsyncBaseTransport | None = None,
@@ -95,6 +96,7 @@ class RateLimitedTransport(httpx2.AsyncBaseTransport):
         self._sink: UsageSink = usage_sink or NullUsageSink()
         self._max_retries = max_retries
         self._output_reserve = output_reserve
+        self._request_overhead = request_overhead
         self._max_wait_s = max_wait_s
         self._base_backoff_s = base_backoff_s
         self._inner = inner or httpx2.AsyncHTTPTransport()
@@ -109,7 +111,7 @@ class RateLimitedTransport(httpx2.AsyncBaseTransport):
             await self._limiter.acquire(0, max_wait_s=self._max_wait_s)
             return await self._inner.handle_async_request(request)
 
-        estimate = estimate_request_tokens(body, self._output_reserve)
+        estimate = estimate_request_tokens(body, self._output_reserve, self._request_overhead)
         model = str(body.get("model", "unknown"))
         streaming = bool(body.get("stream"))
         waited = 0.0
