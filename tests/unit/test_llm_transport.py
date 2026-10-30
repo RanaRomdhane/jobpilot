@@ -170,3 +170,13 @@ async def test_missing_key_is_a_clear_error(redis: FakeAsyncRedis, settings: Set
     settings.groq_api_key = None
     with pytest.raises(LLMConfigurationError, match="GROQ_API_KEY"):
         build_provider(settings, redis)
+
+
+def test_estimate_covers_provider_overhead() -> None:
+    # measured on Groq gpt-oss-120b: this prompt was billed 78 input tokens
+    body: dict[str, Any] = {
+        "model": "m",
+        "messages": [{"role": "user", "content": "Reply with exactly the word: pong"}],
+        "max_completion_tokens": 64,
+    }
+    assert estimate_request_tokens(body, 1024, request_overhead=80) >= 78 + 64

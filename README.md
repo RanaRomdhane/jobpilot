@@ -4,8 +4,8 @@ Local-first, AI-powered job-search copilot: it triages your Gmail inbox, tracks 
 analyses your CV for ATS-friendliness, aggregates job offers, tailors your LaTeX CV and cover letter
 per job, and sends applications from your Gmail **only after you approve them**.
 
-> **Status:** Phase 1 — foundation (stack, config, LLM provider + global rate limiter, schema,
-> health checks, CI). See [docs/plan.md](docs/plan.md).
+> **Status:** Phase 2 — inbox triage (Gmail MCP server, TriageAgent, injection detection).
+> See [docs/plan.md](docs/plan.md).
 
 ## Principles
 
@@ -32,6 +32,17 @@ make up        # builds and starts everything, waits until healthy
 Everything binds to `127.0.0.1`. PostgreSQL is published on **5433** so it never clashes with a
 locally installed PostgreSQL.
 
+### Connect Gmail and triage your inbox
+
+1. Create a Google OAuth client (10 min): [docs/setup/google-oauth.md](docs/setup/google-oauth.md).
+2. `make gmail-auth` — opens Google's consent page; the token is stored encrypted.
+3. `make triage` — syncs the last 90 days and classifies them into `JobPilot/*` labels
+   (Recruteur, Entretien, Refus, Offre, Newsletter, Autre, ⚠ Suspicious). After that, an
+   incremental sync + triage runs every 30 minutes.
+
+JobPilot only **reads** mail and **adds** `JobPilot/*` labels: it never sends, deletes, archives
+or forwards anything. See [docs/security.md](docs/security.md).
+
 ### Lighter development loop
 
 On a machine with little RAM, run only the databases in Docker and the apps on the host:
@@ -50,6 +61,7 @@ make web-dev       # terminal 3
 make check     # ruff, mypy --strict, eslint, prettier, tsc, pytest, vitest
 make test-integration   # needs `make infra`
 make gen-client         # after changing the API: regenerate the typed TS client
+make eval               # real-LLM evals: triage accuracy, injection precision/recall
 ```
 
 `make help` lists every target.
@@ -66,6 +78,7 @@ docs/      architecture, plan, ADRs
 ## Documentation
 
 - [Build brief](PROMPT.md) · [Delivery plan](docs/plan.md) · [Architecture](docs/architecture.md)
+- [Security model](docs/security.md) · [Gmail setup](docs/setup/google-oauth.md)
 - [Architecture decision records](docs/adr/)
 
 ## License

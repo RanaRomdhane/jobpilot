@@ -62,6 +62,16 @@ def requested_output_tokens(body: dict[str, Any], default: int) -> int:
     return default
 
 
-def estimate_request_tokens(body: dict[str, Any], output_reserve: int) -> int:
-    """Prompt + output reservation: providers count both against tokens-per-minute."""
-    return estimate_prompt_tokens(body) + requested_output_tokens(body, output_reserve)
+def estimate_request_tokens(
+    body: dict[str, Any], output_reserve: int, request_overhead: int = 0
+) -> int:
+    """Prompt + output reservation: providers count both against tokens-per-minute.
+
+    `request_overhead` covers tokens the provider adds server-side to every request (e.g. the
+    chat template / system preamble of gpt-oss, measured at ~70 tokens on Groq).
+    """
+    return (
+        estimate_prompt_tokens(body)
+        + request_overhead
+        + requested_output_tokens(body, output_reserve)
+    )

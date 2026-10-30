@@ -46,6 +46,10 @@ class LLMProvider(Protocol):
         """A rate-limited OpenAI-compatible client, e.g. for the Agents SDK."""
         ...
 
+    def guard_client(self) -> AsyncOpenAI:
+        """A client for the injection guard model, rate-limited on its own budget."""
+        ...
+
     async def complete(
         self,
         purpose: LLMPurpose,
@@ -80,6 +84,8 @@ class OpenAICompatibleProvider:
         self.limiter = TokenBucketLimiter(redis, name, provider_limits(tpm, rpm, tpd))
         self._cache = ResponseCache(redis, settings.llm_cache_ttl_s)
         self._clients: dict[LLMPurpose, AsyncOpenAI] = {}
+        self._guard_client: AsyncOpenAI | None = None
+        self._redis = redis
 
     def model(self, purpose: LLMPurpose) -> str:
         return self._settings.model_for(purpose, self.name)
@@ -94,6 +100,7 @@ class OpenAICompatibleProvider:
             usage_sink=self._sink,
             max_retries=self._settings.llm_max_retries,
             output_reserve=self._settings.llm_output_reserve_tokens,
+            request_overhead=self._settings.request_overhead_for(self.name),
             max_wait_s=max_wait_s if max_wait_s is not None else self._settings.llm_max_wait_s,
             inner=self._inner,
         )
@@ -108,6 +115,31 @@ class OpenAICompatibleProvider:
         if max_wait_s is None:
             self._clients[purpose] = client
         return client
+
+    def guard_client(self) -> AsyncOpenAI:
+        """Client for the guard model, with its own budget (Groq rate limits are per model)."""
+        if self._guard_client is not None:
+            return self._guard_client
+        tpm, rpm = self._settings.guard_limits_for(self.name)
+        limiter = TokenBucketLimiter(self._redis, f"{self.name}:guard", provider_limits(tpm, rpm))
+        transport = RateLimitedTransport(
+            limiter,
+            provider=self.name,
+            purpose=LLMPurpose.GUARD.value,
+            usage_sink=self._sink,
+            max_retries=self._settings.llm_max_retries,
+            output_reserve=16,  # classifiers return a single number
+            max_wait_s=self._settings.llm_max_wait_s,
+            inner=self._inner,
+        )
+        self._guard_client = AsyncOpenAI(
+            api_key=self._api_key,
+            base_url=self._settings.base_url_for(self.name),
+            max_retries=0,
+            timeout=self._settings.llm_request_timeout_s,
+            http_client=httpx2.AsyncClient(transport=transport),
+        )
+        return self._guard_client
 
     async def complete(
         self,
@@ -184,6 +216,9 @@ class FallbackProvider:
     def client(self, purpose: LLMPurpose) -> AsyncOpenAI:
         # Agents keep a single model for a whole run, so they stay on the primary provider.
         return self.primary.client(purpose)
+
+    def guard_client(self) -> AsyncOpenAI:
+        return self.primary.guard_client()
 
     async def complete(
         self,

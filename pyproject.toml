@@ -75,7 +75,7 @@ explicit_package_bases = true
 exclude = ["apps/web/", "migrations/versions/"]
 
 [[tool.mypy.overrides]]
-module = ["arq.*", "fakeredis.*", "pgvector.*", "sse_starlette.*"]
+module = ["arq.*", "fakeredis.*", "pgvector.*", "sse_starlette.*", "google_auth_oauthlib.*"]
 ignore_missing_imports = true
 
 # ---------------------------------------------------------------- pytest

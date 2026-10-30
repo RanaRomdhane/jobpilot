@@ -6,7 +6,9 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
   "jobpilot-core",
   "jobpilot-security",
-  "mcp>=1.20",
+  "mcp>=2.3",
+  "httpx>=0.28",
+  "google-auth-oauthlib>=1.2",  # consent flow only (make gmail-auth)
 ]
 
 [build-system]

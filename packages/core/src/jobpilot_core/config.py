@@ -64,7 +64,8 @@ class Settings(BaseSettings):
 
     # models per purpose and provider (override any of them from .env)
     groq_model_triage: str = "openai/gpt-oss-120b"
-    groq_model_guard: str = "openai/gpt-oss-120b"
+    # a dedicated prompt-injection classifier (returns a probability); see jobpilot_security.guard
+    groq_model_guard: str = "meta-llama/llama-prompt-guard-2-86m"
     groq_model_parse_resume: str = "openai/gpt-oss-120b"
     groq_model_rerank: str = "openai/gpt-oss-120b"
     groq_model_tailor: str = "openai/gpt-oss-120b"
@@ -85,11 +86,35 @@ class Settings(BaseSettings):
     openai_rpm: int = 500
     openai_tpd: int = 0
     llm_output_reserve_tokens: int = 1_024  # reserved when a request sets no max tokens
+    # tokens the provider adds to every request (chat template / hidden preamble); measured on
+    # Groq gpt-oss-120b: a 36-char prompt is billed 78 input tokens
+    groq_request_overhead_tokens: int = 80
+    openai_request_overhead_tokens: int = 16
     llm_max_wait_s: float = 300.0  # longest an LLM call may queue for budget
+    # the guard model has its own provider budget (Groq limits are per model)
+    groq_guard_tpm: int = 15_000
+    groq_guard_rpm: int = 30
+    openai_guard_tpm: int = 200_000
+    openai_guard_rpm: int = 500
+
+    # --- prompt-injection detection
+    injection_threshold: float = Field(default=0.5, ge=0, le=1)
+    guard_enabled: bool = True
+    guard_threshold: float = Field(default=0.8, ge=0, le=1)  # guard probability that flags alone
+
+    # --- gmail
+    google_client_file: Path = Path("secrets/google_credentials.json")
+    gmail_query: str = "in:inbox -category:promotions -category:social"
+    gmail_backfill_days: int = Field(default=90, ge=1, le=3650)
+    gmail_max_backfill: int = 3_000
 
     # --- triage
     triage_batch_size: int = Field(default=15, ge=1, le=50)
     triage_snippet_max_chars: int = 300
+    triage_subject_max_chars: int = 150
+    triage_max_turns: int = 4
+    # status changes from emails apply automatically at/above this confidence (never if flagged)
+    pipeline_auto_apply_confidence: float = Field(default=0.85, ge=0, le=1)
 
     @field_validator("cors_origins", mode="before")
     @classmethod
@@ -110,11 +135,21 @@ class Settings(BaseSettings):
     def base_url_for(self, provider: ProviderName) -> str:
         return self.groq_base_url if provider == "groq" else self.openai_base_url
 
+    def request_overhead_for(self, provider: ProviderName) -> int:
+        if provider == "groq":
+            return self.groq_request_overhead_tokens
+        return self.openai_request_overhead_tokens
+
     def limits_for(self, provider: ProviderName) -> tuple[int, int, int]:
         """Return (tokens_per_minute, requests_per_minute, tokens_per_day)."""
         if provider == "groq":
             return self.groq_tpm, self.groq_rpm, self.groq_tpd
         return self.openai_tpm, self.openai_rpm, self.openai_tpd
+
+    def guard_limits_for(self, provider: ProviderName) -> tuple[int, int]:
+        if provider == "groq":
+            return self.groq_guard_tpm, self.groq_guard_rpm
+        return self.openai_guard_tpm, self.openai_guard_rpm
 
 
 @lru_cache
