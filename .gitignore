@@ -1,0 +1,66 @@
+# ---- Secrets & credentials (never commit) ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+client_secret*.json
+token*.json
+secrets/
+.secrets/
+
+# ---- Local data (personal: CVs, PDFs, templates, tokens) ----
+storage/*
+!storage/.gitkeep
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.python-version.local
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
+
+# ---- Node / Next.js ----
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+playwright-report/
+test-results/
+blob-report/
+
+# ---- LaTeX build artifacts ----
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.xdv
+
+# ---- Models / caches ----
+.cache/
+models/
+hf_cache/
+
+# ---- OS / editors ----
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp

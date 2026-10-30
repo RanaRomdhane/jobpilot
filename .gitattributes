@@ -1,0 +1,15 @@
+# Normalize line endings: LF in the repo, so Docker/Linux tooling works from Windows checkouts.
+* text=auto eol=lf
+
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.ttf  binary
+*.otf  binary
+*.woff binary
+*.woff2 binary
+*.docx binary
