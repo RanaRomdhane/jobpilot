@@ -1,0 +1,91 @@
+[project]
+name = "jobpilot"
+version = "0.1.0"
+description = "Local-first AI job-search copilot (workspace root)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "jobpilot-core",
+  "jobpilot-security",
+  "jobpilot-jobs-sources",
+  "jobpilot-latex",
+  "jobpilot-agents",
+  "jobpilot-mcp-gmail",
+  "jobpilot-api",
+  "jobpilot-worker",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=9.0",
+  "pytest-asyncio>=1.0",
+  "pytest-cov>=6.0",
+  "fakeredis[lua]>=2.30",
+  "ruff>=0.17",
+  "mypy>=2.0",
+  "pre-commit>=4.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*", "apps/api", "apps/worker", "apps/mcp_gmail", "apps/agents"]
+
+[tool.uv.sources]
+jobpilot-core = { workspace = true }
+jobpilot-security = { workspace = true }
+jobpilot-jobs-sources = { workspace = true }
+jobpilot-latex = { workspace = true }
+jobpilot-agents = { workspace = true }
+jobpilot-mcp-gmail = { workspace = true }
+jobpilot-api = { workspace = true }
+jobpilot-worker = { workspace = true }
+
+# ---------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["apps/web", "storage"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "S", "ASYNC", "RUF", "SIM", "PTH"]
+ignore = ["S101"]  # asserts are fine in tests; production code uses explicit errors
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106", "S311"]
+"**/migrations/versions/*.py" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+  "jobpilot_core", "jobpilot_security", "jobpilot_jobs_sources", "jobpilot_latex",
+  "jobpilot_agents", "jobpilot_mcp_gmail", "jobpilot_api", "jobpilot_worker",
+]
+
+# ---------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+warn_unreachable = true
+mypy_path = [
+  "packages/core/src", "packages/security/src", "packages/jobs_sources/src", "packages/latex/src",
+  "apps/api/src", "apps/worker/src", "apps/mcp_gmail/src", "apps/agents/src",
+]
+explicit_package_bases = true
+exclude = ["apps/web/", "migrations/versions/"]
+
+[[tool.mypy.overrides]]
+module = ["arq.*", "fakeredis.*", "pgvector.*", "sse_starlette.*"]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------- pytest
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+  "integration: needs running postgres/redis (docker compose or CI services)",
+  "eval: LLM evaluation suites, run with `make eval`",
+]
+addopts = "-ra --strict-markers -m 'not eval'"
+filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]

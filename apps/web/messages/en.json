@@ -1,0 +1,51 @@
+{
+  "app": {
+    "name": "JobPilot",
+    "tagline": "Your job-search copilot"
+  },
+  "nav": {
+    "overview": "Overview",
+    "inbox": "Inbox",
+    "applications": "Applications",
+    "jobs": "Jobs",
+    "resume": "Resume",
+    "templates": "Templates",
+    "review": "Application review",
+    "security": "Security",
+    "settings": "Settings"
+  },
+  "status": {
+    "title": "System status",
+    "description": "JobPilot foundations: every service should be up.",
+    "overall": {
+      "ok": "All systems operational",
+      "degraded": "Degraded",
+      "down": "Service unavailable"
+    },
+    "components": {
+      "database": "Database",
+      "redis": "Redis",
+      "worker": "Worker",
+      "latex": "LaTeX sandbox"
+    },
+    "ok": "OK",
+    "ko": "Unavailable",
+    "unreachable": "The API is unreachable. Run `make up` and try again.",
+    "retry": "Retry",
+    "runPing": "Test the worker",
+    "pingRunning": "Task running… {progress}%",
+    "pingDone": "The worker answered",
+    "pingFailed": "The task failed"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "locale": {
+    "label": "Language",
+    "fr": "Français",
+    "en": "English"
+  }
+}

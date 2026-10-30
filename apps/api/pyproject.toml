@@ -1,0 +1,20 @@
+[project]
+name = "jobpilot-api"
+version = "0.1.0"
+description = "JobPilot REST API"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "jobpilot-core",
+  "jobpilot-latex",
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "sse-starlette>=2.1",
+  "arq>=0.26",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jobpilot_api"]

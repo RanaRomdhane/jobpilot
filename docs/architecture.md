@@ -95,13 +95,20 @@ on failure the batch is retried once with the validation error, then left unproc
 
 ## 4. LLM provider abstraction & rate limiting
 
-- `LLMProvider` → `GroqProvider`, `OpenAIProvider`. Groq is used through its OpenAI-compatible
-  endpoint, so the Agents SDK runs on `OpenAIChatCompletionsModel` with a custom `AsyncOpenAI` client.
+- `LLMProvider` → one `OpenAICompatibleProvider` configured for Groq or OpenAI (both speak the
+  chat-completions protocol), plus an optional `FallbackProvider`. The Agents SDK runs on
+  `OpenAIChatCompletionsModel` with the provider's `AsyncOpenAI` client.
+- **The limiter lives in the HTTP transport** (`RateLimitedTransport`, an `httpx2` transport — the
+  client library of openai ≥ 3). Every request, whether from our code or from the Agents SDK, reserves
+  its estimated tokens (prompt + `max_completion_tokens`, or a 1,024-token reserve), is reconciled
+  with the real `usage` afterwards, and is logged to `llm_call_log`. The SDK's own retries are off.
 - Model per **purpose** (`triage`, `guard`, `parse_resume`, `rerank`, `tailor`, `cover_letter`) from
   `.env`; provider switch requires no code change.
-- **Redis token bucket** (Lua script, atomic) keyed by `provider:model`, two buckets: TPM and RPM.
-  Callers reserve estimated tokens, then reconcile with actual usage from the response.
-- 429 → honour `retry-after`, exponential backoff with jitter; optional OpenAI fallback (off by default).
+- **Redis token bucket** (one atomic Lua script using the Redis server clock) per provider, with
+  TPM, RPM and TPD buckets; a request is admitted only if *every* bucket allows it. Real usage above
+  the estimate becomes debt that later requests wait for.
+- 429 → honour `retry-after` / `x-ratelimit-reset-*`, set a provider-wide block key so *all*
+  processes pause, then retry with jittered exponential backoff; optional OpenAI fallback (off).
 - Response cache keyed by `sha256(provider, model, prompt, inputs)`; every call logged to `llm_call_log`.
 
 ## 5. Data model
@@ -135,7 +142,10 @@ Guardrails: input guardrail = injection detector; output guardrail = schema + no
 ## 7. LaTeX pipeline
 
 `Jinja2(block_start='\BLOCK{', variable_start='\VAR{', comment_start='\#{', autoescape=latex_escape)`
-renders into a per-job temp dir; the `latex` container compiles it with **network disabled**, no
+renders into a per-job temp dir. The `latex` container has `network_mode: none`, so it is driven
+through a **spool volume**: the worker writes `in/<job>/` (sources, then `job.json` atomically), the
+sandbox writes `out/<job>/result.json` + PDF, and refreshes a `heartbeat` file that the health check
+reads. The container compiles with **network disabled**, no
 shell-escape, `openout_any=p`, read-only template mount, CPU/memory/time limits. The compile client
 returns PDF + parsed log. Engine choice (TeX Live `latexmk` vs Tectonic) is decided in Phase 6 —
 Tectonic downloads packages on demand, which conflicts with a no-network sandbox.
@@ -148,7 +158,23 @@ sender service checks hash, expiry, `consumed_at IS NULL`, daily cap and duplica
 DB transaction, then sends with the separate `gmail.send` credential, labels the thread
 `JobPilot/Candidature`, and records `sent_message_id` / `gmail_thread_id`.
 
-## 9. Runtime constraints of the dev machine
+## 9. Web ↔ API
+
+The browser only talks to the Next.js origin. `apps/web/src/app/api/v1/[...path]/route.ts` is a
+server-side proxy to the API on the internal Docker network (`API_INTERNAL_URL`), streaming responses
+(SSE included). It is where dashboard authentication is enforced from Phase 3, and it never forwards
+browser cookies to the API. The API's CORS allow-list contains only the dashboard origin(s).
+
+Background work follows one pattern: the API creates a `task_run` row, enqueues an arq job with the
+same id and returns `202 {task_id}`; the worker reports progress through `TaskReporter` (DB row +
+Redis pub/sub); `GET /api/v1/tasks/{id}/events` streams it as SSE.
+
+## 10. Local ports
+
+All published on `127.0.0.1` only: web 3000, api 8000, postgres **5433** (so a locally installed
+PostgreSQL keeps 5432; `POSTGRES_HOST_PORT`), redis 6379 (`REDIS_HOST_PORT`).
+
+## 11. Runtime constraints of the dev machine
 
 Measured in Phase 0: 4-thread AMD Athlon Gold 3150U, ~10 GB RAM, ~44 GB free disk. Consequences:
 smaller embedding model by default, the web app can run on the host instead of in a container during
