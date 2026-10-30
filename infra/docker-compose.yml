@@ -1,0 +1,146 @@
+name: jobpilot
+
+# All published ports bind to 127.0.0.1 only: JobPilot is a local, single-user app.
+# Memory limits are sized for a ~4 GB Docker Desktop VM.
+
+x-python: &python
+  build:
+    context: ..
+    dockerfile: infra/python.Dockerfile
+  image: jobpilot-python:dev
+  env_file:
+    - path: ../.env
+      required: false
+  environment: &python-env
+    DATABASE_URL: postgresql+asyncpg://jobpilot:${POSTGRES_PASSWORD:-jobpilot}@postgres:5432/jobpilot
+    REDIS_URL: redis://redis:6379/0
+    STORAGE_DIR: /app/storage
+    LATEX_SPOOL_DIR: /spool
+  restart: unless-stopped
+  security_opt: [no-new-privileges:true]
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: jobpilot
+      POSTGRES_USER: jobpilot
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jobpilot}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+    # host port 5433 by default so it never collides with a locally installed PostgreSQL
+    ports: ["127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobpilot -d jobpilot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 512m
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "96mb", "--maxmemory-policy", "noeviction"]
+    volumes: [redisdata:/data]
+    ports: ["127.0.0.1:${REDIS_HOST_PORT:-6379}:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 128m
+    restart: unless-stopped
+
+  migrate:
+    <<: *python
+    command: ["alembic", "-c", "packages/core/alembic.ini", "upgrade", "head"]
+    restart: "no"
+    depends_on:
+      postgres: { condition: service_healthy }
+    mem_limit: 256m
+
+  api:
+    <<: *python
+    command: ["uvicorn", "jobpilot_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    ports: ["127.0.0.1:8000:8000"]
+    volumes:
+      - storage:/app/storage
+      - latex-spool:/spool:ro
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/live', timeout=3).status == 200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    mem_limit: 512m
+
+  worker:
+    <<: *python
+    command: ["arq", "jobpilot_worker.main.WorkerSettings"]
+    volumes:
+      - storage:/app/storage
+      - latex-spool:/spool
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "arq", "--check", "jobpilot_worker.main.WorkerSettings"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    mem_limit: 768m
+
+  latex:
+    build:
+      context: ..
+      dockerfile: infra/latex.Dockerfile
+    image: jobpilot-latex:dev
+    # Sandbox: no network at all, read-only root fs, no capabilities, bounded resources.
+    network_mode: none
+    read_only: true
+    tmpfs: ["/tmp:size=256m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1.0
+    volumes:
+      - latex-spool:/spool
+    healthcheck:
+      test: ["CMD", "python3", "/opt/jobpilot/spool_daemon.py", "--check"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ../apps/web
+      dockerfile: ../../infra/web.Dockerfile
+    image: jobpilot-web:dev
+    environment:
+      API_INTERNAL_URL: http://api:8000
+      NODE_ENV: production
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on:
+      api: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    security_opt: [no-new-privileges:true]
+    mem_limit: 384m
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redisdata:
+  storage:
+  latex-spool:

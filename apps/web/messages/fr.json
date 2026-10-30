@@ -1,0 +1,51 @@
+{
+  "app": {
+    "name": "JobPilot",
+    "tagline": "Votre copilote de recherche d'emploi"
+  },
+  "nav": {
+    "overview": "Vue d'ensemble",
+    "inbox": "Boîte de réception",
+    "applications": "Candidatures",
+    "jobs": "Offres",
+    "resume": "CV",
+    "templates": "Templates",
+    "review": "Revue de candidature",
+    "security": "Sécurité",
+    "settings": "Paramètres"
+  },
+  "status": {
+    "title": "État du système",
+    "description": "Fondations de JobPilot : chaque service doit être opérationnel.",
+    "overall": {
+      "ok": "Tout est opérationnel",
+      "degraded": "Fonctionnement dégradé",
+      "down": "Service indisponible"
+    },
+    "components": {
+      "database": "Base de données",
+      "redis": "Redis",
+      "worker": "Worker",
+      "latex": "Bac à sable LaTeX"
+    },
+    "ok": "OK",
+    "ko": "Indisponible",
+    "unreachable": "L'API est injoignable. Lancez `make up` puis réessayez.",
+    "retry": "Réessayer",
+    "runPing": "Tester le worker",
+    "pingRunning": "Tâche en cours… {progress} %",
+    "pingDone": "Le worker a répondu",
+    "pingFailed": "La tâche a échoué"
+  },
+  "theme": {
+    "toggle": "Changer de thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
+  "locale": {
+    "label": "Langue",
+    "fr": "Français",
+    "en": "English"
+  }
+}

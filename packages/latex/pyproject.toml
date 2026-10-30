@@ -1,0 +1,17 @@
+[project]
+name = "jobpilot-latex"
+version = "0.1.0"
+description = "LaTeX template rendering and sandboxed compilation client"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "jobpilot-core",
+  "jobpilot-security",
+  "jinja2>=3.1",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jobpilot_latex"]

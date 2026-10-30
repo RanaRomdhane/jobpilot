@@ -1,0 +1,15 @@
+[project]
+name = "jobpilot-security"
+version = "0.1.0"
+description = "Prompt-injection detection, sanitization and LaTeX escaping"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "jobpilot-core",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jobpilot_security"]

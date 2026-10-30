@@ -1,0 +1,36 @@
+"""Response cache: identical (provider, model, messages, params) requests are answered once."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from redis.asyncio import Redis
+
+
+def cache_key(provider: str, model: str, payload: dict[str, Any]) -> str:
+    canonical = json.dumps(
+        {"provider": provider, "model": model, "payload": payload},
+        sort_keys=True,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    return "llmcache:" + hashlib.sha256(canonical.encode()).hexdigest()
+
+
+class ResponseCache:
+    def __init__(self, redis: Redis, ttl_s: int) -> None:
+        self._redis = redis
+        self._ttl_s = ttl_s
+
+    async def get(self, key: str) -> dict[str, Any] | None:
+        raw = await self._redis.get(key)
+        if raw is None:
+            return None
+        value = json.loads(raw)
+        return value if isinstance(value, dict) else None
+
+    async def set(self, key: str, value: dict[str, Any]) -> None:
+        await self._redis.set(key, json.dumps(value, ensure_ascii=False), ex=self._ttl_s)
