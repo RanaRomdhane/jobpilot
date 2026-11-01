@@ -38,7 +38,13 @@ export interface Breakdown {
   passed: string[];
   stats: { pages?: number | null; words?: number; kind?: string; sections?: string[] };
   keywords: { coverage: number | null; matched: Keyword[]; missing: Keyword[] } | null;
-  target: { title?: string | null; excerpt?: string; injection_flag?: boolean } | null;
+  target: {
+    title?: string | null;
+    excerpt?: string;
+    job_text?: string;
+    injection_flag?: boolean;
+  } | null;
+  locale?: string;
   review: {
     summary: string;
     strengths: string[];

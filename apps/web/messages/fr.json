@@ -438,6 +438,15 @@
         "rerun": "Relancer sans offre",
         "tooShort": "Collez au moins quelques lignes de l'offre (80 caractères).",
         "started": "Analyse lancée"
+      },
+      "language": {
+        "notice": "Cet avis a été rédigé en {language} ; les règles, elles, suivent la langue de l'interface.",
+        "regenerate": "Régénérer en français",
+        "noJobText": "L'offre utilisée n'a pas été conservée : le nouveau rapport sera sans offre.",
+        "names": {
+          "fr": "français",
+          "en": "anglais"
+        }
       }
     },
     "rules": {
@@ -523,6 +532,10 @@
         "no_linkedin": {
           "title": "Pas de lien LinkedIn",
           "fix": "Ajoutez l'adresse de votre profil LinkedIn (linkedin.com/in/…)."
+        },
+        "linkedin_not_printed": {
+          "title": "Lien LinkedIn non écrit en toutes lettres",
+          "fix": "Votre LinkedIn n'est qu'un lien cliquable (icône ou mot). Les ATS lisent le texte, pas la cible du lien : écrivez l'adresse, par exemple linkedin.com/in/votre-nom."
         }
       },
       "formatting": {

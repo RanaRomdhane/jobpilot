@@ -383,7 +383,7 @@ export default function ResumePage() {
                 </div>
               ) : null}
               {report ? (
-                <AtsReportView report={report} />
+                <AtsReportView report={report} onStarted={follow} />
               ) : reports.isPending || busy ? (
                 <Skeleton className="h-48 w-full" />
               ) : (

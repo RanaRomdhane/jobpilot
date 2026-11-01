@@ -24,6 +24,7 @@ from jobpilot_resume.upload import FileKind, UploadRejectedError
 
 MAX_PAGES = 10
 MAX_PDF_OBJECTS = 50_000
+MAX_LINKS = 20
 
 BULLET_STANDARD = frozenset("•·-–—*▪■◦○●")
 RATING_RUN = re.compile(r"(?:[●○◉◯★☆✩✭■□▪▫⬤◼◻]\s?){3,}")
@@ -61,6 +62,9 @@ class LayoutSignals(BaseModel):
     rating_glyph_runs: int = 0
     skill_bar_shapes: int = 0
     hidden_chars: int = 0
+    # clickable web links (PDF link annotations, DOCX hyperlinks): an address may be clickable
+    # without being printed, and ATS usually read only the printed text
+    links: list[str] = Field(default_factory=list)
 
 
 class ExtractedDocument(BaseModel):
@@ -88,6 +92,43 @@ def _common_text_signals(text: str, signals: LayoutSignals) -> None:
         if s and not s[0].isalnum() and s[0] not in "([{\"'«+@#&/.,:;!?%$€£<":
             glyphs[s[0]] += 1
     signals.bullet_glyphs = {g: n for g, n in glyphs.most_common(8) if n >= 2}
+
+
+_SENTENCE_END = re.compile(r"[.!?:;)\]»”]$")
+_BULLET_START = re.compile(r"^[•·\-–—*▪■◦○●➢►✓✔]\s")
+
+
+def reflow(text: str) -> str:
+    """Join lines that PDF extraction wrapped mid-sentence (for the LLM, not for layout checks).
+
+    A line is joined to the previous one when the previous one does not end a sentence and the
+    next one starts with a lowercase letter or a digit and is not a new bullet.
+    """
+    out: list[str] = []
+    for line in text.split("\n"):
+        s = line.strip()
+        if (
+            out
+            and s
+            and out[-1]
+            and not _SENTENCE_END.search(out[-1])
+            and not _BULLET_START.match(s)
+            and (s[0].islower() or s[0].isdigit())
+        ):
+            prev = out[-1]
+            out[-1] = prev[:-1] + s if prev.endswith("-") and s[0].islower() else f"{prev} {s}"
+        else:
+            out.append(s)
+    return "\n".join(out)
+
+
+def llm_text(doc: ExtractedDocument) -> str:
+    """What the parser and the reviewer read: reflowed visible text plus unprinted link targets."""
+    text = reflow(doc.text)
+    unprinted = [u for u in doc.signals.links if u.split("://", 1)[-1].rstrip("/") not in doc.text]
+    if unprinted:
+        text += "\n\nHyperlinks in the document:\n" + "\n".join(unprinted)
+    return text
 
 
 def font_family(name: str) -> str:
@@ -189,8 +230,13 @@ def _extract_pdf(data: bytes) -> ExtractedDocument:
         icon_fonts: set[str] = set()
         edge_lines: Counter[str] = Counter()
 
+        links: list[str] = []
         for pno, page in enumerate(doc):
             pw, ph = page.rect.width, page.rect.height
+            for link in page.get_links():
+                uri = str(link.get("uri") or "")
+                if uri.startswith(("http://", "https://", "mailto:")) and uri not in links:
+                    links.append(uri[:300])
             drawings = page.get_drawings()
             images = page.get_image_info()
             sig.images += len(images)
@@ -274,6 +320,7 @@ def _extract_pdf(data: bytes) -> ExtractedDocument:
             ][:10]
 
     text = "\n".join(parts)
+    sig.links = links[:MAX_LINKS]
     sig.fonts = sorted(fonts)
     sig.icon_fonts = sorted(icon_fonts)
     hidden = [h for h in hidden if h]
@@ -446,6 +493,13 @@ def _extract_docx(data: bytes) -> ExtractedDocument:
                     (icon_fonts if ICON_FONT.search(fam) else fonts).add(fam)
     sig.fonts = sorted(fonts)
     sig.icon_fonts = sorted(icon_fonts)
+    sig.links = [
+        str(rel.target_ref)[:300]
+        for rel in document.part.rels.values()
+        if rel.is_external
+        and "hyperlink" in rel.reltype
+        and str(rel.target_ref).startswith(("http://", "https://", "mailto:"))
+    ][:MAX_LINKS]
 
     text = "\n".join(parts)
     hidden = [h for h in hidden if h]

@@ -1,7 +1,7 @@
 """CV intelligence: upload validation, extraction with layout signals, grounding, ATS rules."""
 
 from jobpilot_resume.ats import Issue, JobKeyword, Review, build_report
-from jobpilot_resume.extract import ExtractedDocument, LayoutSignals, extract
+from jobpilot_resume.extract import ExtractedDocument, LayoutSignals, extract, llm_text, reflow
 from jobpilot_resume.grounding import grounding_warnings
 from jobpilot_resume.upload import FileKind, UploadRejectedError, ValidatedUpload, validate_upload
 
@@ -17,5 +17,7 @@ __all__ = [
     "build_report",
     "extract",
     "grounding_warnings",
+    "llm_text",
+    "reflow",
     "validate_upload",
 ]

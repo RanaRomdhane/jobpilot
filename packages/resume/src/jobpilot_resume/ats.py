@@ -312,10 +312,13 @@ def rule_issues(
     check(bool(EMAIL.search(body)), "contact.no_email", "contact", "high")
     phones = [p for p in PHONE.findall(body) if len(re.sub(r"\D", "", p)) >= 8]
     check(bool(phones), "contact.no_phone", "contact", "medium")
-    has_linkedin = bool(LINKEDIN.search(body)) or bool(
-        profile and any(link.kind == "linkedin" for link in profile.links)
-    )
-    check(has_linkedin, "contact.no_linkedin", "contact", "low")
+    printed = bool(LINKEDIN.search(body))
+    clickable = any(LINKEDIN.search(u) for u in s.links)
+    if clickable and not printed:
+        # an icon or the word "LinkedIn" with a hyperlink: ATS read the text, not the link target
+        check(False, "contact.linkedin_not_printed", "contact", "low")
+    else:
+        check(printed, "contact.no_linkedin", "contact", "low")
 
     # formatting
     formats = date_formats(text)

@@ -20,6 +20,10 @@ class StructuredOutputError(RuntimeError):
     pass
 
 
+class OutputTruncatedError(StructuredOutputError):
+    """The model hit `max_tokens`: retrying the same request cannot help, splitting it can."""
+
+
 async def complete_structured[T](
     provider: LLMProvider,
     purpose: LLMPurpose,
@@ -73,7 +77,7 @@ async def complete_structured[T](
             raise
         results.append(res)
         if res.finish_reason == "length":
-            raise StructuredOutputError(f"{name}: output truncated at {max_tokens} tokens")
+            raise OutputTruncatedError(f"{name}: output truncated at {max_tokens} tokens")
         try:
             return parse(json.loads(res.content)), results
         except (ValueError, ValidationError) as exc:

@@ -438,6 +438,15 @@
         "rerun": "Run again without a job",
         "tooShort": "Paste at least a few lines of the posting (80 characters).",
         "started": "Analysis started"
+      },
+      "language": {
+        "notice": "This review was written in {language}; rule texts follow the interface language.",
+        "regenerate": "Regenerate in English",
+        "noJobText": "The job ad used was not kept: the new report will have no job ad.",
+        "names": {
+          "fr": "French",
+          "en": "English"
+        }
       }
     },
     "rules": {
@@ -523,6 +532,10 @@
         "no_linkedin": {
           "title": "No LinkedIn link",
           "fix": "Add the address of your LinkedIn profile (linkedin.com/in/…)."
+        },
+        "linkedin_not_printed": {
+          "title": "LinkedIn address not written out",
+          "fix": "Your LinkedIn is only a clickable link (an icon or a word). ATS read the text, not the link target: write the address, e.g. linkedin.com/in/your-name."
         }
       },
       "formatting": {

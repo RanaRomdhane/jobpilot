@@ -236,3 +236,26 @@ def test_grounding_flags_values_absent_from_the_document() -> None:
     warnings = grounding_warnings(profile, text)
     assert [w["path"] for w in warnings] == ["experiences.0.bullets.1"]
     assert warnings[0]["id"] == profile.experiences[0].bullets[1].id
+
+
+def test_reflow_joins_wrapped_lines_but_keeps_bullets_and_headings() -> None:
+    from jobpilot_resume import reflow
+
+    text = (
+        "- Built a RAG assistant over a locally\ndeployed LLM, reaching 96%\nof faithfulness\n"
+        "- Second bullet\nEXPERIENCE\nAcme"
+    )
+    assert reflow(text) == (
+        "- Built a RAG assistant over a locally deployed LLM, reaching 96% of faithfulness\n"
+        "- Second bullet\nEXPERIENCE\nAcme"
+    )
+
+
+def test_clickable_linkedin_without_printed_address() -> None:
+    from jobpilot_resume import llm_text
+
+    doc = extract(s.clickable_linkedin_pdf(), FileKind.PDF)
+    assert doc.signals.links == [s.LINKEDIN_URL]
+    assert "Hyperlinks in the document:" in llm_text(doc)  # the parser still gets the URL
+    found = {i.code for i in rule_issues(doc, None)[0]}
+    assert "contact.linkedin_not_printed" in found and "contact.no_linkedin" not in found

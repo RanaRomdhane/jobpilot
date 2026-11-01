@@ -173,3 +173,18 @@ def tricky_docx() -> bytes:
     buf = io.BytesIO()
     d.save(buf)
     return buf.getvalue()
+
+
+LINKEDIN_URL = "https://www.linkedin.com/in/camille-martin-example"
+
+
+def clickable_linkedin_pdf() -> bytes:
+    """The word "LinkedIn" is a hyperlink; the address itself is not printed."""
+    import pymupdf
+
+    lines = [*CLEAN_LINES[:2], ("camille.martin@example.com | LinkedIn", 9), *CLEAN_LINES[3:]]
+    doc = pymupdf.open(stream=clean_pdf(lines), filetype="pdf")
+    doc[0].insert_link(
+        {"kind": pymupdf.LINK_URI, "from": pymupdf.Rect(50, 100, 120, 112), "uri": LINKEDIN_URL}
+    )
+    return bytes(doc.tobytes())

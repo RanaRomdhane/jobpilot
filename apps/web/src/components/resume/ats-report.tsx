@@ -319,7 +319,57 @@ export function JobAdForm({
   );
 }
 
-export function AtsReportView({ report }: { report: AtsReport }) {
+/**
+ * Rule texts follow the interface language; the AI review is written once, in the language the
+ * report was generated in. When they differ, offer to regenerate (same job ad, if any).
+ */
+function LanguageNotice({
+  report,
+  onStarted,
+}: {
+  report: AtsReport;
+  onStarted: (taskId: string) => void;
+}) {
+  const t = useTranslations("resume.report.language");
+  const locale = useLocale() as "fr" | "en";
+  const b = report.breakdown as unknown as Breakdown;
+  const regenerate = useMutation({
+    mutationFn: () =>
+      unwrap(
+        api.POST("/api/v1/ats/reports", {
+          body: {
+            resume_id: report.resume_id!,
+            job_text: b.target?.job_text ?? null,
+            job_title: b.target?.title ?? null,
+            locale,
+          },
+        }),
+      ),
+    onSuccess: (r) => onStarted(r.task_id),
+    onError: (e: Error) => toast.error(e.message),
+  });
+  if (!b.review || !b.locale || b.locale === locale || report.resume_id === null) return null;
+  const canReuseJob = !b.target || Boolean(b.target.job_text);
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-primary/30 bg-accent p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+      <p>
+        {t("notice", { language: t(`names.${b.locale === "en" ? "en" : "fr"}`) })}
+        {canReuseJob ? "" : ` ${t("noJobText")}`}
+      </p>
+      <Button size="sm" disabled={regenerate.isPending} onClick={() => regenerate.mutate()}>
+        {t("regenerate")}
+      </Button>
+    </div>
+  );
+}
+
+export function AtsReportView({
+  report,
+  onStarted,
+}: {
+  report: AtsReport;
+  onStarted: (taskId: string) => void;
+}) {
   const t = useTranslations("resume.report");
   const tf = useTranslations("resume.file");
   const locale = useLocale();
@@ -327,6 +377,7 @@ export function AtsReportView({ report }: { report: AtsReport }) {
   const issues = report.issues as unknown as Issue[];
   return (
     <div className="space-y-10">
+      <LanguageNotice report={report} onStarted={onStarted} />
       <div className="space-y-2">
         <ScoreBlock report={report} />
         <p className="text-xs text-muted-foreground">

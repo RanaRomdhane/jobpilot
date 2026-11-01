@@ -28,6 +28,7 @@ from jobpilot_resume import (
     build_report,
     extract,
     grounding_warnings,
+    llm_text,
 )
 from jobpilot_resume.storage import resume_path
 from jobpilot_security import CleanText, InjectionDetector, clean_plain
@@ -140,7 +141,7 @@ class ResumePipeline:
             else:
                 await self.rep.progress(0.3, "reading the CV (LLM)")
                 try:
-                    outcome = await parse_resume_text(self.provider, doc.text, tpm=self.tpm)
+                    outcome = await parse_resume_text(self.provider, llm_text(doc), tpm=self.tpm)
                 except (ParseTooLongError, StructuredOutputError, RateLimitExceededError) as exc:
                     log.warning("resume %s: parse failed: %s", resume_id, exc)
                     row.status = "failed"
@@ -193,6 +194,7 @@ class ResumePipeline:
             target = {
                 "title": job_title,
                 "excerpt": job_text[:280],
+                "job_text": job_text,  # kept so the report can be regenerated (e.g. in FR)
                 "chars": len(job_text),
                 "injection_flag": scan.flagged,
             }
@@ -202,7 +204,11 @@ class ResumePipeline:
         if self.provider is not None and len(doc.text.strip()) >= MIN_TEXT_CHARS:
             try:
                 review, _ = await review_resume(
-                    self.provider, doc.text, locale=locale, job_text=job_text, job_title=job_title
+                    self.provider,
+                    llm_text(doc),
+                    locale=locale,
+                    job_text=job_text,
+                    job_title=job_title,
                 )
             except (StructuredOutputError, RateLimitExceededError) as exc:
                 log.warning("resume %s: ATS review failed: %s", resume_id, exc)
