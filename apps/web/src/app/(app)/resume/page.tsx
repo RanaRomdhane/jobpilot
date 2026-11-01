@@ -405,6 +405,7 @@ export default function ResumePage() {
               <ProfileEditor
                 initial={d.parsed}
                 warnings={d.warnings as unknown as Warning[]}
+                missingLines={d.missing_lines}
                 mode="draft"
                 sourceResumeId={d.id}
               />

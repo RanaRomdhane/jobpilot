@@ -48,6 +48,7 @@ class ResumeUploadOut(BaseModel):
 class ResumeUploadDetail(ResumeUploadOut):
     parsed: ResumeProfile | None
     warnings: list[dict[str, Any]]
+    missing_lines: list[str]  # CV lines the parser did not carry over (shown for review)
     injection_reasons: list[dict[str, Any]]
     signals: dict[str, Any]
     hidden_excerpts: list[str]
@@ -86,6 +87,7 @@ def _detail(row: Resume, latest: int | None) -> ResumeUploadDetail:
             **_out(row, latest).model_dump(),
             "parsed": row.parsed,
             "warnings": (row.parse_meta or {}).get("warnings", []),
+            "missing_lines": (row.parse_meta or {}).get("missing_lines", []),
             "injection_reasons": row.injection_reasons,
             "signals": ex.get("signals", {}),
             "hidden_excerpts": [h[:200] for h in ex.get("hidden", [])[:5]],

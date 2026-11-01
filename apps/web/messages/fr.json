@@ -701,7 +701,9 @@
       "invalidDate": "Format attendu : AAAA-MM ou AAAA",
       "required": "Champ obligatoire",
       "invalidEmail": "Adresse e-mail invalide",
-      "cefrNative": "Langue maternelle"
+      "cefrNative": "Langue maternelle",
+      "missingTitle": "{count, plural, one {# ligne du CV non reprise dans le profil} other {# lignes du CV non reprises dans le profil}}",
+      "missingHint": "La lecture automatique n'a pas placé ces lignes. Ajoutez celles qui comptent à la bonne rubrique (souvent « Autres rubriques »)."
     },
     "compare": {
       "intro": "Ce CV a été analysé après votre profil maître. Choisissez, rubrique par rubrique, ce que vous gardez. Rien ne change avant que vous appliquiez.",

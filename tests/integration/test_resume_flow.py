@@ -118,6 +118,7 @@ async def test_parse_review_master_and_job_report(ctx: dict[str, Any]) -> None:
     assert detail["status"] == "parsed" and detail["injection_flag"] is False
     assert detail["latest_score"] == result["score"]
     assert detail["warnings"] == []  # every parsed value exists in the document
+    assert isinstance(detail["missing_lines"], list)
     exp = detail["parsed"]["experiences"][0]
     assert exp["id"].startswith("exp_") and exp["bullets"][0]["id"].startswith("b_")
 

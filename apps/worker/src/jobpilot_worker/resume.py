@@ -29,7 +29,9 @@ from jobpilot_resume import (
     extract,
     grounding_warnings,
     llm_text,
+    reflow,
 )
+from jobpilot_resume.grounding import missing_lines
 from jobpilot_resume.storage import resume_path
 from jobpilot_security import CleanText, InjectionDetector, clean_plain
 
@@ -162,6 +164,7 @@ class ResumePipeline:
                         "passes": outcome.passes,
                         "truncated": outcome.truncated,
                         "warnings": grounding_warnings(profile, doc.text),
+                        "missing_lines": missing_lines(profile, reflow(doc.text)),
                     }
                     row.status, row.parsed_at = "parsed", datetime.now(UTC)
             await session.commit()

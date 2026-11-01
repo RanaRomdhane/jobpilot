@@ -1345,6 +1345,8 @@ export interface components {
             latest_score?: number | null;
             /** Mime */
             mime: string | null;
+            /** Missing Lines */
+            missing_lines: string[];
             /** Original Filename */
             original_filename: string | null;
             /** Page Count */

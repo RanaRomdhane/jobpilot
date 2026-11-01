@@ -65,3 +65,22 @@ def grounding_warnings(profile: ResumeProfile, source_text: str) -> list[dict[st
         for j, b in enumerate(x.bullets):
             check(f"extra_sections.{i}.bullets.{j}", b.id, b.text)
     return out
+
+
+def missing_lines(profile: ResumeProfile, source_text: str, *, limit: int = 30) -> list[str]:
+    """The reverse check: CV lines whose words appear nowhere in the parsed profile.
+
+    A model can silently drop a section it does not know where to put; these lines are shown on
+    the profile form so nothing disappears unnoticed. Short lines (headings, dates) are ignored.
+    """
+    vocabulary = set(words(profile.model_dump_json()))
+    out: list[str] = []
+    for line in source_text.split("\n"):
+        ws = words(line)
+        if len(ws) < 4:
+            continue
+        if sum(w in vocabulary for w in ws) / len(ws) < 0.5:
+            out.append(line.strip()[:300])
+            if len(out) >= limit:
+                break
+    return out

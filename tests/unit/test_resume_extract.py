@@ -259,3 +259,28 @@ def test_clickable_linkedin_without_printed_address() -> None:
     assert "Hyperlinks in the document:" in llm_text(doc)  # the parser still gets the URL
     found = {i.code for i in rule_issues(doc, None)[0]}
     assert "contact.linkedin_not_printed" in found and "contact.no_linkedin" not in found
+
+
+def test_missing_lines_lists_cv_content_the_parser_dropped() -> None:
+    from jobpilot_resume.grounding import missing_lines
+
+    text = (
+        "Ingénieure backend chez Exemplia\n"
+        "Réduit la latence de 40 % en introduisant un cache Redis\n"
+        "PUBLICATIONS\n"
+        "Article sur la détection d'anomalies présenté à une conférence internationale"
+    )
+    profile = ResumeProfile.model_validate(
+        {
+            "experiences": [
+                {
+                    "company": "Exemplia",
+                    "title": "Ingénieure backend",
+                    "bullets": ["Réduit la latence de 40 % en introduisant un cache Redis"],
+                }
+            ]
+        }
+    )
+    assert missing_lines(profile, text) == [
+        "Article sur la détection d'anomalies présenté à une conférence internationale"
+    ]

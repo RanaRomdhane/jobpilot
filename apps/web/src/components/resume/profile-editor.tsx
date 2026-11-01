@@ -333,12 +333,14 @@ function ItemCard({
 export function ProfileEditor({
   initial,
   warnings = [],
+  missingLines = [],
   mode,
   sourceResumeId,
   onSaved,
 }: {
   initial: Profile;
   warnings?: Warning[];
+  missingLines?: string[];
   mode: "draft" | "master";
   sourceResumeId?: number;
   onSaved?: () => void;
@@ -429,6 +431,22 @@ export function ProfileEditor({
           </span>
         ) : null}
       </p>
+
+      {missingLines.length ? (
+        <details className="rounded-lg border border-signal/40 p-3 text-sm">
+          <summary className="cursor-pointer font-medium">
+            {t("missingTitle", { count: missingLines.length })}
+          </summary>
+          <p className="mt-2 text-muted-foreground">{t("missingHint")}</p>
+          <ul className="mt-2 list-disc space-y-1 pl-5">
+            {missingLines.map((line, i) => (
+              <li key={i} className="break-words">
+                {line}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
 
       <Section title={t("sections.contact")}>
         <div className="grid gap-3 sm:grid-cols-2">

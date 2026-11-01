@@ -701,7 +701,9 @@
       "invalidDate": "Expected format: YYYY-MM or YYYY",
       "required": "Required",
       "invalidEmail": "Invalid e-mail address",
-      "cefrNative": "Native"
+      "cefrNative": "Native",
+      "missingTitle": "{count, plural, one {# CV line not carried over to the profile} other {# CV lines not carried over to the profile}}",
+      "missingHint": "Automatic reading did not place these lines. Add the ones that matter to the right section (often “Other sections”)."
     },
     "compare": {
       "intro": "This CV was analysed after your master profile. Choose, section by section, what to keep. Nothing changes until you apply.",

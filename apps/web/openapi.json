@@ -2494,6 +2494,13 @@
             ],
             "title": "Mime"
           },
+          "missing_lines": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Lines",
+            "type": "array"
+          },
           "original_filename": {
             "anyOf": [
               {
@@ -2597,6 +2604,7 @@
           "injection_score",
           "parsed",
           "warnings",
+          "missing_lines",
           "injection_reasons",
           "signals",
           "hidden_excerpts",
