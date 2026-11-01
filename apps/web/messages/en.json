@@ -351,7 +351,9 @@
       "active_content": "The document contained active content (JavaScript, attached files). It was refused and deleted.",
       "encrypted": "This PDF is password-protected. Export an unprotected version.",
       "corrupt": "This file is damaged and could not be read.",
-      "too_many_pages": "This document has more than 10 pages: it is probably not a CV."
+      "too_many_pages": "This document has more than 10 pages: it is probably not a CV.",
+      "llm_unreachable": "The model provider (Groq) could not be reached, probably a network outage. Read the CV again in a moment.",
+      "internal_error": "An unexpected error stopped the analysis. Read the CV again; if it happens again, check the worker logs."
     },
     "progress": {
       "title": "Analysing the CV",

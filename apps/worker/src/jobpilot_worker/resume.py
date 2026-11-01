@@ -11,7 +11,8 @@ import logging
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import select
+from openai import APIConnectionError, APIStatusError
+from sqlalchemy import select, update
 
 from jobpilot_agents.ats_review import review_resume
 from jobpilot_agents.resume_parser import ParseTooLongError, parse_resume_text
@@ -70,6 +71,17 @@ def _usage(results: list[ChatResult]) -> dict[str, Any]:
 async def user_locale(session: AsyncSession) -> str:
     locale = await session.scalar(select(UserProfile.locale).limit(1))
     return locale if locale in ("fr", "en") else "fr"
+
+
+async def mark_failed(sm: async_sessionmaker[AsyncSession], resume_id: int, error: str) -> None:
+    """Never leave a CV "processing" after an unexpected error."""
+    async with sm() as session:
+        await session.execute(
+            update(Resume)
+            .where(Resume.id == resume_id, Resume.status.in_(("uploaded", "processing")))
+            .values(status="failed", error=error)
+        )
+        await session.commit()
 
 
 class ResumePipeline:
@@ -148,6 +160,9 @@ class ResumePipeline:
                     log.warning("resume %s: parse failed: %s", resume_id, exc)
                     row.status = "failed"
                     row.error = "too_long" if isinstance(exc, ParseTooLongError) else "parse_failed"
+                except (APIConnectionError, APIStatusError) as exc:
+                    log.warning("resume %s: LLM provider unreachable: %s", resume_id, exc)
+                    row.status, row.error = "failed", "llm_unreachable"
                 else:
                     profile = outcome.profile
                     if outcome.injection_suspected:
@@ -163,7 +178,7 @@ class ResumePipeline:
                         **_usage(outcome.usage),
                         "passes": outcome.passes,
                         "truncated": outcome.truncated,
-                        "warnings": grounding_warnings(profile, doc.text),
+                        "warnings": grounding_warnings(profile, llm_text(doc)),
                         "missing_lines": missing_lines(profile, reflow(doc.text)),
                     }
                     row.status, row.parsed_at = "parsed", datetime.now(UTC)
@@ -213,7 +228,12 @@ class ResumePipeline:
                     job_text=job_text,
                     job_title=job_title,
                 )
-            except (StructuredOutputError, RateLimitExceededError) as exc:
+            except (
+                StructuredOutputError,
+                RateLimitExceededError,
+                APIConnectionError,
+                APIStatusError,
+            ) as exc:
                 log.warning("resume %s: ATS review failed: %s", resume_id, exc)
                 review_error = "review_failed"
         if target is not None and review is not None:

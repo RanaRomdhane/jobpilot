@@ -47,6 +47,8 @@ const PARSE_ERRORS = [
   "encrypted",
   "corrupt",
   "too_many_pages",
+  "llm_unreachable",
+  "internal_error",
 ] as const;
 
 type Active = { taskId: string; progress: number; message: string | null };

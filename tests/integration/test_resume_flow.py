@@ -201,3 +201,37 @@ async def test_active_content_pdf_is_deleted(ctx: dict[str, Any]) -> None:
     result = await pipe.process(up["resume"]["id"])
     assert result == {"status": "failed", "error": "active_content"}
     assert not list((ctx["settings"].storage_dir / "resumes").iterdir())
+
+
+async def test_provider_outage_fails_cleanly_and_still_grades(ctx: dict[str, Any]) -> None:
+    import httpx2
+    from openai import APIConnectionError
+
+    class Offline(ScriptedProvider):
+        async def complete(self, purpose: Any, messages: Any, **kw: Any) -> Any:
+            raise APIConnectionError(request=httpx2.Request("POST", "https://api.groq.com"))
+
+    c = ctx["client"]
+    up = await upload(c, s.clean_pdf())
+    rep = TaskReporter(ctx["sm"], ctx["redis"], uuid.UUID(up["task_id"]))
+    pipe = ResumePipeline(ctx["settings"], ctx["sm"], Offline(), InjectionDetector(), rep)  # type: ignore[arg-type]
+    result = await pipe.process(up["resume"]["id"])
+    assert result["status"] == "failed" and result["error"] == "llm_unreachable"
+    report = (await c.get(f"/api/v1/ats/reports/{result['ats_report_id']}")).json()
+    assert report["breakdown"]["review_error"] == "review_failed"  # rules-only report
+
+
+async def test_unexpected_error_never_leaves_a_cv_processing(ctx: dict[str, Any]) -> None:
+    from jobpilot_core.models import Resume
+    from jobpilot_worker.resume import mark_failed
+
+    up = await upload(ctx["client"], s.clean_pdf())
+    rid = up["resume"]["id"]
+    async with ctx["sm"]() as session:
+        row = await session.get(Resume, rid)
+        assert row is not None
+        row.status = "processing"
+        await session.commit()
+    await mark_failed(ctx["sm"], rid, "internal_error")
+    detail = (await ctx["client"].get(f"/api/v1/resume/uploads/{rid}")).json()
+    assert (detail["status"], detail["error"]) == ("failed", "internal_error")

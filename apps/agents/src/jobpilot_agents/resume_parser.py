@@ -7,16 +7,21 @@ really comes from the document.
 
 from __future__ import annotations
 
-import json
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from jobpilot_agents.structured import OutputTruncatedError, complete_structured
+from jobpilot_agents.structured import (
+    OutputTruncatedError,
+    complete_structured,
+    response_format,
+)
 from jobpilot_core.config import LLMPurpose
 from jobpilot_core.llm import ChatResult, LLMProvider
-from jobpilot_core.llm.tokens import estimate_text_tokens
-from jobpilot_core.resume import ResumeProfile, ensure_ids, llm_schema
+from jobpilot_core.llm.tokens import estimate_prompt_tokens
+from jobpilot_core.ratelimit import RateLimitExceededError
+from jobpilot_core.resume import Link, ResumeProfile, ensure_ids, llm_schema
 from jobpilot_security import SPOTLIGHT_POLICY, spotlight
 
 log = logging.getLogger(__name__)
@@ -25,7 +30,7 @@ MAX_CV_CHARS = 20_000
 REQUEST_OVERHEAD = 80
 MAX_OUTPUT = 8_000
 MIN_OUTPUT = 1_500
-BUDGET_SHARE = 0.92  # of the provider's tokens/minute, kept for estimation error
+BUDGET_SHARE = 0.85  # of the provider's tokens/minute: headroom for a corrective retry
 # when one call cannot hold the whole JSON: smaller calls, each with the full remaining budget
 SPLIT = (
     ("contact", "headline", "summary", "links", "languages", "certifications"),
@@ -49,8 +54,9 @@ Rules:
 - skills: keep the CV's own groups and names. If skills are not grouped, group them by kind
   (hard = technical/domain skills, tool = software and tools, soft = interpersonal, other).
 - languages: level exactly as written; cefr only when stated or unambiguous ("natif" = native).
-- links: LinkedIn, GitHub, portfolio, website: URLs as written, including those listed under
-  "Hyperlinks in the document" (clickable links whose address is not printed).
+- links: LinkedIn, GitHub, portfolio, website: URLs as written. The "Hyperlinks in the document"
+  list at the end is context, not a CV section: use its URLs only for links and project urls,
+  and never turn it into an extra section.
 - extra_sections: every other section of the CV (publications, conferences and talks, awards,
   volunteering, associations, interests...), one entry per section with the CV's own title and
   one bullet per item.
@@ -101,12 +107,16 @@ Plan = list[tuple[tuple[str, ...] | None, int]]
 
 
 def _max_output(cv_text: str, sections: tuple[str, ...] | None, tpm: int) -> int:
-    """Every token the minute budget leaves after the prompt (the limiter refunds the unused)."""
-    prompt = (
-        estimate_text_tokens(PARSER_INSTRUCTIONS + cv_text + json.dumps(_schema(sections)))
-        + REQUEST_OVERHEAD
-        + 120
-    )
+    """Every token the minute budget leaves after the prompt (the limiter refunds the unused).
+
+    The prompt is measured with the rate limiter's own estimator on the exact request body, so
+    the reservation can never exceed the bucket.
+    """
+    body = {
+        "messages": _messages(cv_text),
+        "response_format": response_format("resume_profile", _schema(sections)),
+    }
+    prompt = estimate_prompt_tokens(body) + REQUEST_OVERHEAD
     room = MAX_OUTPUT if tpm <= 0 else int(BUDGET_SHARE * tpm) - prompt
     return min(MAX_OUTPUT, room)
 
@@ -154,17 +164,53 @@ async def _run(
     return merged, suspected, usage
 
 
+HYPERLINKS_HEADING = "Hyperlinks in the document:"
+_URL = re.compile(r"^(https?://|mailto:)\S+$")
+_PROFILE_URL = (
+    ("linkedin", re.compile(r"^https?://([a-z]{2,3}\.)?(www\.)?linkedin\.com/in/[^/?#]+/?$", re.I)),
+    ("github", re.compile(r"^https?://(www\.)?github\.com/[^/?#]+/?$", re.I)),
+    ("gitlab", re.compile(r"^https?://(www\.)?gitlab\.com/[^/?#]+/?$", re.I)),
+)
+
+
+def tidy_links(profile: ResumeProfile, text: str) -> ResumeProfile:
+    """Deterministic clean-up around the hyperlink list we append to the CV text.
+
+    - drop an extra section the model built from that list (a section of bare URLs);
+    - add LinkedIn / GitHub / GitLab *profile* links found there and missing from `links`.
+    """
+    out = profile.model_copy(deep=True)
+    out.extra_sections = [
+        x
+        for x in out.extra_sections
+        if not (
+            x.title.lower().startswith("hyperlink")
+            or (x.bullets and all(_URL.match(b.text) for b in x.bullets))
+        )
+    ]
+    if HYPERLINKS_HEADING in text:
+        listed = text.split(HYPERLINKS_HEADING, 1)[1].split()
+        known = {link.url.rstrip("/").lower() for link in out.links}
+        for url in listed:
+            for kind, pattern in _PROFILE_URL:
+                if pattern.match(url) and url.rstrip("/").lower() not in known:
+                    out.links.append(Link(kind=kind, url=url))
+                    known.add(url.rstrip("/").lower())
+    return out
+
+
 async def parse_resume_text(provider: LLMProvider, cv_text: str, *, tpm: int) -> ParseOutcome:
     truncated = len(cv_text) > MAX_CV_CHARS
     text = cv_text[:MAX_CV_CHARS]
     passes = plan_passes(text, tpm)
     try:
         merged, suspected, usage = await _run(provider, text, passes)
-    except OutputTruncatedError:
+    except (OutputTruncatedError, RateLimitExceededError) as exc:
+        # cut off at max_tokens, or refused as larger than the minute budget: split it
         if len(passes) > 1:
             raise
-        log.info("single-call parse truncated; retrying in %d smaller calls", len(SPLIT))
+        log.info("single-call parse failed (%s); retrying in %d smaller calls", exc, len(SPLIT))
         passes = plan_passes(text, tpm, split=True)
         merged, suspected, usage = await _run(provider, text, passes)
-    profile = ensure_ids(ResumeProfile.model_validate(merged))
+    profile = ensure_ids(tidy_links(ResumeProfile.model_validate(merged), text))
     return ParseOutcome(profile, suspected, len(passes), truncated, usage)

@@ -26,7 +26,7 @@ from jobpilot_core.tasks import TaskReporter, create_task_run
 from jobpilot_mcp_gmail.credentials import CredentialStore, GmailNotConnectedError
 from jobpilot_mcp_gmail.gmail_client import GmailAuthExpiredError, GmailClient
 from jobpilot_security.factory import build_detector
-from jobpilot_worker.resume import ResumePipeline
+from jobpilot_worker.resume import ResumePipeline, mark_failed
 from jobpilot_worker.triage import run_triage
 from jobpilot_worker.user_labels import UserLabelActions
 
@@ -166,6 +166,7 @@ async def parse_resume(
     try:
         result = await resume_pipeline(ctx, rep).process(resume_id, locale=locale)
     except Exception as exc:
+        await mark_failed(ctx["sessionmaker"], resume_id, "internal_error")
         await rep.fail(f"{type(exc).__name__}: {exc}")
         raise
     if result["status"] == "failed" and result.get("ats_report_id") is None:

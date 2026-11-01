@@ -181,3 +181,48 @@ async def test_review_spotlights_the_job_posting_and_sanitises_rewrites() -> Non
 
     no_job, _ = await review_resume(ScriptedProvider(reply), "CV", locale="fr")  # type: ignore[arg-type]
     assert no_job.job_keywords == [] and no_job.job_title is None
+
+
+@pytest.mark.parametrize("chars", [3_000, 6_000, 9_000])
+def test_every_planned_call_fits_the_rate_limiter_bucket(chars: int) -> None:
+    """Measured with the limiter's own estimator: a reservation larger than the bucket fails."""
+    from jobpilot_agents.resume_parser import _messages, _schema
+    from jobpilot_agents.structured import response_format
+    from jobpilot_core.llm.tokens import estimate_request_tokens
+
+    line = "- Réalisé une « API » de paiement: 2 M requêtes/jour, latence -40 %\n"
+    text = (line * (chars // len(line) + 1))[:chars]
+    for sections, max_tokens in plan_passes(text, tpm=8_000):
+        body = {
+            "messages": _messages(text),
+            "response_format": response_format("resume_profile", _schema(sections)),
+            "max_completion_tokens": max_tokens,
+        }
+        assert estimate_request_tokens(body, 1_024, request_overhead=80) <= 8_000
+
+
+def test_hyperlink_list_is_not_turned_into_a_section() -> None:
+    from jobpilot_agents.resume_parser import tidy_links
+    from jobpilot_core.resume import ResumeProfile
+
+    text = (
+        "Camille Martin\nLinkedIn | GitHub\n\nHyperlinks in the document:\n"
+        "https://www.linkedin.com/in/camille-martin-example\n"
+        "https://github.com/camille-example\n"
+        "https://github.com/camille-example/some-project\n"
+        "mailto:camille.martin@example.com"
+    )
+    parsed = ResumeProfile.model_validate(
+        {
+            "extra_sections": [
+                {"title": "Hyperlinks", "bullets": ["https://github.com/camille-example"]},
+                {"title": "Publications", "bullets": ["Article sur la détection d'anomalies"]},
+            ]
+        }
+    )
+    out = tidy_links(parsed, text)
+    assert [x.title for x in out.extra_sections] == ["Publications"]
+    assert [(link.kind, link.url) for link in out.links] == [
+        ("linkedin", "https://www.linkedin.com/in/camille-martin-example"),
+        ("github", "https://github.com/camille-example"),  # profile, not the project repo
+    ]

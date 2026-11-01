@@ -351,7 +351,9 @@
       "active_content": "Le document contenait du contenu actif (JavaScript, fichiers joints). Il a été refusé et supprimé.",
       "encrypted": "Ce PDF est protégé par un mot de passe. Exportez une version sans protection.",
       "corrupt": "Ce fichier est endommagé et n'a pas pu être lu.",
-      "too_many_pages": "Ce document compte plus de 10 pages : ce n'est probablement pas un CV."
+      "too_many_pages": "Ce document compte plus de 10 pages : ce n'est probablement pas un CV.",
+      "llm_unreachable": "Le fournisseur du modèle (Groq) était injoignable, probablement une coupure réseau. Relancez la lecture dans un instant.",
+      "internal_error": "Une erreur inattendue a interrompu l'analyse. Relancez la lecture ; si elle se reproduit, consultez les logs du worker."
     },
     "progress": {
       "title": "Analyse du CV",
