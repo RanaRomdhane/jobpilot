@@ -244,7 +244,7 @@ def test_dedupe_profile_undoes_overlapping_parse_passes() -> None:
 
     messy = ResumeProfile.model_validate(
         {
-            "summary": "ML engineer building NLP products, including React front ends, with Python.",
+            "summary": "ML engineer building NLP products, with React front ends, in Python.",
             "experiences": [
                 {
                     "id": "exp_1",

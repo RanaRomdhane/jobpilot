@@ -342,12 +342,13 @@ def dedupe_profile(profile: ResumeProfile) -> ResumeProfile:
             edu.append(e)
             continue
         short, long_ = sorted((twin, e), key=lambda x: len(x.institution))
-        merged = short.model_copy()  # the clean name ("School"), not "School – City"
+        merged = short.model_copy()  # the clean name ("School"), not "School, City"
         for f in ("degree", "field", "location", "grade"):
             if not getattr(merged, f):
                 setattr(merged, f, getattr(long_, f))
-        if not merged.location and "–" in long_.institution:
-            merged.location = long_.institution.split("–", 1)[1].strip() or None
+        dash = "–"  # en dash, as in "School – City"
+        if not merged.location and dash in long_.institution:
+            merged.location = long_.institution.split(dash, 1)[1].strip() or None
         merged.details = merged.details or long_.details
         edu[edu.index(twin)] = merged
     out.education = edu
@@ -360,14 +361,14 @@ def dedupe_profile(profile: ResumeProfile) -> ResumeProfile:
 
     certs: list[Certification] = []
     for c in out.certifications:
-        twin = next((x for x in certs if cert_key(x) == cert_key(c)), None)
-        if twin is None:
+        cert_twin = next((x for x in certs if cert_key(x) == cert_key(c)), None)
+        if cert_twin is None:
             certs.append(c)
             continue
-        keep = min((twin, c), key=lambda x: len(x.name)).model_copy()
-        keep.url = twin.url or c.url
-        keep.date = twin.date or c.date
-        certs[certs.index(twin)] = keep
+        keep = min((cert_twin, c), key=lambda x: len(x.name)).model_copy()
+        keep.url = cert_twin.url or c.url
+        keep.date = cert_twin.date or c.date
+        certs[certs.index(cert_twin)] = keep
     out.certifications = certs
 
     for g in out.skills:
