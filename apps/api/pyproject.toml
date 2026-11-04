@@ -6,6 +6,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
   "jobpilot-core",
   "jobpilot-resume",
+  "jobpilot-jobs-sources",
   "jobpilot-latex",
   "fastapi>=0.115",
   "uvicorn[standard]>=0.32",

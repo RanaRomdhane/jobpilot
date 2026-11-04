@@ -125,6 +125,47 @@ class Settings(BaseSettings):
     # status changes from emails apply automatically at/above this confidence (never if flagged)
     pipeline_auto_apply_confidence: float = Field(default=0.85, ge=0, le=1)
 
+    # --- job discovery (Phase 5)
+    # identifiable, with a contact page: what polite crawling etiquette asks for
+    jobs_user_agent: str = (
+        "JobPilot/0.1 (personal job-search assistant; +https://github.com/RanaRomdhane/jobpilot)"
+    )
+    jobs_request_timeout_s: float = 30.0
+    jobs_cache_ttl_s: int = 3 * 3600
+    # official APIs that need keys (connectors stay disabled until set)
+    adzuna_app_id: SecretStr | None = None
+    adzuna_app_key: SecretStr | None = None
+    adzuna_countries: Annotated[list[str], NoDecode] = Field(
+        default_factory=lambda: ["fr", "de", "gb", "nl", "be"]
+    )
+    rapidapi_key: SecretStr | None = None
+    # per-source daily request caps (the sources' own terms / free tiers)
+    remotive_daily_cap: int = 4  # Remotive asks for at most 4 calls a day
+    remoteok_daily_cap: int = 4
+    weworkremotely_daily_cap: int = 8
+    tanitjobs_daily_cap: int = 6
+    keejob_daily_cap: int = 12  # listing pages
+    keejob_pages: int = Field(default=3, ge=1, le=5)
+    adzuna_daily_cap: int = 100
+    jsearch_daily_cap: int = 6  # free RapidAPI plan: ~200 requests a month
+    scrape_min_interval_s: float = 6.0  # between two pages of the same HTML site
+    # fetch + match runs (UTC hours): 07:00 and 17:00 UTC = 08:00 and 18:00 in Tunis
+    jobs_fetch_hours: Annotated[list[int], NoDecode] = Field(default_factory=lambda: [7, 17])
+    jobs_max_age_days: int = Field(default=30, ge=1, le=180)
+
+    # --- matching
+    embedding_dim: int = 384  # intfloat/multilingual-e5-small
+    match_recall_k: int = 80
+    match_rerank_top_n: int = Field(default=10, ge=0, le=40)
+    match_rerank_batch: int = Field(default=5, ge=1, le=10)
+
+    @field_validator("adzuna_countries", "jobs_fetch_hours", mode="before")
+    @classmethod
+    def _split_csv(cls, v: object) -> object:
+        if isinstance(v, str) and not v.strip().startswith("["):
+            return [x.strip() for x in v.split(",") if x.strip()]
+        return v
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _split_origins(cls, v: object) -> object:

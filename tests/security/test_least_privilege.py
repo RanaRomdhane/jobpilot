@@ -113,7 +113,12 @@ async def test_add_labels_only_adds_and_only_jobpilot_labels() -> None:
 
 @pytest.mark.parametrize(
     "module",
-    ["jobpilot_agents.resume_parser", "jobpilot_agents.ats_review", "jobpilot_agents.structured"],
+    [
+        "jobpilot_agents.resume_parser",
+        "jobpilot_agents.ats_review",
+        "jobpilot_agents.structured",
+        "jobpilot_agents.job_matcher",
+    ],
 )
 def test_cv_agents_have_no_tools_and_no_gmail_access(module: str) -> None:
     """ResumeParserAgent and the ATS review are pure structured output: no tools, no Gmail."""
