@@ -58,6 +58,10 @@ ignore = ["S101"]  # asserts are fine in tests; production code uses explicit er
 # CVs and dates use real typography (en dashes, bullets)
 "packages/resume/**" = ["RUF001"]
 "packages/jobs_sources/**" = ["RUF001"]
+# LaTeX typography and the Unicode characters the escaping normalises
+"packages/latex/**" = ["RUF001", "RUF002"]
+"packages/security/src/jobpilot_security/latex.py" = ["RUF001"]
+"apps/agents/src/jobpilot_agents/template_converter.py" = ["RUF001", "S608"]
 "**/migrations/versions/*.py" = ["E501"]
 
 [tool.ruff.lint.isort]

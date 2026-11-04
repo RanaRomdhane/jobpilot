@@ -148,6 +148,11 @@ class Settings(BaseSettings):
     keejob_pages: int = Field(default=3, ge=1, le=5)
     adzuna_daily_cap: int = 100
     jsearch_daily_cap: int = 6  # free RapidAPI plan: ~200 requests a month
+
+    # ---- application factory (Phase 6)
+    cover_letter_tone: Literal["formal", "modern"] = "formal"
+    cv_page_budget: int = 1
+    latex_compile_timeout_s: float = 90.0
     scrape_min_interval_s: float = 6.0  # between two pages of the same HTML site
     # fetch + match runs (UTC hours): 07:00 and 17:00 UTC = 08:00 and 18:00 in Tunis
     jobs_fetch_hours: Annotated[list[int], NoDecode] = Field(default_factory=lambda: [7, 17])

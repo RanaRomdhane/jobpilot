@@ -239,6 +239,66 @@ def ensure_ids(profile: ResumeProfile) -> ResumeProfile:
     return out
 
 
+def _norm(text: str | None) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", (text or "").lower()).strip()
+
+
+def _similar(a: str | None, b: str | None) -> float:
+    import difflib
+
+    return difflib.SequenceMatcher(a=_norm(a), b=_norm(b), autojunk=False).ratio()
+
+
+# list field -> how an item is recognised in the old profile
+_ITEM_KEY: dict[str, Any] = {
+    "experiences": lambda e: f"{e.company} {e.title}",
+    "education": lambda e: f"{e.institution} {e.degree or ''}",
+    "projects": lambda p: p.name,
+    "skills": lambda g: g.name,
+    "languages": lambda lg: lg.name,
+    "certifications": lambda c: c.name,
+    "links": lambda lk: lk.url,
+    "extra_sections": lambda s: s.title,
+}
+
+
+def carry_ids(old: ResumeProfile, new: ResumeProfile, threshold: float = 0.6) -> ResumeProfile:
+    """Give `new` the ids of the matching items and bullets of `old` (best match, each id once).
+
+    Used when a profile is rebuilt from another source (e.g. the LaTeX template): documents
+    already generated keep pointing at the same entries. Unmatched items get fresh ids.
+    """
+    out = new.model_copy(deep=True)
+    for field_name, (_, bullet_fields) in _LIST_KINDS.items():
+        key = _ITEM_KEY[field_name]
+        olds: list[Any] = list(getattr(old, field_name))
+        used: set[int] = set()
+        for item in getattr(out, field_name):
+            scores = [(_similar(key(item), key(o)), i) for i, o in enumerate(olds) if i not in used]
+            best = max(scores, default=(0.0, -1))
+            item.id = ""
+            if best[0] < threshold:
+                continue
+            used.add(best[1])
+            match = olds[best[1]]
+            item.id = match.id
+            for bf in bullet_fields:
+                old_bullets = list(getattr(match, bf))
+                taken: set[int] = set()
+                for b in getattr(item, bf):
+                    cand = [
+                        (_similar(b.text, ob.text), j)
+                        for j, ob in enumerate(old_bullets)
+                        if j not in taken
+                    ]
+                    score, j = max(cand, default=(0.0, -1))
+                    b.id = ""
+                    if score >= 0.5:
+                        taken.add(j)
+                        b.id = old_bullets[j].id
+    return ensure_ids(out)
+
+
 def all_bullets(profile: ResumeProfile) -> dict[str, str]:
     """Every bullet id -> text (the traceability index for tailoring)."""
     out: dict[str, str] = {}

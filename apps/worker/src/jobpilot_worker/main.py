@@ -27,6 +27,7 @@ from jobpilot_mcp_gmail.credentials import CredentialStore, GmailNotConnectedErr
 from jobpilot_mcp_gmail.gmail_client import GmailAuthExpiredError, GmailClient
 from jobpilot_security.factory import build_detector
 from jobpilot_worker import job_runs
+from jobpilot_worker.documents import DocumentFactory, FactoryError
 from jobpilot_worker.resume import ResumePipeline, mark_failed
 from jobpilot_worker.triage import run_triage
 from jobpilot_worker.user_labels import UserLabelActions
@@ -255,6 +256,63 @@ async def jobs_match(
     return result
 
 
+def document_factory(ctx: Ctx, rep: TaskReporter) -> DocumentFactory:
+    settings = ctx["settings"]
+    try:
+        provider: LLMProvider | None = build_provider(
+            settings, ctx["app_redis"], usage_sink=DbUsageSink(ctx["sessionmaker"])
+        )
+    except LLMConfigurationError:
+        provider = None
+    return DocumentFactory(settings, ctx["sessionmaker"], provider, rep)
+
+
+async def _factory_task(rep: TaskReporter, label: str, run: Any) -> dict[str, Any]:
+    await rep.start(label)
+    try:
+        result: dict[str, Any] = await run
+    except FactoryError as exc:
+        await rep.fail(exc.code if not exc.detail else f"{exc.code}: {exc.detail}")
+        return {"error": exc.code}
+    except Exception as exc:
+        await rep.fail(f"{type(exc).__name__}: {exc}")
+        raise
+    await rep.succeed(result, f"{label}: done")
+    return result
+
+
+async def template_convert(ctx: Ctx, task_id: str, template_id: int) -> dict[str, Any]:
+    """Convert an uploaded LaTeX template into a Jinja template (then test-compile it)."""
+    rep = reporter(ctx, task_id)
+    return await _factory_task(
+        rep, "template conversion", document_factory(ctx, rep).convert(template_id)
+    )
+
+
+async def template_preview(
+    ctx: Ctx, task_id: str, template_id: int, use: str = "master"
+) -> dict[str, Any]:
+    """Render a template with the master profile and compile it in the sandbox."""
+    rep = reporter(ctx, task_id)
+    factory = document_factory(ctx, rep)
+    return await _factory_task(rep, "template preview", factory.preview(template_id, use=use))  # type: ignore[arg-type]
+
+
+async def documents_generate(
+    ctx: Ctx,
+    task_id: str,
+    job_id: int,
+    locale: str = "fr",
+    tone: str | None = None,
+    confirm_flagged: bool = False,
+) -> dict[str, Any]:
+    """Tailored CV + cover letter for one job (two LLM calls, guardrails, sandboxed compiles)."""
+    rep = reporter(ctx, task_id)
+    factory = document_factory(ctx, rep)
+    run = factory.generate(job_id, locale=locale, tone=tone, confirm_flagged=confirm_flagged)  # type: ignore[arg-type]
+    return await _factory_task(rep, "documents", run)
+
+
 async def scheduled_jobs(ctx: Ctx) -> None:
     """Cron: the twice-daily job refresh (saved searches are updated at the end)."""
     async with ctx["sessionmaker"]() as session:
@@ -273,6 +331,9 @@ class WorkerSettings:
         ats_report,
         jobs_refresh,
         jobs_match,
+        template_convert,
+        template_preview,
+        documents_generate,
     ]
     cron_jobs = [  # noqa: RUF012
         cron(heartbeat, second={0, 15, 30, 45}, run_at_startup=True),
