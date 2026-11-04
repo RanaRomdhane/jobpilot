@@ -325,8 +325,21 @@ class Resume(Base):
     sha256: Mapped[str | None] = mapped_column(String(64), index=True)
     raw_text: Mapped[str | None] = mapped_column(Text)
     parsed: Mapped[dict[str, Any] | None] = mapped_column(JSONB)  # validated by ResumeProfile
+    # uploaded file rows: uploaded -> processing -> parsed | failed; the master row: "master"
+    status: Mapped[str] = mapped_column(String(20), default="uploaded", server_default="uploaded")
+    error: Mapped[str | None] = mapped_column(String(64))  # stable code, translated in the UI
+    page_count: Mapped[int | None] = mapped_column(Integer)
+    # layout signals from extraction (jobpilot_resume.LayoutSignals) + hidden-text excerpts
+    extraction: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict, server_default="{}")
+    # parser model, grounding warnings, passes; on the master row: the uploads it was built from
+    parse_meta: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict, server_default="{}")
+    parsed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     is_master: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     injection_flag: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    injection_score: Mapped[float | None] = mapped_column(Float)
+    injection_reasons: Mapped[list[dict[str, Any]]] = mapped_column(
+        JSONB, default=list, server_default="[]"
+    )
     uploaded_at: Mapped[datetime] = created_at_col()
     updated_at: Mapped[datetime] = updated_at_col()
 

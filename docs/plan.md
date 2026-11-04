@@ -48,18 +48,21 @@ Prerequisites, repo, brief, architecture, ADRs 0001–0004, this plan.
 - **Asks:** Google Cloud project/OAuth client (step-by-step guide provided if you have none).
 - ✅ Acceptance criteria from the brief, plus a report: tool calls/batch, tokens/batch, accuracy.
 
-## Phase 3 — Dashboard v1 (`phase/3-dashboard`) — in review
+## Phase 3 — Dashboard v1 (`phase/3-dashboard`) ✅ merged in #3
 
 Auth, app shell, Overview, Inbox (re-classify → eval set), Applications Kanban (dnd-kit) + table +
 drawer, Security panel, Settings; SSE progress toasts; skeletons, empty states, a11y, 375px → desktop.
 - **Asks:** auth method (local password vs Google sign-in restricted to your address).
 - ✅ You can see and manage your pipeline in the browser.
 
-## Phase 4 — Resume intelligence (`phase/4-resume`)
+## Phase 4 — Resume intelligence (`phase/4-resume`) — in review
 
 Upload (PDF/DOCX, size/type/magic-byte checks, random names), PyMuPDF/python-docx extraction with
 layout signals, ResumeParserAgent → `ResumeProfile` with stable ids, editable master profile form,
 ATS report (deterministic checks + keyword coverage + LLM review) with prioritized fixes.
+- **Decided:** keyword coverage against a pasted job ad (Phase 5 adds discovered jobs); a later
+  upload is compared section by section before anything reaches the master profile; scanned PDFs
+  are flagged, not OCR'd (ADR-0006).
 - ✅ Your real CV parses correctly; the ATS report is actionable.
 
 ## Phase 5 — Job discovery (`phase/5-jobs`)

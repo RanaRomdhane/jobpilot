@@ -7,7 +7,7 @@ configured per provider. Switching provider or model is a `.env` change only.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Literal, Protocol
 
 import httpx2
 from openai import AsyncOpenAI
@@ -24,6 +24,15 @@ if TYPE_CHECKING:
 
 class LLMConfigurationError(RuntimeError):
     pass
+
+
+ReasoningEffort = Literal["low", "medium", "high"]
+_REASONING_MODELS = ("openai/gpt-oss", "gpt-oss", "o1", "o3", "o4", "gpt-5")
+
+
+def supports_reasoning_effort(model: str) -> bool:
+    """Only reasoning models accept `reasoning_effort` (gpt-4.1 rejects it)."""
+    return model.startswith(_REASONING_MODELS)
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +68,7 @@ class LLMProvider(Protocol):
         temperature: float = 0.0,
         max_tokens: int | None = None,
         use_cache: bool = True,
+        reasoning_effort: ReasoningEffort | None = None,
     ) -> ChatResult: ...
 
 
@@ -150,6 +160,7 @@ class OpenAICompatibleProvider:
         temperature: float = 0.0,
         max_tokens: int | None = None,
         use_cache: bool = True,
+        reasoning_effort: ReasoningEffort | None = None,
         max_wait_s: float | None = None,
     ) -> ChatResult:
         model = self.model(purpose)
@@ -158,6 +169,8 @@ class OpenAICompatibleProvider:
             payload["response_format"] = response_format
         if max_tokens is not None:
             payload["max_completion_tokens"] = max_tokens
+        if reasoning_effort is not None and supports_reasoning_effort(model):
+            payload["reasoning_effort"] = reasoning_effort
 
         key = cache_key(self.name, model, payload)
         if use_cache:
@@ -229,12 +242,14 @@ class FallbackProvider:
         temperature: float = 0.0,
         max_tokens: int | None = None,
         use_cache: bool = True,
+        reasoning_effort: ReasoningEffort | None = None,
     ) -> ChatResult:
         kwargs: dict[str, Any] = {
             "response_format": response_format,
             "temperature": temperature,
             "max_tokens": max_tokens,
             "use_cache": use_cache,
+            "reasoning_effort": reasoning_effort,
         }
         try:
             return await self.primary.complete(

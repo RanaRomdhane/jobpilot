@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import type { TaskEvent } from "@/lib/api/client";
 
-const KNOWN = ["triage", "user_label_change", "ping"] as const;
+const KNOWN = ["triage", "user_label_change", "ping", "parse_resume", "ats_report"] as const;
 
 /** One SSE connection for the whole app: background-task results become toasts + fresh data. */
 export function TaskToasts() {
@@ -35,6 +35,11 @@ export function TaskToasts() {
                 classified: r.classified ?? 0,
                 flagged: r.flagged ?? 0,
               }),
+            });
+          } else if (event.kind === "parse_resume" || event.kind === "ats_report") {
+            const r = (event.result ?? {}) as { score?: number };
+            toast.success(t("succeeded", { kind }), {
+              description: r.score !== undefined ? t("atsSummary", { score: r.score }) : undefined,
             });
           } else if (event.kind !== "user_label_change") {
             toast.success(t("succeeded", { kind }));

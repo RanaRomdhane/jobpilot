@@ -1,6 +1,6 @@
 # JobPilot — Security model
 
-Status: v1.1 (Phase 3: dashboard). Extended in later phases and finalised in Phase 8.
+Status: v1.2 (Phase 4: CV intelligence). Extended in later phases and finalised in Phase 8.
 
 JobPilot reads attacker-controllable text (anyone can email you or publish a job post) and holds
 credentials that can act in your name. The design goal is that **a successful prompt injection can
@@ -116,6 +116,16 @@ with provider-wide pauses on 429. The guard model has its own budget.
 
 Compilation runs in a container with no network, read-only root fs, no capabilities, pids/memory/
 CPU limits and shell-escape disabled; it is driven through a spool volume.
+
+### T9 — Malicious or manipulated CV files (Phase 4)
+
+ADR-0006. Uploads are validated by content (PDF header/EOF; DOCX structure, no macros, zip-bomb
+bounds), stored under random names outside any web root and downloaded only as attachments.
+Parsing runs in the worker with a timeout and a page cap; PDFs with JavaScript, launch actions or
+embedded files are refused and deleted. Invisible text (white, tiny, transparent, off-page, Word
+hidden runs) never reaches the parser: it is injection-scanned and reported. The parser and the
+ATS review are tool-less structured-output calls on spotlighted text, and a grounding check flags
+any parsed value that is not in the document before it can enter the master profile.
 
 ## Residual risks
 

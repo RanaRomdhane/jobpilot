@@ -5,6 +5,7 @@ description = "JobPilot REST API"
 requires-python = ">=3.12,<3.13"
 dependencies = [
   "jobpilot-core",
+  "jobpilot-resume",
   "jobpilot-latex",
   "fastapi>=0.115",
   "uvicorn[standard]>=0.32",
@@ -12,6 +13,7 @@ dependencies = [
   "arq>=0.26",
   "argon2-cffi>=23.1",
   "email-validator>=2.2",
+  "python-multipart>=0.0.20",  # CV uploads
 ]
 
 [build-system]

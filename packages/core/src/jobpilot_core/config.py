@@ -113,6 +113,10 @@ class Settings(BaseSettings):
     gmail_backfill_days: int = Field(default=90, ge=1, le=3650)
     gmail_max_backfill: int = 3_000
 
+    # --- resume (CV uploads live in <storage_dir>/resumes, outside any web root)
+    resume_max_upload_mb: int = Field(default=5, ge=1, le=20)
+    resume_extract_timeout_s: float = 60.0
+
     # --- triage
     triage_batch_size: int = Field(default=15, ge=1, le=50)
     triage_snippet_max_chars: int = 300

@@ -8,6 +8,7 @@ dependencies = [
   "jobpilot-security",
   "jobpilot-jobs-sources",
   "jobpilot-latex",
+  "jobpilot-resume",
   "jobpilot-agents",
   "jobpilot-mcp-gmail",
   "jobpilot-api",
@@ -36,6 +37,7 @@ jobpilot-core = { workspace = true }
 jobpilot-security = { workspace = true }
 jobpilot-jobs-sources = { workspace = true }
 jobpilot-latex = { workspace = true }
+jobpilot-resume = { workspace = true }
 jobpilot-agents = { workspace = true }
 jobpilot-mcp-gmail = { workspace = true }
 jobpilot-api = { workspace = true }
@@ -52,12 +54,14 @@ select = ["E", "F", "W", "I", "B", "UP", "N", "S", "ASYNC", "RUF", "SIM", "PTH"]
 ignore = ["S101"]  # asserts are fine in tests; production code uses explicit errors
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S105", "S106", "S311"]
+"tests/**" = ["S105", "S106", "S311", "RUF001"]
+# CVs and dates use real typography (en dashes, bullets)
+"packages/resume/**" = ["RUF001"]
 "**/migrations/versions/*.py" = ["E501"]
 
 [tool.ruff.lint.isort]
 known-first-party = [
-  "jobpilot_core", "jobpilot_security", "jobpilot_jobs_sources", "jobpilot_latex",
+  "jobpilot_core", "jobpilot_security", "jobpilot_jobs_sources", "jobpilot_latex", "jobpilot_resume",
   "jobpilot_agents", "jobpilot_mcp_gmail", "jobpilot_api", "jobpilot_worker",
 ]
 
@@ -68,14 +72,14 @@ strict = true
 plugins = ["pydantic.mypy"]
 warn_unreachable = true
 mypy_path = [
-  "packages/core/src", "packages/security/src", "packages/jobs_sources/src", "packages/latex/src",
+  "packages/core/src", "packages/security/src", "packages/jobs_sources/src", "packages/latex/src", "packages/resume/src",
   "apps/api/src", "apps/worker/src", "apps/mcp_gmail/src", "apps/agents/src",
 ]
 explicit_package_bases = true
 exclude = ["apps/web/", "migrations/versions/"]
 
 [[tool.mypy.overrides]]
-module = ["arq.*", "fakeredis.*", "pgvector.*", "sse_starlette.*", "google_auth_oauthlib.*"]
+module = ["arq.*", "fitz.*", "pymupdf.*", "docx.*", "fakeredis.*", "pgvector.*", "sse_starlette.*", "google_auth_oauthlib.*"]
 ignore_missing_imports = true
 
 # ---------------------------------------------------------------- pytest

@@ -7,6 +7,7 @@ dependencies = [
   "jobpilot-core",
   "jobpilot-security",
   "openai-agents>=0.24",
+  "jobpilot-resume",
   "jobpilot-mcp-gmail",
 ]
 

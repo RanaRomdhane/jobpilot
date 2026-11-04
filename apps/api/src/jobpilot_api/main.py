@@ -14,11 +14,13 @@ from redis.asyncio import Redis
 
 from jobpilot_api.routers import (
     applications,
+    ats,
     auth,
     emails,
     gmail,
     health,
     overview,
+    resume,
     security,
     tasks,
 )
@@ -80,6 +82,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     v1.include_router(overview.router)
     v1.include_router(emails.router)
     v1.include_router(applications.router)
+    v1.include_router(resume.router)
+    v1.include_router(ats.router)
     v1.include_router(security.router)
     v1.include_router(settings_router.router)
     v1.include_router(tasks.router)

@@ -259,7 +259,6 @@
   "soon": {
     "title": "Not available yet",
     "jobs": "Multi-source job search arrives in phase 5.",
-    "resume": "Resume analysis and the ATS report arrive in phase 4.",
     "templates": "Your LaTeX templates arrive in phase 6.",
     "review": "Application review and sending arrive in phase 7."
   },
@@ -269,7 +268,10 @@
     "ping": "Worker test",
     "succeeded": "{kind} finished",
     "failed": "{kind} failed: {error}",
-    "triageSummary": "{classified, plural, =0 {no email classified} one {# email classified} other {# emails classified}}, {flagged, plural, =0 {none suspicious} one {# suspicious} other {# suspicious}}"
+    "triageSummary": "{classified, plural, =0 {no email classified} one {# email classified} other {# emails classified}}, {flagged, plural, =0 {none suspicious} one {# suspicious} other {# suspicious}}",
+    "parse_resume": "CV analysis",
+    "ats_report": "ATS report",
+    "atsSummary": "ATS score: {score}/100"
   },
   "theme": {
     "toggle": "Toggle theme"
@@ -301,5 +303,428 @@
     "pingRunning": "Task running… {progress}%",
     "pingDone": "The worker answered",
     "pingFailed": "The task failed"
+  },
+  "resume": {
+    "description": "Upload your CV: JobPilot extracts a structured profile and checks how well applicant tracking systems (ATS) can read it.",
+    "upload": {
+      "button": "Upload a CV",
+      "drop": "Drop your CV here",
+      "hint": "PDF or DOCX, {max} MB max.",
+      "choose": "Choose a file",
+      "privacy": "The file stays on your machine. Only its visible text is sent to the language model for analysis.",
+      "uploading": "Uploading…",
+      "started": "CV received: analysis in progress",
+      "errors": {
+        "too_large": "File too large: {max} MB max.",
+        "unsupported_type": "Unsupported format: upload a PDF or a DOCX.",
+        "corrupt": "This file is damaged or incomplete. Export it again and retry.",
+        "empty": "This file is empty.",
+        "active_content": "This document contains active content (macros, scripts) and was refused. Export it as a plain PDF or DOCX.",
+        "generic": "The upload failed. Try again in a moment."
+      }
+    },
+    "file": {
+      "label": "Document",
+      "status": {
+        "uploaded": "Queued",
+        "processing": "Analysing",
+        "parsed": "Analysed",
+        "failed": "Could not be read"
+      },
+      "download": "Download original",
+      "reanalyze": "Read again",
+      "delete": "Delete",
+      "deleteTitle": "Delete “{name}”?",
+      "deleteBody": "The file and its ATS reports will be deleted. Your master profile is not changed.",
+      "deleteConfirm": "Delete document",
+      "deleted": "Document deleted",
+      "pages": "{count, plural, one {# page} other {# pages}}",
+      "uploadedAt": "uploaded {when}",
+      "actions": "Document actions"
+    },
+    "parseErrors": {
+      "no_text": "No selectable text: this PDF is probably an image or a scan. Export your CV as a text PDF from Word, Google Docs or LaTeX.",
+      "llm_unavailable": "No model key is configured: only the ATS rules ran. You can fill in the profile by hand.",
+      "parse_failed": "Automatic reading failed. Run it again or fill in the profile by hand.",
+      "too_long": "CV too long for the provider's tokens-per-minute budget. Shorten it or enable the OpenAI fallback in .env.",
+      "extract_timeout": "Text extraction took too long.",
+      "active_content": "The document contained active content (JavaScript, attached files). It was refused and deleted.",
+      "encrypted": "This PDF is password-protected. Export an unprotected version.",
+      "corrupt": "This file is damaged and could not be read.",
+      "too_many_pages": "This document has more than 10 pages: it is probably not a CV.",
+      "llm_unreachable": "The model provider (Groq) could not be reached, probably a network outage. Read the CV again in a moment.",
+      "internal_error": "An unexpected error stopped the analysis. Read the CV again; if it happens again, check the worker logs."
+    },
+    "progress": {
+      "title": "Analysing the CV",
+      "waiting": "Waiting for the worker…",
+      "steps": {
+        "received": "CV received",
+        "extract": "Extracting text",
+        "scan": "Scanning for prompt injection",
+        "parse": "Reading the CV (model)",
+        "ats": "Building the ATS report"
+      }
+    },
+    "tabs": {
+      "report": "ATS report",
+      "profile": "Profile",
+      "compare": "Compare"
+    },
+    "injection": {
+      "title": "Invisible text or instructions detected",
+      "body": "This document contains text a recruiter cannot see (white, tiny or hidden) or instructions aimed at an AI. That text was left out of the analysis.",
+      "excerpts": "Excerpts"
+    },
+    "report": {
+      "score": "ATS score",
+      "levels": {
+        "good": "Good",
+        "fair": "Needs work",
+        "poor": "Rework needed"
+      },
+      "history": "Report shown",
+      "historyItem": "{when} · {score}/100",
+      "withJob": "{when} · {score}/100 · {title}",
+      "pastedJob": "pasted job",
+      "categories": {
+        "parsing": "Readability",
+        "layout": "Layout",
+        "sections": "Sections",
+        "contact": "Contact details",
+        "formatting": "Format",
+        "content": "Content",
+        "keywords": "Keywords"
+      },
+      "fixes": "Priority fixes",
+      "noFixes": "No problems found: your CV is ready for ATS.",
+      "severity": {
+        "critical": "Critical",
+        "high": "Important",
+        "medium": "Medium",
+        "low": "Minor"
+      },
+      "source": {
+        "rule": "Rule",
+        "llm": "AI review"
+      },
+      "evidence": "Relevant text",
+      "passed": "{count, plural, one {# check passed} other {# checks passed}}",
+      "stats": "{words} words · {pages}",
+      "empty": "No report for this document yet.",
+      "review": {
+        "title": "Content review",
+        "strengths": "Strengths",
+        "rewrites": "Achievements to strengthen",
+        "original": "Current",
+        "suggestion": "Suggestion",
+        "placeholderHint": "Replace [N] and [X %] with your real figures, or remove them: nothing is made up for you.",
+        "failed": "The AI review could not be generated: the score relies on the rules alone."
+      },
+      "keywords": {
+        "title": "Match with the job",
+        "coverage": "{percent}% of the job's keywords are present",
+        "matched": "Present",
+        "missing": "Missing",
+        "required": "required",
+        "honest": "Only add a keyword if you really have that skill.",
+        "injection": "This posting contained instructions aimed at an AI: they were ignored."
+      },
+      "job": {
+        "title": "Compare with a job",
+        "description": "Paste a job posting: the report measures how many of its keywords your CV contains.",
+        "jobTitle": "Job title",
+        "jobTitleHint": "Optional",
+        "jobText": "Job posting text",
+        "analyze": "Analyse against this job",
+        "rerun": "Run again without a job",
+        "tooShort": "Paste at least a few lines of the posting (80 characters).",
+        "started": "Analysis started"
+      },
+      "language": {
+        "notice": "This review was written in {language}; rule texts follow the interface language.",
+        "regenerate": "Regenerate in English",
+        "noJobText": "The job ad used was not kept: the new report will have no job ad.",
+        "names": {
+          "fr": "French",
+          "en": "English"
+        }
+      }
+    },
+    "rules": {
+      "parsing": {
+        "no_text": {
+          "title": "No readable text",
+          "fix": "This PDF is an image (a scan or an image export): an ATS reads nothing in it. Export it as a text PDF from your editor."
+        },
+        "garbled": {
+          "title": "Badly decoded text",
+          "fix": "{count} characters could not be decoded because of badly encoded fonts. Export the PDF again with standard embedded fonts."
+        },
+        "type3_fonts": {
+          "title": "Type 3 fonts",
+          "fix": "These bitmap fonts often prevent text extraction. Export the document again with TrueType or OpenType fonts."
+        },
+        "hidden_text": {
+          "title": "Invisible text",
+          "fix": "{chars} characters are invisible to a person (white on white, tiny, hidden). ATS treat this as keyword stuffing: remove it."
+        },
+        "icon_glyphs": {
+          "title": "Icon fonts",
+          "fix": "Icons (phone, e-mail, location…) turn into junk characters in an ATS. Replace them with text labels such as “Phone” and “E-mail”."
+        }
+      },
+      "layout": {
+        "multi_column": {
+          "title": "Multi-column layout",
+          "fix": "Many ATS read line by line and mix the columns up. Switch to one column, or at least keep experience and education in the main column."
+        },
+        "tables": {
+          "title": "Content in tables",
+          "fix": "A large share of the text sits in tables, which many ATS read poorly. Use paragraphs and tab stops instead."
+        },
+        "text_boxes": {
+          "title": "Text boxes",
+          "fix": "Many ATS ignore text inside text boxes. Move it into the body of the document."
+        },
+        "header_footer_contact": {
+          "title": "Contact details in the header or footer",
+          "fix": "Many ATS skip headers and footers. Put your name, e-mail and phone number in the body of the document."
+        },
+        "header_footer": {
+          "title": "Text in the header or footer",
+          "fix": "This text may be skipped: keep nothing essential there."
+        },
+        "large_images": {
+          "title": "Large image",
+          "fix": "An image covers much of the page: any text inside it is invisible to an ATS."
+        },
+        "images": {
+          "title": "Photo or logos",
+          "fix": "ATS ignore images. A photo is common in France and Tunisia but discouraged for the UK or the US."
+        }
+      },
+      "sections": {
+        "none_found": {
+          "title": "Sections not recognised",
+          "fix": "No standard heading found. Use “Work experience”, “Education” and “Skills”."
+        },
+        "missing_experience": {
+          "title": "No Experience section found",
+          "fix": "Title the section “Work experience” (or “Expérience professionnelle”) so the ATS recognises it."
+        },
+        "missing_education": {
+          "title": "No Education section found",
+          "fix": "Add a standard “Education” (or “Formation”) heading."
+        },
+        "missing_skills": {
+          "title": "No Skills section found",
+          "fix": "Group your skills under a “Skills” (or “Compétences”) heading."
+        }
+      },
+      "contact": {
+        "no_email": {
+          "title": "No e-mail in the body of the CV",
+          "fix": "Write your e-mail address out in the body of the document, not only in the header or in an image."
+        },
+        "no_phone": {
+          "title": "No phone number found",
+          "fix": "Add a number in international format, for example +216 20 000 000."
+        },
+        "no_linkedin": {
+          "title": "No LinkedIn link",
+          "fix": "Add the address of your LinkedIn profile (linkedin.com/in/…)."
+        },
+        "linkedin_not_printed": {
+          "title": "LinkedIn address not written out",
+          "fix": "Your LinkedIn is only a clickable link (an icon or a word). ATS read the text, not the link target: write the address, e.g. linkedin.com/in/your-name."
+        }
+      },
+      "formatting": {
+        "date_formats": {
+          "title": "Mixed date formats",
+          "fix": "Formats found: {formats}. Use a single one for every date, for example “03/2021 – 06/2024”."
+        },
+        "too_many_fonts": {
+          "title": "Too many fonts",
+          "fix": "Fonts used: {fonts}. Stick to one or two families."
+        },
+        "bullets": {
+          "title": "Non-standard bullets",
+          "fix": "The symbols {glyphs} may display badly in an ATS. Use simple bullets (•) or dashes."
+        },
+        "skill_bars": {
+          "title": "Graphical skill levels",
+          "fix": "Bars, stars and dots are unreadable for an ATS. State the level in words: “advanced”, “C1”."
+        },
+        "pages": {
+          "title": "CV too long ({pages} pages)",
+          "fix": "Aim for one page, two at most with more than ten years of experience."
+        },
+        "too_short": {
+          "title": "Very short CV ({words} words)",
+          "fix": "Describe your experience: achievements, tools, measurable results."
+        },
+        "too_long": {
+          "title": "Very dense CV ({words} words)",
+          "fix": "Trim it: keep the achievements most useful for the role you want."
+        }
+      },
+      "content": {
+        "few_bullets": {
+          "title": "Thin experience entries",
+          "fix": "Add 2 to 5 achievements for: {experiences}."
+        },
+        "low_quantification": {
+          "title": "Few measurable results",
+          "fix": "Only {percent}% of your achievements contain a number. Quantify where it is true: volumes, time, gains."
+        },
+        "long_bullets": {
+          "title": "Achievements too long",
+          "fix": "{count} achievements exceed 35 words. One idea per bullet, on one or two lines."
+        },
+        "no_summary": {
+          "title": "No title or summary",
+          "fix": "Add the target job title at the top of the CV and a 2–3 line summary."
+        }
+      },
+      "keywords": {
+        "missing_required": {
+          "title": "Required keywords missing",
+          "fix": "The job asks for: {terms}. Add the ones you really master, in your experience or skills."
+        },
+        "missing_preferred": {
+          "title": "Preferred keywords missing",
+          "fix": "Nice-to-haves in the posting: {terms}. Add them only if they are true."
+        }
+      }
+    },
+    "profile": {
+      "draftBanner": "Profile extracted from the CV, not saved yet. Check every section, then save it as your master profile: it is the only source used to tailor your applications.",
+      "masterBanner": "Your master profile: the only source of facts used to tailor your CVs and cover letters.",
+      "unverified": "Not found as such in the document: check this value.",
+      "unverifiedCount": "{count, plural, one {# value to check} other {# values to check}}",
+      "save": "Save master profile",
+      "saving": "Saving…",
+      "saved": "Master profile saved",
+      "unsaved": "Unsaved changes",
+      "reset": "Discard changes",
+      "fixErrors": "Fix the highlighted fields before saving.",
+      "noParse": "This document could not be read automatically. You can fill in the profile by hand.",
+      "empty": "No profile yet.",
+      "startEmpty": "Fill in by hand",
+      "sections": {
+        "contact": "Contact details",
+        "headline": "Title and summary",
+        "experiences": "Experience",
+        "education": "Education",
+        "projects": "Projects",
+        "skills": "Skills",
+        "languages": "Languages",
+        "certifications": "Certifications",
+        "links": "Links",
+        "extra_sections": "Other sections"
+      },
+      "fields": {
+        "language": "CV language",
+        "full_name": "Full name",
+        "email": "E-mail",
+        "phone": "Phone",
+        "location": "Location",
+        "headline": "Title",
+        "summary": "Summary",
+        "company": "Company",
+        "title": "Job title",
+        "start": "Start",
+        "end": "End",
+        "current": "Current role",
+        "employment_type": "Contract type",
+        "bullets": "Achievements",
+        "technologies": "Technologies",
+        "institution": "Institution",
+        "degree": "Degree",
+        "field": "Field",
+        "grade": "Grade",
+        "details": "Details",
+        "name": "Name",
+        "role": "Role",
+        "url": "Web address",
+        "description": "Description",
+        "groupName": "Group",
+        "kind": "Type",
+        "skills": "Skills",
+        "level": "Level (as written)",
+        "cefr": "CEFR level",
+        "issuer": "Issuer",
+        "date": "Date",
+        "credential_id": "Credential ID",
+        "label": "Label",
+        "sectionTitle": "Section title"
+      },
+      "hints": {
+        "date": "YYYY-MM or YYYY",
+        "list": "Comma-separated",
+        "bullets": "One achievement per line"
+      },
+      "kinds": {
+        "hard": "Technical",
+        "soft": "Interpersonal",
+        "tool": "Tools",
+        "other": "Other"
+      },
+      "linkKinds": {
+        "linkedin": "LinkedIn",
+        "github": "GitHub",
+        "gitlab": "GitLab",
+        "portfolio": "Portfolio",
+        "website": "Website",
+        "other": "Other"
+      },
+      "cvLanguages": {
+        "fr": "French",
+        "en": "English",
+        "other": "Other"
+      },
+      "cefrNone": "Not stated",
+      "add": {
+        "experiences": "Add experience",
+        "education": "Add education",
+        "projects": "Add project",
+        "skills": "Add group",
+        "languages": "Add language",
+        "certifications": "Add certification",
+        "links": "Add link",
+        "extra_sections": "Add section"
+      },
+      "remove": "Remove",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "item": "Item {n}",
+      "invalidDate": "Expected format: YYYY-MM or YYYY",
+      "required": "Required",
+      "invalidEmail": "Invalid e-mail address",
+      "cefrNative": "Native",
+      "missingTitle": "{count, plural, one {# CV line not carried over to the profile} other {# CV lines not carried over to the profile}}",
+      "missingHint": "Automatic reading did not place these lines. Add the ones that matter to the right section (often “Other sections”)."
+    },
+    "compare": {
+      "intro": "This CV was analysed after your master profile. Choose, section by section, what to keep. Nothing changes until you apply.",
+      "master": "Master profile",
+      "incoming": "New CV",
+      "choice": "Choice for {section}",
+      "keep": "Keep",
+      "replace": "Replace",
+      "merge": "Add what's new",
+      "same": "Identical",
+      "items": "{count, plural, =0 {empty} one {# item} other {# items}}",
+      "newItems": "{count, plural, =0 {nothing new} one {# new} other {# new}}",
+      "apply": "Apply to master profile",
+      "applied": "Master profile updated",
+      "notParsed": "This document has no extracted profile yet.",
+      "alreadyMerged": "This CV is already part of your master profile. You can still take sections from it.",
+      "banner": "New CV analysed: compare it with your master profile.",
+      "open": "Compare",
+      "empty": "empty"
+    }
   }
 }
