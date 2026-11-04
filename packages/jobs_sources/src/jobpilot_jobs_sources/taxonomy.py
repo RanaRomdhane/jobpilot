@@ -70,19 +70,20 @@ DOMAINS: tuple[Domain, ...] = (
 DOMAIN_KEYS = tuple(d.key for d in DOMAINS)
 
 # concrete skills and tools a posting can ask for (used to list what a profile is missing)
+# written as shown on the dashboard (matching folds case and punctuation anyway)
 TECH_VOCAB: tuple[str, ...] = (
-    "python", "java", "javascript", "typescript", "c++", "c#", "go", "rust", "scala", "kotlin",
-    "php", "ruby", "sql", "nosql", "r", "matlab", "bash",
-    "django", "flask", "fastapi", "spring", "node.js", "express", ".net", "laravel",
-    "react", "next.js", "angular", "vue.js", "tailwind", "graphql", "rest api",
-    "pytorch", "tensorflow", "keras", "scikit-learn", "xgboost", "pandas", "numpy",
-    "hugging face", "transformers", "langchain", "llamaindex", "rag", "llm", "nlp",
-    "computer vision", "opencv", "deep learning", "machine learning", "mlops", "mlflow",
-    "spark", "airflow", "dbt", "kafka", "hadoop", "databricks", "snowflake", "bigquery",
-    "power bi", "tableau", "looker", "excel", "etl",
-    "postgresql", "mysql", "mongodb", "redis", "elasticsearch", "oracle",
-    "docker", "kubernetes", "terraform", "ansible", "aws", "azure", "gcp", "linux", "git",
-    "ci/cd", "jenkins", "github actions",
+    "Python", "Java", "JavaScript", "TypeScript", "C++", "C#", "Go", "Rust", "Scala", "Kotlin",
+    "PHP", "Ruby", "SQL", "NoSQL", "R", "MATLAB", "Bash",
+    "Django", "Flask", "FastAPI", "Spring", "Node.js", "Express", ".NET", "Laravel",
+    "React", "Next.js", "Angular", "Vue.js", "Tailwind", "GraphQL", "REST API",
+    "PyTorch", "TensorFlow", "Keras", "scikit-learn", "XGBoost", "pandas", "NumPy",
+    "Hugging Face", "Transformers", "LangChain", "LlamaIndex", "RAG", "LLM", "NLP",
+    "Computer Vision", "OpenCV", "Deep Learning", "Machine Learning", "MLOps", "MLflow",
+    "Spark", "Airflow", "dbt", "Kafka", "Hadoop", "Databricks", "Snowflake", "BigQuery",
+    "Power BI", "Tableau", "Looker", "Excel", "ETL",
+    "PostgreSQL", "MySQL", "MongoDB", "Redis", "Elasticsearch", "Oracle",
+    "Docker", "Kubernetes", "Terraform", "Ansible", "AWS", "Azure", "GCP", "Linux", "Git",
+    "CI/CD", "Jenkins", "GitHub Actions",
 )  # fmt: skip
 
 
@@ -121,11 +122,22 @@ _SENIORITY: list[tuple[re.Pattern[str], Seniority]] = [
 _YEARS = re.compile(r"\b(\d{1,2})\s*(?:\+|a|-\s*\d+)?\s*(?:ans|years|yrs|annees)\b")
 
 
+# "We're looking for a Staff/Senior ML Engineer": the level stated in the hiring sentence
+_HIRING = re.compile(
+    r"\b(?:looking for|seeking|hiring|recherchons|recrutons|recrute)\s+(?:an?|un|une|des)?\s*"
+    r"([a-z/ -]{0,40})"
+)
+
+
 def detect_seniority(title: str, body: str) -> Seniority | None:
     t = fold(title)
     for pattern, level in _SENIORITY:
         if pattern.search(t):
             return level
+    for phrase in _HIRING.findall(fold(body)[:1500]):
+        for pattern, level in _SENIORITY:
+            if level != "intern" and pattern.search(phrase):
+                return level
     years = [int(y) for y in _YEARS.findall(fold(body)[:4000]) if int(y) <= 20]
     if years:
         y = min(years)

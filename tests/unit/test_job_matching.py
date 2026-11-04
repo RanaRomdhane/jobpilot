@@ -158,7 +158,7 @@ def test_profile_terms_and_keyword_fit() -> None:
         "AI engineer: Python, FastAPI, Kubernetes and AWS required", terms, hay
     )
     assert matched == ["Python", "FastAPI"]
-    assert set(missing) == {"kubernetes", "aws"} and score == 0.5
+    assert set(missing) == {"Kubernetes", "AWS"} and score == 0.5
     assert vector_fit(0.79) == 0 and vector_fit(0.92) == 1 and 0 < vector_fit(0.86) < 1
 
 
@@ -214,3 +214,18 @@ def test_onnxruntime_telemetry_is_disabled_before_import() -> None:
     import jobpilot_worker.embeddings  # noqa: F401  (sets the variable at import)
 
     assert os.environ.get("ORT_DISABLE_TELEMETRY") == "1"
+
+
+def test_level_stated_in_the_hiring_sentence() -> None:
+    body = "We're looking for a Staff/Senior Machine Learning Engineer with deep expertise."
+    assert detect_seniority("Machine Learning Engineer - IV", body) == "lead"  # Staff > Senior
+    fr = "Nous recherchons un développeur junior motivé pour rejoindre l'équipe."
+    assert detect_seniority("Développeur Python", fr) == "junior"
+    assert detect_seniority("Engineer", "You will work with senior engineers.") is None
+
+
+def test_rationale_addresses_the_user_without_gender() -> None:
+    from jobpilot_agents.job_matcher import instructions
+
+    text = instructions("fr")
+    assert '"vous"' in text and "never assume a gender" in text
