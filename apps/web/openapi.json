@@ -320,6 +320,45 @@
         "title": "ApplicationDetail",
         "type": "object"
       },
+      "ApplicationDocuments": {
+        "properties": {
+          "application_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Application Id"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentOut"
+            },
+            "title": "Documents",
+            "type": "array"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApplicationStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "application_id",
+          "status",
+          "documents"
+        ],
+        "title": "ApplicationDocuments",
+        "type": "object"
+      },
       "ApplicationOut": {
         "properties": {
           "applied_at": {
@@ -732,6 +771,40 @@
         "title": "Body_upload_resume_api_v1_resume_uploads_post",
         "type": "object"
       },
+      "Body_upload_template_api_v1_templates_post": {
+        "properties": {
+          "files": {
+            "description": ".tex/.cls/.sty/images/fonts or a .zip",
+            "items": {
+              "contentMediaType": "application/octet-stream",
+              "type": "string"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/TemplateKind"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "required": [
+          "kind",
+          "files"
+        ],
+        "title": "Body_upload_template_api_v1_templates_post",
+        "type": "object"
+      },
       "Bullet": {
         "properties": {
           "id": {
@@ -861,6 +934,15 @@
         "title": "CompanyOut",
         "type": "object"
       },
+      "CompileStatus": {
+        "enum": [
+          "pending",
+          "success",
+          "failed"
+        ],
+        "title": "CompileStatus",
+        "type": "string"
+      },
       "ComponentStatus": {
         "properties": {
           "critical": {
@@ -904,6 +986,46 @@
           "critical"
         ],
         "title": "ComponentStatus",
+        "type": "object"
+      },
+      "ConfirmIn": {
+        "properties": {
+          "headings": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headings"
+          },
+          "make_default": {
+            "default": true,
+            "title": "Make Default",
+            "type": "boolean"
+          },
+          "page_budget": {
+            "default": 1,
+            "maximum": 4.0,
+            "minimum": 1.0,
+            "title": "Page Budget",
+            "type": "integer"
+          },
+          "remove_page_breaks": {
+            "default": false,
+            "title": "Remove Page Breaks",
+            "type": "boolean"
+          }
+        },
+        "title": "ConfirmIn",
         "type": "object"
       },
       "Contact": {
@@ -958,6 +1080,261 @@
           }
         },
         "title": "Contact",
+        "type": "object"
+      },
+      "DocumentDetail": {
+        "properties": {
+          "application_id": {
+            "title": "Application Id",
+            "type": "integer"
+          },
+          "ats_after": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ats After"
+          },
+          "ats_before": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ats Before"
+          },
+          "compile_status": {
+            "$ref": "#/components/schemas/CompileStatus"
+          },
+          "content": {
+            "additionalProperties": true,
+            "title": "Content",
+            "type": "object"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "file_name": {
+            "title": "File Name",
+            "type": "string"
+          },
+          "findings": {
+            "title": "Findings",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DocumentKind"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "application_id",
+          "kind",
+          "version",
+          "template_id",
+          "compile_status",
+          "page_count",
+          "created_at",
+          "language",
+          "error",
+          "findings",
+          "ats_before",
+          "ats_after",
+          "content",
+          "errors",
+          "file_name"
+        ],
+        "title": "DocumentDetail",
+        "type": "object"
+      },
+      "DocumentKind": {
+        "enum": [
+          "cv",
+          "cover_letter"
+        ],
+        "title": "DocumentKind",
+        "type": "string"
+      },
+      "DocumentOut": {
+        "properties": {
+          "application_id": {
+            "title": "Application Id",
+            "type": "integer"
+          },
+          "ats_after": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ats After"
+          },
+          "ats_before": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ats Before"
+          },
+          "compile_status": {
+            "$ref": "#/components/schemas/CompileStatus"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "findings": {
+            "title": "Findings",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DocumentKind"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Id"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "application_id",
+          "kind",
+          "version",
+          "template_id",
+          "compile_status",
+          "page_count",
+          "created_at",
+          "language",
+          "error",
+          "findings",
+          "ats_before",
+          "ats_after"
+        ],
+        "title": "DocumentOut",
         "type": "object"
       },
       "Education": {
@@ -1725,6 +2102,48 @@
           "count"
         ],
         "title": "FunnelStep",
+        "type": "object"
+      },
+      "GenerateIn": {
+        "properties": {
+          "confirm_flagged": {
+            "default": false,
+            "title": "Confirm Flagged",
+            "type": "boolean"
+          },
+          "job_id": {
+            "title": "Job Id",
+            "type": "integer"
+          },
+          "locale": {
+            "default": "fr",
+            "enum": [
+              "fr",
+              "en"
+            ],
+            "title": "Locale",
+            "type": "string"
+          },
+          "tone": {
+            "anyOf": [
+              {
+                "enum": [
+                  "formal",
+                  "modern"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tone"
+          }
+        },
+        "required": [
+          "job_id"
+        ],
+        "title": "GenerateIn",
         "type": "object"
       },
       "GmailScope": {
@@ -3215,6 +3634,44 @@
         "title": "Preferences",
         "type": "object"
       },
+      "PreviewIn": {
+        "properties": {
+          "use": {
+            "default": "master",
+            "enum": [
+              "master",
+              "extracted"
+            ],
+            "title": "Use",
+            "type": "string"
+          }
+        },
+        "title": "PreviewIn",
+        "type": "object"
+      },
+      "ProfileProposal": {
+        "properties": {
+          "current": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResumeProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "proposed": {
+            "$ref": "#/components/schemas/ResumeProfile"
+          }
+        },
+        "required": [
+          "current",
+          "proposed"
+        ],
+        "title": "ProfileProposal",
+        "type": "object"
+      },
       "Project": {
         "properties": {
           "bullets": {
@@ -4051,6 +4508,20 @@
         "title": "SkillGroup",
         "type": "object"
       },
+      "SourceIn": {
+        "properties": {
+          "source": {
+            "maxLength": 200000,
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source"
+        ],
+        "title": "SourceIn",
+        "type": "object"
+      },
       "SourceStatus": {
         "properties": {
           "attribution": {
@@ -4494,6 +4965,262 @@
         "title": "Taxonomy",
         "type": "object"
       },
+      "TemplateDetail": {
+        "properties": {
+          "converted": {
+            "title": "Converted",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "engine": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Engine"
+          },
+          "files": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/TemplateKind"
+          },
+          "main": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Main"
+          },
+          "mapping": {
+            "additionalProperties": true,
+            "title": "Mapping",
+            "type": "object"
+          },
+          "mapping_confirmed": {
+            "title": "Mapping Confirmed",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "original": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original"
+          },
+          "page_budget": {
+            "title": "Page Budget",
+            "type": "integer"
+          },
+          "placeholders": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Placeholders",
+            "type": "array"
+          },
+          "preview": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "is_default",
+          "mapping_confirmed",
+          "page_budget",
+          "placeholders",
+          "created_at",
+          "converted",
+          "engine",
+          "main",
+          "files",
+          "preview",
+          "warnings",
+          "mapping",
+          "source",
+          "original"
+        ],
+        "title": "TemplateDetail",
+        "type": "object"
+      },
+      "TemplateKind": {
+        "enum": [
+          "cv",
+          "cover_letter"
+        ],
+        "title": "TemplateKind",
+        "type": "string"
+      },
+      "TemplateOut": {
+        "properties": {
+          "converted": {
+            "title": "Converted",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "engine": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Engine"
+          },
+          "files": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_default": {
+            "title": "Is Default",
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/TemplateKind"
+          },
+          "main": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Main"
+          },
+          "mapping_confirmed": {
+            "title": "Mapping Confirmed",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "page_budget": {
+            "title": "Page Budget",
+            "type": "integer"
+          },
+          "placeholders": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Placeholders",
+            "type": "array"
+          },
+          "preview": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "is_default",
+          "mapping_confirmed",
+          "page_budget",
+          "placeholders",
+          "created_at",
+          "converted",
+          "engine",
+          "main",
+          "files",
+          "preview",
+          "warnings"
+        ],
+        "title": "TemplateOut",
+        "type": "object"
+      },
       "UpcomingInterview": {
         "properties": {
           "application_id": {
@@ -4528,23 +5255,6 @@
           "interview_at"
         ],
         "title": "UpcomingInterview",
-        "type": "object"
-      },
-      "UploadResult": {
-        "properties": {
-          "resume": {
-            "$ref": "#/components/schemas/ResumeUploadOut"
-          },
-          "task_id": {
-            "title": "Task Id",
-            "type": "string"
-          }
-        },
-        "required": [
-          "resume",
-          "task_id"
-        ],
-        "title": "UploadResult",
         "type": "object"
       },
       "ValidationError": {
@@ -4595,6 +5305,40 @@
         ],
         "title": "WorkMode",
         "type": "string"
+      },
+      "jobpilot_api__routers__resume__UploadResult": {
+        "properties": {
+          "resume": {
+            "$ref": "#/components/schemas/ResumeUploadOut"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "resume",
+          "task_id"
+        ],
+        "title": "UploadResult",
+        "type": "object"
+      },
+      "jobpilot_api__routers__templates__UploadResult": {
+        "properties": {
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "template": {
+            "$ref": "#/components/schemas/TemplateOut"
+          }
+        },
+        "required": [
+          "template",
+          "task_id"
+        ],
+        "title": "UploadResult",
+        "type": "object"
       }
     }
   },
@@ -5159,6 +5903,166 @@
         "summary": "Session Info",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/documents/by-job/{job_id}": {
+      "get": {
+        "operationId": "for_job_api_v1_documents_by_job__job_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationDocuments"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "For Job",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/v1/documents/generate": {
+      "post": {
+        "operationId": "generate_api_v1_documents_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStarted"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/v1/documents/{document_id}": {
+      "get": {
+        "operationId": "get_document_api_v1_documents__document_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "title": "Document Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Document",
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/v1/documents/{document_id}/pdf": {
+      "get": {
+        "operationId": "document_pdf_api_v1_documents__document_id__pdf_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "required": true,
+            "schema": {
+              "title": "Document Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Pdf",
+        "tags": [
+          "documents"
         ]
       }
     },
@@ -6031,7 +6935,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UploadResult"
+                  "$ref": "#/components/schemas/jobpilot_api__routers__resume__UploadResult"
                 }
               }
             },
@@ -6816,6 +7720,424 @@
         "summary": "Stream task progress as SSE until it finishes",
         "tags": [
           "tasks"
+        ]
+      }
+    },
+    "/api/v1/templates": {
+      "get": {
+        "operationId": "list_templates_api_v1_templates_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TemplateOut"
+                  },
+                  "title": "Response List Templates Api V1 Templates Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Templates",
+        "tags": [
+          "templates"
+        ]
+      },
+      "post": {
+        "description": "Store the files, then convert the main .tex into a template in the worker.",
+        "operationId": "upload_template_api_v1_templates_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_template_api_v1_templates_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/jobpilot_api__routers__templates__UploadResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Template",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}": {
+      "delete": {
+        "operationId": "delete_template_api_v1_templates__template_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "title": "Template Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Template",
+        "tags": [
+          "templates"
+        ]
+      },
+      "get": {
+        "operationId": "get_template_api_v1_templates__template_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "title": "Template Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Template",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/confirm": {
+      "post": {
+        "description": "You checked the mapping and the preview: the template may now be used.",
+        "operationId": "confirm_api_v1_templates__template_id__confirm_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "title": "Template Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Confirm",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/convert": {
+      "post": {
+        "operationId": "reconvert_api_v1_templates__template_id__convert_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "title": "Template Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStarted"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reconvert",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/preview": {
+      "post": {
+        "operationId": "preview_api_v1_templates__template_id__preview_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "title": "Template Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStarted"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/preview.pdf": {
+      "get": {
+        "operationId": "preview_pdf_api_v1_templates__template_id__preview_pdf_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "title": "Template Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Pdf",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/profile-proposal": {
+      "get": {
+        "description": "The master profile rebuilt from the CV template's own content, keeping the master's ids.\n\nNothing is saved here: the CV page shows the diff, and you save it as the master yourself.",
+        "operationId": "profile_proposal_api_v1_templates__template_id__profile_proposal_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "title": "Template Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileProposal"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Profile Proposal",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{template_id}/source": {
+      "put": {
+        "description": "Your own edit of the Jinja template: checked for syntax; the confirmation is cleared.",
+        "operationId": "save_source_api_v1_templates__template_id__source_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "title": "Template Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Source",
+        "tags": [
+          "templates"
         ]
       }
     }

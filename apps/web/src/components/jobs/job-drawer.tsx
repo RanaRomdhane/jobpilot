@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { toast } from "sonner";
 
 import { ScorePill } from "@/components/jobs/job-card";
+import { JobDocuments } from "@/components/documents/job-documents";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -16,7 +17,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { api, unwrap } from "@/lib/api/client";
 import { dateTime } from "@/lib/format";
 import { safeHref } from "@/lib/jobs";
@@ -241,18 +241,6 @@ export function JobDrawer({
                     </a>
                   </Button>
                 ) : null}
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span tabIndex={0}>
-                        <Button variant="outline" disabled>
-                          {td("prepare")}
-                        </Button>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>{td("prepareSoon")}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
               </div>
               {j.apply_email ? (
                 <p className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -260,6 +248,8 @@ export function JobDrawer({
                   {td("applyEmail", { email: j.apply_email })}
                 </p>
               ) : null}
+
+              <JobDocuments jobId={j.id} flagged={j.injection_flag} />
 
               <section aria-labelledby="job-description">
                 <h3 id="job-description" className="mb-2 text-sm font-semibold">
