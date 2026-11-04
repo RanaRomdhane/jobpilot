@@ -25,6 +25,7 @@ from jobpilot_core.resume import ResumeProfile
 from jobpilot_jobs_sources.taxonomy import TECH_VOCAB
 from jobpilot_resume.ats import Haystack
 from jobpilot_security import InjectionDetector, clean_plain
+from jobpilot_worker.jobs import load_preferences
 from jobpilot_worker.resume import user_locale
 
 if TYPE_CHECKING:
@@ -83,6 +84,19 @@ def keyword_fit(
     return len(covered) / len(wanted), matched[:12], missing[:8]
 
 
+LEVELS = ("intern", "junior", "mid", "senior", "lead")
+LEVEL_PENALTY = 0.15  # per level above what you are looking for
+
+
+def level_factor(job_level: str | None, wanted: set[str]) -> float:
+    """Jobs above the levels you target score lower; unknown levels and lower ones are untouched."""
+    if not job_level or not wanted or job_level in wanted or job_level not in LEVELS:
+        return 1.0
+    top = max(LEVELS.index(w) for w in wanted if w in LEVELS)
+    gap = LEVELS.index(job_level) - top
+    return max(0.4, 1.0 - LEVEL_PENALTY * gap) if gap > 0 else 1.0
+
+
 def vector_fit(similarity: float) -> float:
     return max(0.0, min(1.0, (similarity - SIM_FLOOR) / SIM_SPAN))
 
@@ -117,6 +131,7 @@ async def score_jobs(
         qvec = (await embedder.aembed([profile_summary(profile)], "query"))[0].tolist()
         terms = profile_terms(profile)
         profile_hay = Haystack(profile_summary(profile, limit=20_000) + " " + " ".join(terms))
+        wanted_levels: set[str] = set((await load_preferences(session)).seniority)
 
         existing = JobMatch.__table__.alias("m")
         dist = JobPosting.embedding.cosine_distance(qvec)
@@ -153,6 +168,7 @@ async def score_jobs(
                 f"{job.title}\n{job.description or ''}", terms, profile_hay
             )
             pre = VECTOR_WEIGHT * v + (1 - VECTOR_WEIGHT) * k
+            pre *= level_factor(job.seniority, wanted_levels)
             m = matches.get(job.id) or JobMatch(job_id=job.id, resume_id=prow.id)
             m.vector_score = round(v, 4)
             m.keyword_score = round(k, 4)

@@ -92,10 +92,22 @@ _REGION_WORDS: list[tuple[re.Pattern[str], Region]] = [
     ),
     (re.compile(r"\b(europe|european union|eu|emea|eea|cet)\b"), Region.EUROPE),
     (
-        re.compile(r"\b(middle east|moyen-orient|gcc|gulf|golfe|mena)\b"),
+        re.compile(
+            r"\b(middle east|moyen-orient|gcc|gulf|golfe|mena|north africa|afrique du nord"
+            r"|maghreb)\b"
+        ),
         Region.MIDDLE_EAST,
     ),
-    (re.compile(r"\b(north america|americas|amerique du nord)\b"), Region.USA),
+    (re.compile(r"\b(north america|amerique du nord)\b"), Region.USA),
+    # zones we do not target: say so instead of letting them pass as "worldwide"
+    (
+        re.compile(
+            r"\b(latam|latin america|amerique latine|south america|brazil|bresil|mexico"
+            r"|argentina|colombia|chile|peru|apac|asia|asie|india|inde|philippines|pakistan"
+            r"|australia|new zealand|sub-saharan africa|nigeria|kenya|south africa)\b"
+        ),
+        Region.OTHER,
+    ),
 ]
 
 

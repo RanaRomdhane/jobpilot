@@ -16,6 +16,8 @@ x-python: &python
     REDIS_URL: redis://redis:6379/0
     STORAGE_DIR: /app/storage
     LATEX_SPOOL_DIR: /spool
+    # onnxruntime (local embeddings) ships Microsoft telemetry with HTTPS upload: off
+    ORT_DISABLE_TELEMETRY: "1"
   restart: unless-stopped
   security_opt: [no-new-privileges:true]
 

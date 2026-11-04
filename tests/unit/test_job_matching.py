@@ -181,3 +181,36 @@ async def test_rerank_agent_spotlights_postings_and_maps_refs() -> None:
     msgs = provider.calls[0]["messages"]
     assert 'kind="job_postings"' in msgs[1]["content"] and "SECURITY POLICY" in msgs[0]["content"]
     assert "Write rationale and missing_skills in French" in msgs[0]["content"]
+
+
+def test_jobs_above_the_target_level_score_lower() -> None:
+    from jobpilot_worker.matching import level_factor
+
+    junior = {"junior"}
+    assert level_factor("junior", junior) == 1.0
+    assert level_factor(None, junior) == 1.0  # unknown is not punished
+    assert level_factor("intern", junior) == 1.0
+    assert level_factor("mid", junior) == pytest.approx(0.85)
+    assert level_factor("senior", junior) == pytest.approx(0.70)
+    assert level_factor("lead", junior) == pytest.approx(0.55)
+    assert level_factor("senior", set()) == 1.0  # no preference, no penalty
+
+
+def test_zones_we_do_not_target_are_not_worldwide() -> None:
+    assert locate("Remote - LATAM") == (None, Region.OTHER)
+    assert locate("APAC only") == (None, Region.OTHER)
+    assert locate("Remote, North Africa") == (None, Region.MIDDLE_EAST)
+
+
+def test_internship_is_not_read_from_the_description() -> None:
+    assert detect_contract(None, "Senior Software Engineer", "You will mentor our interns.") is None
+    assert detect_contract(None, "Data Engineer", "Full-time position") == "permanent"
+    assert detect_contract("Stage", "Data", "") == "internship"
+
+
+def test_onnxruntime_telemetry_is_disabled_before_import() -> None:
+    import os
+
+    import jobpilot_worker.embeddings  # noqa: F401  (sets the variable at import)
+
+    assert os.environ.get("ORT_DISABLE_TELEMETRY") == "1"

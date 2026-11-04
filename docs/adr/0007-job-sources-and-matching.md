@@ -31,7 +31,8 @@ Docker memory and no GPU.
 4. **Local embeddings**: `intfloat/multilingual-e5-small` through ONNX Runtime (int8 export,
    384-d) instead of PyTorch: ~250 MB in memory instead of ~1.5 GB, FR/EN/AR, no API cost, no
    text leaves the machine. The files are fetched from a pinned Hugging Face revision and refused
-   unless their SHA-256 matches.
+   unless their SHA-256 matches. ONNX Runtime 1.31 embeds Microsoft telemetry with HTTPS upload;
+   it is switched off with `ORT_DISABLE_TELEMETRY=1` (compose and set before the import in code).
 5. **Matching in three stages**: cosine similarity (pgvector) and keyword overlap give every job a
    pre-score; the best `MATCH_RERANK_TOP_N` (10) unreviewed jobs then go to the JobMatcherAgent,
    a tool-less structured-output call (stricter than the read-only tools the brief allows), in

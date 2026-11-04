@@ -145,10 +145,15 @@ _CONTRACT: list[tuple[re.Pattern[str], Contract]] = [
 ]  # fmt: skip
 
 
+# words that also appear in ordinary job text ("mentor our interns", "temporary access"): trusted
+# only in the source's own label or the title, never in the description
+_BODY_UNSAFE: frozenset[Contract] = frozenset({"internship", "apprenticeship", "fixed_term"})
+
+
 def detect_contract(hint: str | None, title: str, body: str) -> Contract | None:
-    for text in (hint or "", title, fold(body)[:3000]):
+    for text, trusted in ((hint or "", True), (title, True), (body[:1500], False)):
         folded = fold(text)
         for pattern, contract in _CONTRACT:
-            if pattern.search(folded):
+            if (trusted or contract not in _BODY_UNSAFE) and pattern.search(folded):
                 return contract
     return None

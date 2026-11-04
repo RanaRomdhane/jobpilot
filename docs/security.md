@@ -134,7 +134,8 @@ only `http(s)` links and valid e-mails are kept, links open in a new tab with `n
 noreferrer`, and descriptions are rendered as text, never HTML. The injection heuristics run on
 every posting at ingestion; the guard model runs on each posting before the JobMatcherAgent (no
 tools) reads it, and flagged postings never reach the LLM. Feeds are parsed with `defusedxml`,
-responses are capped at 8 MB. Towards the sources: identifiable user agent, `robots.txt`
+responses are capped at 8 MB. The local embedding model is pinned and SHA-256-verified, and
+ONNX Runtime's built-in telemetry is disabled (`ORT_DISABLE_TELEMETRY=1`). Towards the sources: identifiable user agent, `robots.txt`
 (Protego), daily caps, pacing and caching; no login-walled pages, no LinkedIn/Indeed scraping.
 
 ## Residual risks

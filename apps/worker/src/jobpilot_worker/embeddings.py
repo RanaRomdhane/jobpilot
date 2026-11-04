@@ -11,11 +11,16 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
+import os
 from pathlib import Path
 from typing import Any, Literal, Protocol
 
 import httpx
 import numpy as np
+
+# onnxruntime ships Microsoft telemetry (with HTTPS upload) that starts at import time: must be
+# switched off before the import (also set in infra/docker-compose.yml)
+os.environ.setdefault("ORT_DISABLE_TELEMETRY", "1")
 
 log = logging.getLogger(__name__)
 
@@ -94,6 +99,7 @@ class Embedder:
             from tokenizers import Tokenizer
         except ImportError as exc:  # pragma: no cover - installed with the worker
             raise EmbeddingUnavailableError(str(exc)) from exc
+        ort.disable_telemetry_events()  # belt and braces, on top of ORT_DISABLE_TELEMETRY
         path = await ensure_model(model_dir, user_agent=user_agent)
         opts = ort.SessionOptions()
         opts.intra_op_num_threads = threads
