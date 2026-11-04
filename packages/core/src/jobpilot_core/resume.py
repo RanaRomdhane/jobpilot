@@ -299,6 +299,106 @@ def carry_ids(old: ResumeProfile, new: ResumeProfile, threshold: float = 0.6) ->
     return ensure_ids(out)
 
 
+def _words_of(text: str | None) -> set[str]:
+    return set(_norm(text).split())
+
+
+def _covered(part: str, whole: str, share: float = 0.9) -> bool:
+    """Is (almost) every word of `part` in `whole`? (a sentence lifted from a longer text)"""
+    words = _words_of(part)
+    return bool(words) and len(words & _words_of(whole)) / len(words) >= share
+
+
+def _join_split_parens(items: list[str]) -> list[str]:
+    """['Explainable AI (SHAP', 'Grad-CAM)'] -> ['Explainable AI (SHAP, Grad-CAM)']"""
+    out: list[str] = []
+    for item in items:
+        if out and out[-1].count("(") > out[-1].count(")"):
+            out[-1] = f"{out[-1]}, {item}"
+        else:
+            out.append(item)
+    return out
+
+
+def dedupe_profile(profile: ResumeProfile) -> ResumeProfile:
+    """Undo what a multi-pass parse duplicates (deterministic, keeps the fullest wording).
+
+    - education / certification entries describing the same thing are merged;
+    - an extra section that only repeats structured content (summary, experience bullets,
+      certifications, languages) is dropped, after its fuller wording, if any, replaced the
+      structured bullet's;
+    - skills split inside parentheses by the parser are joined back.
+    """
+    out = profile.model_copy(deep=True)
+
+    def same_education(a: Education, b: Education) -> bool:
+        ia, ib = _norm(a.institution), _norm(b.institution)
+        return (ia.startswith(ib) or ib.startswith(ia)) and (a.start, a.end) == (b.start, b.end)
+
+    edu: list[Education] = []
+    for e in out.education:
+        twin = next((x for x in edu if same_education(x, e)), None)
+        if twin is None:
+            edu.append(e)
+            continue
+        short, long_ = sorted((twin, e), key=lambda x: len(x.institution))
+        merged = short.model_copy()  # the clean name ("School"), not "School – City"
+        for f in ("degree", "field", "location", "grade"):
+            if not getattr(merged, f):
+                setattr(merged, f, getattr(long_, f))
+        if not merged.location and "–" in long_.institution:
+            merged.location = long_.institution.split("–", 1)[1].strip() or None
+        merged.details = merged.details or long_.details
+        edu[edu.index(twin)] = merged
+    out.education = edu
+
+    def cert_key(c: Certification) -> str:
+        name = c.name
+        if c.issuer and _norm(name).startswith(_norm(c.issuer)):
+            name = name.split(":", 1)[-1]
+        return _norm(name)
+
+    certs: list[Certification] = []
+    for c in out.certifications:
+        twin = next((x for x in certs if cert_key(x) == cert_key(c)), None)
+        if twin is None:
+            certs.append(c)
+            continue
+        keep = min((twin, c), key=lambda x: len(x.name)).model_copy()
+        keep.url = twin.url or c.url
+        keep.date = twin.date or c.date
+        certs[certs.index(twin)] = keep
+    out.certifications = certs
+
+    for g in out.skills:
+        g.skills = _join_split_parens(g.skills)
+
+    structured: list[Bullet] = [b for e in out.experiences for b in e.bullets] + [
+        b for p in out.projects for b in p.bullets
+    ]
+    other_texts = (
+        [out.summary or ""]
+        + [f"{c.issuer or ''}: {c.name}" for c in out.certifications]
+        + [f"{lg.name}: {lg.level or ''}" for lg in out.languages]
+    )
+
+    kept_sections: list[ExtraSection] = []
+    for sec in out.extra_sections:
+        duplicates = 0
+        for b in sec.bullets:
+            best = max(structured, key=lambda s: _similar(s.text, b.text), default=None)
+            if best is not None and _similar(best.text, b.text) >= 0.8:
+                duplicates += 1
+                if _words_of(b.text) > _words_of(best.text):  # the section kept more words
+                    best.text = b.text
+            elif any(_covered(b.text, t) for t in other_texts):
+                duplicates += 1
+        if not sec.bullets or duplicates / len(sec.bullets) < 0.7:
+            kept_sections.append(sec)
+    out.extra_sections = kept_sections
+    return out
+
+
 def all_bullets(profile: ResumeProfile) -> dict[str, str]:
     """Every bullet id -> text (the traceability index for tailoring)."""
     out: dict[str, str] = {}

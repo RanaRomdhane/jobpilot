@@ -237,3 +237,57 @@ def test_drop_order_and_page_fitting() -> None:
     )  # never an experience's first bullet
     cv = build_tailored(MASTER, v.plan, drop={"b_2", "b_4"})
     assert [b.id for b in cv.experiences[0].bullets] == ["b_1"] and cv.projects == []
+
+
+def test_dedupe_profile_undoes_overlapping_parse_passes() -> None:
+    from jobpilot_core.resume import dedupe_profile
+
+    messy = ResumeProfile.model_validate(
+        {
+            "summary": "ML engineer building NLP products, including React front ends, with Python.",
+            "experiences": [
+                {
+                    "id": "exp_1",
+                    "company": "Exemplia Labs",
+                    "title": "Intern",
+                    "bullets": [
+                        {"id": "b_1", "text": "Built an analytical dashboard and an ML engine"}
+                    ],
+                }
+            ],
+            "education": [
+                {"institution": "Exemplia School – Tunis", "degree": "MSc", "start": "2023-09"},
+                {"institution": "Exemplia School", "degree": "MSc", "start": "2023-09"},
+            ],
+            "certifications": [
+                {"name": "Deep Learning", "issuer": "Demo Institute"},
+                {
+                    "name": "Demo Institute: Deep Learning",
+                    "issuer": "Demo Institute",
+                    "url": "https://ex.com/c",
+                },
+            ],
+            "skills": [{"name": "AI", "skills": ["Explainable AI (SHAP", "t-SNE)", "BERT"]}],
+            "extra_sections": [
+                {"title": "Summary", "bullets": ["ML engineer building NLP products with Python."]},
+                {
+                    "title": "Experience – Intern",
+                    "bullets": ["Built a React analytical dashboard and an ML engine"],
+                },
+                {
+                    "title": "Technical Writing",
+                    "bullets": ["Author of an article in Demo magazine"],
+                },
+            ],
+        }
+    )
+    clean = dedupe_profile(messy)
+    assert [(e.institution, e.location) for e in clean.education] == [("Exemplia School", "Tunis")]
+    assert [(c.name, c.url) for c in clean.certifications] == [
+        ("Deep Learning", "https://ex.com/c")
+    ]
+    assert clean.skills[0].skills == ["Explainable AI (SHAP, t-SNE)", "BERT"]
+    assert [s.title for s in clean.extra_sections] == ["Technical Writing"]
+    # the fuller wording the duplicate section kept wins, under the original bullet id
+    assert clean.experiences[0].bullets[0].id == "b_1"
+    assert "React" in clean.experiences[0].bullets[0].text
