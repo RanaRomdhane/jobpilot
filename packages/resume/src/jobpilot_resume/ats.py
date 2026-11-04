@@ -170,14 +170,24 @@ def _has(needle: str, haystack: str) -> bool:
     return re.search(rf"(?<![a-z0-9+#]){re.escape(needle)}(?![a-z0-9+#])", haystack) is not None
 
 
+class Haystack:
+    """A text normalized once, for many keyword lookups (job matching checks dozens per job)."""
+
+    def __init__(self, text: str) -> None:
+        self.spaced = _norm_term(text)
+        self.joined = _norm_term(text, "")
+
+    def has(self, term: str) -> bool:
+        """Whole-word match after folding; "Node.js", "node js" and "NodeJS" are the same term."""
+        t = _norm_term(term)
+        if not t:
+            return False
+        compact = _norm_term(term, "").replace(" ", "")
+        return _has(t, self.spaced) or _has(compact, self.joined) or _has(compact, self.spaced)
+
+
 def keyword_present(term: str, text: str) -> bool:
-    """Whole-word match after folding; "Node.js", "node js" and "NodeJS" are the same term."""
-    t = _norm_term(term)
-    if not t:
-        return False
-    spaced, joined = _norm_term(text), _norm_term(text, "")
-    compact = _norm_term(term, "").replace(" ", "")
-    return _has(t, spaced) or _has(compact, joined) or _has(compact, spaced)
+    return Haystack(text).has(term)
 
 
 def keyword_coverage(text: str, keywords: list[JobKeyword]) -> dict[str, Any]:

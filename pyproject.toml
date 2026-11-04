@@ -57,6 +57,7 @@ ignore = ["S101"]  # asserts are fine in tests; production code uses explicit er
 "tests/**" = ["S105", "S106", "S311", "RUF001"]
 # CVs and dates use real typography (en dashes, bullets)
 "packages/resume/**" = ["RUF001"]
+"packages/jobs_sources/**" = ["RUF001"]
 "**/migrations/versions/*.py" = ["E501"]
 
 [tool.ruff.lint.isort]
@@ -79,7 +80,7 @@ explicit_package_bases = true
 exclude = ["apps/web/", "migrations/versions/"]
 
 [[tool.mypy.overrides]]
-module = ["arq.*", "fitz.*", "pymupdf.*", "docx.*", "fakeredis.*", "pgvector.*", "sse_starlette.*", "google_auth_oauthlib.*"]
+module = ["arq.*", "defusedxml.*", "protego.*", "onnxruntime.*", "fitz.*", "pymupdf.*", "docx.*", "fakeredis.*", "pgvector.*", "sse_starlette.*", "google_auth_oauthlib.*"]
 ignore_missing_imports = true
 
 # ---------------------------------------------------------------- pytest

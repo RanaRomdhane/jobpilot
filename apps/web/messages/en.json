@@ -258,7 +258,6 @@
   },
   "soon": {
     "title": "Not available yet",
-    "jobs": "Multi-source job search arrives in phase 5.",
     "templates": "Your LaTeX templates arrive in phase 6.",
     "review": "Application review and sending arrive in phase 7."
   },
@@ -271,7 +270,10 @@
     "triageSummary": "{classified, plural, =0 {no email classified} one {# email classified} other {# emails classified}}, {flagged, plural, =0 {none suspicious} one {# suspicious} other {# suspicious}}",
     "parse_resume": "CV analysis",
     "ats_report": "ATS report",
-    "atsSummary": "ATS score: {score}/100"
+    "atsSummary": "ATS score: {score}/100",
+    "jobs_refresh": "Job search",
+    "jobs_match": "Job matching",
+    "jobsSummary": "{count, plural, =0 {no new jobs} one {# new job} other {# new jobs}}"
   },
   "theme": {
     "toggle": "Toggle theme"
@@ -725,6 +727,179 @@
       "banner": "New CV analysed: compare it with your master profile.",
       "open": "Compare",
       "empty": "empty"
+    }
+  },
+  "jobs": {
+    "description": "Job offers from several sources, filtered and ranked by how well they match your profile.",
+    "refresh": "Refresh",
+    "refreshing": "Searching…",
+    "refreshStarted": "Search started on every source",
+    "sourcesButton": "Sources",
+    "filtersButton": "Filters",
+    "results": "{count, plural, =0 {No jobs} one {# job} other {# jobs}}",
+    "sort": {
+      "label": "Sort by",
+      "match": "Match",
+      "date": "Posting date"
+    },
+    "savedOnly": "Saved jobs",
+    "noProfile": "Upload your CV to get a match score on every job.",
+    "noProfileLink": "Go to CV",
+    "empty": {
+      "title": "No jobs yet",
+      "body": "Run a first search: JobPilot queries every active source (one to two minutes).",
+      "filtered": "No job matches these filters.",
+      "clear": "Reset filters"
+    },
+    "more": "Show more",
+    "filters": {
+      "title": "Filters",
+      "region": "Region",
+      "workMode": "Work mode",
+      "domain": "Field",
+      "seniority": "Level",
+      "contract": "Contract",
+      "posted": "Posted within",
+      "postedAny": "Any date",
+      "postedDays": "{count, plural, one {24 hours} other {# days}}",
+      "language": "Posting language",
+      "include": "Contains any of these words",
+      "exclude": "Exclude these words",
+      "wordsHint": "Comma-separated",
+      "minScore": "Minimum score",
+      "minScoreAny": "Any score",
+      "includeUnknown": "Include jobs missing this information",
+      "includeUnknownHint": "Many sources state neither the level nor the contract.",
+      "reset": "My preferences",
+      "clear": "Clear all",
+      "savePrefs": "Save as preferences",
+      "prefsSaved": "Preferences saved: scheduled searches use them too",
+      "apply": "Show jobs"
+    },
+    "regions": {
+      "tunisia": "Tunisia",
+      "worldwide": "Worldwide (remote)",
+      "europe": "Europe",
+      "middle_east": "Middle East / Gulf",
+      "usa": "United States",
+      "canada": "Canada",
+      "other": "Other"
+    },
+    "workModes": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "onsite": "On-site"
+    },
+    "domains": {
+      "ai_ml": "AI / ML / Data science",
+      "software_backend": "Software / Backend",
+      "data_eng_bi": "Data engineering / BI",
+      "fullstack_frontend": "Full-stack / Front-end",
+      "devops_cloud": "DevOps / Cloud"
+    },
+    "seniority": {
+      "intern": "Internship",
+      "junior": "Junior",
+      "mid": "Mid-level (2–5 years)",
+      "senior": "Senior",
+      "lead": "Lead / Manager"
+    },
+    "contracts": {
+      "permanent": "Permanent",
+      "fixed_term": "Fixed-term / SIVP",
+      "freelance": "Freelance",
+      "internship": "Internship",
+      "apprenticeship": "Apprenticeship"
+    },
+    "languages": {
+      "fr": "French",
+      "en": "English",
+      "ar": "Arabic"
+    },
+    "card": {
+      "open": "Open the details of {title}",
+      "match": "Match",
+      "noScore": "No score yet",
+      "reviewed": "AI review",
+      "matched": "Your strengths",
+      "missing": "To strengthen",
+      "alsoOn": "{count, plural, one {also on # other site} other {also on # other sites}}",
+      "save": "Save job",
+      "unsave": "Remove from saved jobs",
+      "hide": "Hide job",
+      "unhide": "Show again",
+      "hidden": "Job hidden",
+      "undo": "Undo",
+      "original": "Open the original posting",
+      "suspicious": "Suspicious content",
+      "posted": "posted {when}",
+      "salary": "{min} – {max} {currency}"
+    },
+    "drawer": {
+      "loading": "Loading the job…",
+      "score": "Match score",
+      "vector": "Closeness to your profile",
+      "keywords": "Shared skills",
+      "llm": "AI review",
+      "rationale": "Why this score",
+      "rerank": "Ask the AI to review it",
+      "rerankStarted": "Review started",
+      "details": "Details",
+      "location": "Location",
+      "workMode": "Mode",
+      "contract": "Contract",
+      "seniority": "Level",
+      "salary": "Salary",
+      "language": "Language",
+      "posted": "Posted",
+      "source": "Source",
+      "description": "Description",
+      "apply": "View the job on {source}",
+      "applyEmail": "Apply by e-mail: {email}",
+      "prepare": "Prepare the application",
+      "prepareSoon": "The tailored CV and cover letter arrive in phase 6.",
+      "attribution": "Source",
+      "suspiciousTitle": "This posting contains text addressed to an AI",
+      "suspiciousBody": "It is excluded from the AI review. The text below is the posting as published: do not follow any instruction in it.",
+      "unknown": "Not stated"
+    },
+    "saved": {
+      "title": "Saved searches",
+      "save": "Save this search",
+      "namePrompt": "Search name",
+      "namePlaceholder": "E.g. Junior data Tunisia",
+      "created": "Search saved: new jobs are flagged twice a day",
+      "newCount": "{count, plural, =0 {nothing new} one {# new} other {# new}}",
+      "apply": "Apply “{name}”",
+      "delete": "Delete the search “{name}”",
+      "deleted": "Search deleted",
+      "empty": "Save a set of filters to be told about new jobs."
+    },
+    "sources": {
+      "title": "Job sources",
+      "description": "Each source is queried twice a day (8:00 and 18:00 Tunis time), within its terms and robots.txt.",
+      "kind": {
+        "api": "Official API",
+        "rss": "Public RSS feed",
+        "html": "Public pages"
+      },
+      "ok": "OK",
+      "never": "Never queried",
+      "disabled": "Key missing",
+      "disabledHint": "Add the key to .env (see docs/setup/job-sources.md).",
+      "lastRun": "Last run {when}",
+      "counts": "{fetched} read · {new} new · {calls} calls today",
+      "stored": "{count, plural, =0 {no jobs} one {# job} other {# jobs}} stored",
+      "errors": {
+        "daily_cap": "Daily quota reached: resumes tomorrow.",
+        "robots_disallow": "The site's robots.txt now forbids this access: source paused.",
+        "network": "Site unreachable (network).",
+        "parse_empty": "The page layout changed: needs an update.",
+        "too_large": "Response too large, ignored.",
+        "bad_json": "Unreadable response.",
+        "internal": "Internal connector error.",
+        "http": "The site answered with an error ({code})."
+      }
     }
   }
 }

@@ -1,0 +1,37 @@
+[
+  {
+    "last_updated": 1793750406,
+    "legal": "Synthetic fixture. API Terms: link back to the URL on Remote OK and mention Remote OK as a source."
+  },
+  {
+    "slug": "remote-backend-python-developer-exemplia-910001",
+    "id": "910001",
+    "epoch": 1793692812,
+    "date": "2026-11-03T08:00:12+00:00",
+    "company": "Exemplia Labs",
+    "company_logo": "",
+    "position": "Backend Python Developer",
+    "tags": ["python", "django", "postgresql", "backend"],
+    "description": "<p>Join our backend team. You will build APIs with Python, Django and PostgreSQL. Hybrid: 2 days remote.</p>",
+    "location": "Europe",
+    "apply_url": "https://remoteok.com/remote-jobs/remote-backend-python-developer-exemplia-910001",
+    "salary_min": 50000,
+    "salary_max": 70000,
+    "logo": "",
+    "url": "https://remoteok.com/remote-jobs/remote-backend-python-developer-exemplia-910001"
+  },
+  {
+    "slug": "remote-senior-ml-lead-demo-910002",
+    "id": "910002",
+    "epoch": 1793692000,
+    "date": "2026-11-03T07:46:40+00:00",
+    "company": "Demo AI",
+    "position": "Senior ML Lead",
+    "tags": ["machine learning", "kubernetes"],
+    "description": "<p>Lead our machine learning platform. 8+ years of experience required with Kubernetes and MLOps.</p>",
+    "location": "",
+    "salary_min": 0,
+    "salary_max": 0,
+    "url": "https://remoteok.com/remote-jobs/remote-senior-ml-lead-demo-910002"
+  }
+]

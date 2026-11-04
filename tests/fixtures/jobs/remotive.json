@@ -1,0 +1,38 @@
+{
+  "00-warning": "Synthetic fixture modelled on the Remotive API response shape.",
+  "0-legal-notice": "Link back to the URL found on Remotive and mention Remotive as a source.",
+  "job-count": 3,
+  "total-job-count": 3,
+  "jobs": [
+    {
+      "id": 900001,
+      "url": "https://remotive.com/remote-jobs/software-dev/ml-engineer-900001",
+      "title": "Machine Learning Engineer (NLP)",
+      "company_name": "Exemplia Labs",
+      "company_logo": "https://remotive.com/job/900001/logo",
+      "category": "Software Development",
+      "tags": ["python", "pytorch", "nlp", "llm"],
+      "job_type": "full_time",
+      "publication_date": "2026-11-02T09:00:00",
+      "candidate_required_location": "Worldwide",
+      "salary": "$60k - $80k",
+      "description": "<p>We are looking for an ML engineer to build NLP and LLM features with Python and PyTorch. You will work with our team on RAG pipelines.</p><ul><li>2+ years of experience</li><li>Docker, FastAPI</li></ul>"
+    },
+    {
+      "id": 900002,
+      "url": "https://remotive.com/remote-jobs/sales/account-executive-900002",
+      "title": "Account Executive",
+      "company_name": "Demo Sales Co",
+      "category": "Sales",
+      "tags": ["sales"],
+      "job_type": "full_time",
+      "publication_date": "2026-11-01T12:00:00",
+      "candidate_required_location": "USA Only",
+      "salary": "",
+      "description": "<p>We are hiring an account executive for our team in the US.</p>"
+    },
+    {
+      "id": "not-a-valid-item"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss">
+  <channel>
+    <title>We Work Remotely: synthetic fixture</title>
+    <link>https://weworkremotely.com/categories/remote-programming-jobs.rss</link>
+    <item>
+      <title>Exemplia Labs: Data Engineer (Contract)</title>
+      <region>Anywhere in the World</region>
+      <category>Back-End Programming</category>
+      <description>&lt;p&gt;&lt;strong&gt;Headquarters:&lt;/strong&gt; Remote&lt;/p&gt;&lt;p&gt;Build ETL pipelines with Airflow, dbt and SQL. Freelance contract, 6 months.&lt;/p&gt;</description>
+      <pubDate>Mon, 02 Nov 2026 10:00:00 +0000</pubDate>
+      <guid>https://weworkremotely.com/remote-jobs/exemplia-labs-data-engineer-contract</guid>
+      <link>https://weworkremotely.com/remote-jobs/exemplia-labs-data-engineer-contract</link>
+    </item>
+    <item>
+      <title>Demo Studio: Full Stack Developer</title>
+      <region>USA Only</region>
+      <category>Full-Stack Programming</category>
+      <description>&lt;p&gt;React, Next.js and Node.js. US residents only.&lt;/p&gt;</description>
+      <pubDate>Sun, 01 Nov 2026 18:30:00 +0000</pubDate>
+      <guid>https://weworkremotely.com/remote-jobs/demo-studio-full-stack-developer</guid>
+      <link>https://weworkremotely.com/remote-jobs/demo-studio-full-stack-developer</link>
+    </item>
+  </channel>
+</rss>

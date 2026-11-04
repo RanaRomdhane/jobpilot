@@ -51,7 +51,7 @@ from jobpilot_core.enums import (
     WorkMode,
 )
 
-EMBEDDING_DIM = 768  # intfloat/multilingual-e5-base; confirmed in Phase 5
+EMBEDDING_DIM = 384  # intfloat/multilingual-e5-small (ONNX), chosen in Phase 5
 
 
 def enum_type(enum: type[StrEnum], name: str) -> SAEnum:
@@ -424,6 +424,8 @@ class JobPosting(Base):
     apply_url: Mapped[str | None] = mapped_column(String(2048))
     saved: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     hidden: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    # the same posting found on other boards (dedup_hash): [{"source", "url", "external_id"}]
+    also_on: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list, server_default="[]")
 
 
 class JobMatch(Base):
@@ -441,7 +443,9 @@ class JobMatch(Base):
     matched_keywords: Mapped[list[str]] = mapped_column(ARRAY(String), default=list)
     missing_keywords: Mapped[list[str]] = mapped_column(ARRAY(String), default=list)
     rationale: Mapped[str | None] = mapped_column(Text)
+    llm_score: Mapped[float | None] = mapped_column(Float)  # set once the job was re-ranked
     created_at: Mapped[datetime] = created_at_col()
+    updated_at: Mapped[datetime] = updated_at_col()
 
 
 class SavedSearch(Base):

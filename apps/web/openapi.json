@@ -1856,6 +1856,922 @@
         "title": "HealthResponse",
         "type": "object"
       },
+      "JobDetail": {
+        "properties": {
+          "also_on": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Also On",
+            "type": "array"
+          },
+          "apply_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Email"
+          },
+          "apply_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Url"
+          },
+          "attribution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attribution"
+          },
+          "company_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Name"
+          },
+          "contract_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Type"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain"
+          },
+          "hidden": {
+            "title": "Hidden",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "injection_flag": {
+            "title": "Injection Flag",
+            "type": "boolean"
+          },
+          "injection_reasons": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Injection Reasons",
+            "type": "array"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "location_raw": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Raw"
+          },
+          "match": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MatchOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "posted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Posted At"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Region"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "salary_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Currency"
+          },
+          "salary_max": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Max"
+          },
+          "salary_min": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Min"
+          },
+          "saved": {
+            "title": "Saved",
+            "type": "boolean"
+          },
+          "scraped_at": {
+            "format": "date-time",
+            "title": "Scraped At",
+            "type": "string"
+          },
+          "seniority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seniority"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "source_name": {
+            "title": "Source Name",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "work_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorkMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "source_name",
+          "url",
+          "title",
+          "company_name",
+          "location_raw",
+          "country",
+          "region",
+          "work_mode",
+          "domain",
+          "seniority",
+          "contract_type",
+          "salary_min",
+          "salary_max",
+          "salary_currency",
+          "language",
+          "posted_at",
+          "scraped_at",
+          "saved",
+          "hidden",
+          "injection_flag",
+          "also_on",
+          "apply_url",
+          "match",
+          "description",
+          "apply_email",
+          "injection_reasons",
+          "attribution"
+        ],
+        "title": "JobDetail",
+        "type": "object"
+      },
+      "JobFilters-Input": {
+        "properties": {
+          "contracts": {
+            "items": {
+              "enum": [
+                "permanent",
+                "fixed_term",
+                "freelance",
+                "internship",
+                "apprenticeship"
+              ],
+              "type": "string"
+            },
+            "title": "Contracts",
+            "type": "array"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "title": "Countries",
+            "type": "array"
+          },
+          "domains": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Domains",
+            "type": "array"
+          },
+          "exclude": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Exclude",
+            "type": "array"
+          },
+          "include": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Include",
+            "type": "array"
+          },
+          "include_unknown": {
+            "default": true,
+            "title": "Include Unknown",
+            "type": "boolean"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Languages",
+            "type": "array"
+          },
+          "min_score": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Score"
+          },
+          "posted_within_days": {
+            "anyOf": [
+              {
+                "maximum": 180.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Posted Within Days"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/Region"
+            },
+            "title": "Regions",
+            "type": "array"
+          },
+          "salary_min": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Min"
+          },
+          "seniority": {
+            "items": {
+              "enum": [
+                "intern",
+                "junior",
+                "mid",
+                "senior",
+                "lead"
+              ],
+              "type": "string"
+            },
+            "title": "Seniority",
+            "type": "array"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Sources",
+            "type": "array"
+          },
+          "work_modes": {
+            "items": {
+              "$ref": "#/components/schemas/WorkMode"
+            },
+            "title": "Work Modes",
+            "type": "array"
+          }
+        },
+        "title": "JobFilters",
+        "type": "object"
+      },
+      "JobFilters-Output": {
+        "properties": {
+          "contracts": {
+            "items": {
+              "enum": [
+                "permanent",
+                "fixed_term",
+                "freelance",
+                "internship",
+                "apprenticeship"
+              ],
+              "type": "string"
+            },
+            "title": "Contracts",
+            "type": "array"
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 30,
+            "title": "Countries",
+            "type": "array"
+          },
+          "domains": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Domains",
+            "type": "array"
+          },
+          "exclude": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Exclude",
+            "type": "array"
+          },
+          "include": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Include",
+            "type": "array"
+          },
+          "include_unknown": {
+            "default": true,
+            "title": "Include Unknown",
+            "type": "boolean"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Languages",
+            "type": "array"
+          },
+          "min_score": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Score"
+          },
+          "posted_within_days": {
+            "anyOf": [
+              {
+                "maximum": 180.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Posted Within Days"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/Region"
+            },
+            "title": "Regions",
+            "type": "array"
+          },
+          "salary_min": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Min"
+          },
+          "seniority": {
+            "items": {
+              "enum": [
+                "intern",
+                "junior",
+                "mid",
+                "senior",
+                "lead"
+              ],
+              "type": "string"
+            },
+            "title": "Seniority",
+            "type": "array"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Sources",
+            "type": "array"
+          },
+          "work_modes": {
+            "items": {
+              "$ref": "#/components/schemas/WorkMode"
+            },
+            "title": "Work Modes",
+            "type": "array"
+          }
+        },
+        "title": "JobFilters",
+        "type": "object"
+      },
+      "JobFlags": {
+        "properties": {
+          "hidden": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hidden"
+          },
+          "saved": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Saved"
+          }
+        },
+        "title": "JobFlags",
+        "type": "object"
+      },
+      "JobOut": {
+        "properties": {
+          "also_on": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Also On",
+            "type": "array"
+          },
+          "apply_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Url"
+          },
+          "company_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company Name"
+          },
+          "contract_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Type"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain"
+          },
+          "hidden": {
+            "title": "Hidden",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "injection_flag": {
+            "title": "Injection Flag",
+            "type": "boolean"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "location_raw": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location Raw"
+          },
+          "match": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MatchOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "posted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Posted At"
+          },
+          "region": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Region"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "salary_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Currency"
+          },
+          "salary_max": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Max"
+          },
+          "salary_min": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Min"
+          },
+          "saved": {
+            "title": "Saved",
+            "type": "boolean"
+          },
+          "scraped_at": {
+            "format": "date-time",
+            "title": "Scraped At",
+            "type": "string"
+          },
+          "seniority": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seniority"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "source_name": {
+            "title": "Source Name",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "work_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorkMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "source_name",
+          "url",
+          "title",
+          "company_name",
+          "location_raw",
+          "country",
+          "region",
+          "work_mode",
+          "domain",
+          "seniority",
+          "contract_type",
+          "salary_min",
+          "salary_max",
+          "salary_currency",
+          "language",
+          "posted_at",
+          "scraped_at",
+          "saved",
+          "hidden",
+          "injection_flag",
+          "also_on",
+          "apply_url",
+          "match"
+        ],
+        "title": "JobOut",
+        "type": "object"
+      },
+      "JobPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/JobOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "profile_ready": {
+            "title": "Profile Ready",
+            "type": "boolean"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "profile_ready"
+        ],
+        "title": "JobPage",
+        "type": "object"
+      },
+      "JobSearch": {
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/JobFilters-Input"
+          },
+          "include_hidden": {
+            "default": false,
+            "title": "Include Hidden",
+            "type": "boolean"
+          },
+          "limit": {
+            "default": 30,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Offset",
+            "type": "integer"
+          },
+          "saved_only": {
+            "default": false,
+            "title": "Saved Only",
+            "type": "boolean"
+          },
+          "sort": {
+            "default": "match",
+            "enum": [
+              "match",
+              "date"
+            ],
+            "title": "Sort",
+            "type": "string"
+          }
+        },
+        "title": "JobSearch",
+        "type": "object"
+      },
       "Kpis": {
         "properties": {
           "applications_sent": {
@@ -2119,6 +3035,83 @@
         "title": "MasterOut",
         "type": "object"
       },
+      "MatchOut": {
+        "properties": {
+          "keyword_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keyword Score"
+          },
+          "llm_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Llm Score"
+          },
+          "matched_keywords": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Matched Keywords",
+            "type": "array"
+          },
+          "missing_keywords": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Keywords",
+            "type": "array"
+          },
+          "rationale": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rationale"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          },
+          "vector_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vector Score"
+          }
+        },
+        "required": [
+          "score",
+          "vector_score",
+          "keyword_score",
+          "llm_score",
+          "matched_keywords",
+          "missing_keywords",
+          "rationale"
+        ],
+        "title": "MatchOut",
+        "type": "object"
+      },
       "Overview": {
         "properties": {
           "activity": {
@@ -2324,6 +3317,73 @@
           "category"
         ],
         "title": "Reclassify",
+        "type": "object"
+      },
+      "RefreshIn": {
+        "properties": {
+          "locale": {
+            "anyOf": [
+              {
+                "enum": [
+                  "fr",
+                  "en"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locale"
+          }
+        },
+        "title": "RefreshIn",
+        "type": "object"
+      },
+      "Region": {
+        "enum": [
+          "tunisia",
+          "middle_east",
+          "europe",
+          "usa",
+          "canada",
+          "worldwide",
+          "other"
+        ],
+        "title": "Region",
+        "type": "string"
+      },
+      "RerankIn": {
+        "properties": {
+          "job_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Job Ids",
+            "type": "array"
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "enum": [
+                  "fr",
+                  "en"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locale"
+          }
+        },
+        "required": [
+          "job_ids"
+        ],
+        "title": "RerankIn",
         "type": "object"
       },
       "ResumeProfile": {
@@ -2738,6 +3798,81 @@
         "title": "ResumeUploadOut",
         "type": "object"
       },
+      "SavedSearchIn": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/JobFilters-Input"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "filters"
+        ],
+        "title": "SavedSearchIn",
+        "type": "object"
+      },
+      "SavedSearchOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "filters": {
+            "$ref": "#/components/schemas/JobFilters-Output"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "last_run_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Run At"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "new_match_count": {
+            "title": "New Match Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "filters",
+          "enabled",
+          "last_run_at",
+          "new_match_count",
+          "created_at"
+        ],
+        "title": "SavedSearchOut",
+        "type": "object"
+      },
       "ScopeStatus": {
         "properties": {
           "account_email": {
@@ -2914,6 +4049,82 @@
           "name"
         ],
         "title": "SkillGroup",
+        "type": "object"
+      },
+      "SourceStatus": {
+        "properties": {
+          "attribution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attribution"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "homepage": {
+            "title": "Homepage",
+            "type": "string"
+          },
+          "job_count": {
+            "title": "Job Count",
+            "type": "integer"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "last_run": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Run"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/Region"
+            },
+            "title": "Regions",
+            "type": "array"
+          },
+          "requires_key": {
+            "title": "Requires Key",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "display_name",
+          "homepage",
+          "kind",
+          "requires_key",
+          "enabled",
+          "regions",
+          "attribution",
+          "last_run",
+          "job_count"
+        ],
+        "title": "SourceStatus",
         "type": "object"
       },
       "StatusChange": {
@@ -3235,6 +4446,54 @@
         "title": "TaskStatus",
         "type": "string"
       },
+      "Taxonomy": {
+        "properties": {
+          "contracts": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Contracts",
+            "type": "array"
+          },
+          "domains": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Domains",
+            "type": "array"
+          },
+          "regions": {
+            "items": {
+              "$ref": "#/components/schemas/Region"
+            },
+            "title": "Regions",
+            "type": "array"
+          },
+          "seniority": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Seniority",
+            "type": "array"
+          },
+          "work_modes": {
+            "items": {
+              "$ref": "#/components/schemas/WorkMode"
+            },
+            "title": "Work Modes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "domains",
+          "regions",
+          "work_modes",
+          "seniority",
+          "contracts"
+        ],
+        "title": "Taxonomy",
+        "type": "object"
+      },
       "UpcomingInterview": {
         "properties": {
           "application_id": {
@@ -3327,6 +4586,15 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "WorkMode": {
+        "enum": [
+          "remote",
+          "hybrid",
+          "onsite"
+        ],
+        "title": "WorkMode",
+        "type": "string"
       }
     }
   },
@@ -4311,6 +5579,327 @@
         ]
       }
     },
+    "/api/v1/jobs/preferences": {
+      "get": {
+        "operationId": "get_preferences_api_v1_jobs_preferences_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobFilters-Output"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Preferences",
+        "tags": [
+          "jobs"
+        ]
+      },
+      "put": {
+        "operationId": "save_preferences_api_v1_jobs_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobFilters-Input"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobFilters-Output"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Save Preferences",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/jobs/refresh": {
+      "post": {
+        "operationId": "refresh_api_v1_jobs_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStarted"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Refresh",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/jobs/rerank": {
+      "post": {
+        "operationId": "rerank_api_v1_jobs_rerank_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RerankIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStarted"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rerank",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/jobs/search": {
+      "post": {
+        "operationId": "search_jobs_api_v1_jobs_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobSearch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Search Jobs",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/jobs/sources": {
+      "get": {
+        "operationId": "sources_api_v1_jobs_sources_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SourceStatus"
+                  },
+                  "title": "Response Sources Api V1 Jobs Sources Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Sources",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/jobs/taxonomy": {
+      "get": {
+        "operationId": "taxonomy_api_v1_jobs_taxonomy_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Taxonomy"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Taxonomy",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/jobs/{job_id}": {
+      "get": {
+        "operationId": "get_job_api_v1_jobs__job_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Job",
+        "tags": [
+          "jobs"
+        ]
+      },
+      "patch": {
+        "operationId": "flag_job_api_v1_jobs__job_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobFlags"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Flag Job",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
     "/api/v1/overview": {
       "get": {
         "operationId": "overview_api_v1_overview_get",
@@ -4636,6 +6225,197 @@
         "summary": "Reparse Upload",
         "tags": [
           "resume"
+        ]
+      }
+    },
+    "/api/v1/saved-searches": {
+      "get": {
+        "operationId": "list_saved_api_v1_saved_searches_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SavedSearchOut"
+                  },
+                  "title": "Response List Saved Api V1 Saved Searches Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Saved",
+        "tags": [
+          "jobs"
+        ]
+      },
+      "post": {
+        "operationId": "create_saved_api_v1_saved_searches_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavedSearchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedSearchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Saved",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/saved-searches/{search_id}": {
+      "delete": {
+        "operationId": "delete_saved_api_v1_saved_searches__search_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "search_id",
+            "required": true,
+            "schema": {
+              "title": "Search Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Saved",
+        "tags": [
+          "jobs"
+        ]
+      },
+      "put": {
+        "operationId": "update_saved_api_v1_saved_searches__search_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "search_id",
+            "required": true,
+            "schema": {
+              "title": "Search Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavedSearchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedSearchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Saved",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/saved-searches/{search_id}/seen": {
+      "post": {
+        "operationId": "mark_seen_api_v1_saved_searches__search_id__seen_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "search_id",
+            "required": true,
+            "schema": {
+              "title": "Search Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedSearchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mark Seen",
+        "tags": [
+          "jobs"
         ]
       }
     },

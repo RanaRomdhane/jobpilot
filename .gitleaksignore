@@ -1,0 +1,4 @@
+# Reviewed false positives only, one fingerprint per line (commit:file:rule:line).
+# Public SHA-256 checksum of Xenova/multilingual-e5-small tokenizer.json (Phase 5), flagged by
+# generic-api-key because the file name contains "token". The line now carries gitleaks:allow.
+d2f9fa6045ed1d441826654a3ca52092e3844fee:apps/worker/src/jobpilot_worker/embeddings.py:generic-api-key:26

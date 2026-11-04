@@ -55,7 +55,7 @@ drawer, Security panel, Settings; SSE progress toasts; skeletons, empty states, 
 - **Asks:** auth method (local password vs Google sign-in restricted to your address).
 - ✅ You can see and manage your pipeline in the browser.
 
-## Phase 4 — Resume intelligence (`phase/4-resume`) — in review
+## Phase 4 — Resume intelligence (`phase/4-resume`) ✅ merged in #5
 
 Upload (PDF/DOCX, size/type/magic-byte checks, random names), PyMuPDF/python-docx extraction with
 layout signals, ResumeParserAgent → `ResumeProfile` with stable ids, editable master profile form,
@@ -65,7 +65,7 @@ ATS report (deterministic checks + keyword coverage + LLM review) with prioritiz
   are flagged, not OCR'd (ADR-0006).
 - ✅ Your real CV parses correctly; the ATS report is actionable.
 
-## Phase 5 — Job discovery (`phase/5-jobs`)
+## Phase 5 — Job discovery (`phase/5-jobs`) — in review
 
 `JobSource` protocol, connectors (Adzuna, JSearch, Remotive, RemoteOK, WeWorkRemotely, then the
 Tunisian sites after a robots.txt/terms review each), normalization (location → country/region, work
@@ -74,6 +74,9 @@ saved searches on cron. VCR-style fixtures for every connector.
 - **Asks:** target domains, seniority, contract types, default regions; Adzuna / RapidAPI keys;
   embedding model (default proposal: `intfloat/multilingual-e5-base`, 768-d — `bge-m3` is ~2.3 GB
   and slow on this CPU); any Tunisian source whose terms forbid automation.
+- **Decided:** fields AI/ML, backend, data/BI, full-stack; junior + freelance; regions Tunisia,
+  worldwide remote, Europe, Middle East; Keejob included (public pages, politely), OptionCarriere
+  excluded (robots.txt); multilingual-e5-small via ONNX; saved searches twice a day (ADR-0007).
 - ✅ Filtered search returns deduplicated jobs with match scores from ≥ 4 sources.
 
 ## Phase 6 — LaTeX application factory (`phase/6-latex`)

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="https://www.w3.org/2005/Atom">
+	<channel>
+		<title><![CDATA[Tanitjobs.com (synthetic fixture)]]></title>
+		<link><![CDATA[https://www.tanitjobs.com]]></link>
+		<language>fr</language>
+					<item>
+				<title><![CDATA[Ingénieur Data Science Junior (H/F) – FR | Tunis]]></title>
+				<link><![CDATA[https://www.tanitjobs.com/job/9900001/ingenieur-data-science-junior-h-f-fr-tunis/]]></link>
+				<description>
+					<![CDATA[Les Berges du Lac, Tunis, Tunisie
+					Exemplia Tunisie<br/>
+					<p>Nous recherchons un ingénieur data science junior pour développer des modèles de machine learning en Python (scikit-learn, pandas). Contrat CDI, poste en présentiel.</p>]]>
+				</description>
+				<pubDate>Tue, 03 Nov 2026 09:15:00 GMT</pubDate>
+				<guid><![CDATA[https://www.tanitjobs.com/job/9900001/ingenieur-data-science-junior-h-f-fr-tunis/]]></guid>
+			</item>
+					<item>
+				<title><![CDATA[Commercial Terrain (H/F) – FR | Sfax]]></title>
+				<link><![CDATA[https://www.tanitjobs.com/job/9900002/commercial-terrain-h-f-fr-sfax/]]></link>
+				<description>
+					<![CDATA[Sfax, Sfax, Tunisie
+					Démo Distribution<br/>
+					<p>Prospection et suivi de clients. Permis B exigé.</p>]]>
+				</description>
+				<pubDate>Mon, 02 Nov 2026 15:00:00 GMT</pubDate>
+				<guid><![CDATA[https://www.tanitjobs.com/job/9900002/commercial-terrain-h-f-fr-sfax/]]></guid>
+			</item>
+	</channel>
+</rss>

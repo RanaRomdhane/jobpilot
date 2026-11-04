@@ -1,0 +1,33 @@
+{
+  "__CLASS__": "Adzuna::API::Response::JobSearchResults",
+  "count": 2,
+  "mean": 52000,
+  "results": [
+    {
+      "__CLASS__": "Adzuna::API::Response::Job",
+      "id": "4400001",
+      "title": "Data Scientist Junior",
+      "description": "Synthetic fixture. Rejoignez notre équipe data à Paris : Python, machine learning, SQL. CDI.",
+      "created": "2026-11-02T10:00:00Z",
+      "redirect_url": "https://www.adzuna.fr/land/ad/4400001",
+      "company": {"__CLASS__": "Adzuna::API::Response::Company", "display_name": "Exemplia France"},
+      "location": {"__CLASS__": "Adzuna::API::Response::Location", "display_name": "Paris, Ile-de-France", "area": ["France", "Ile-de-France", "Paris"]},
+      "category": {"__CLASS__": "Adzuna::API::Response::Category", "label": "IT Jobs", "tag": "it-jobs"},
+      "contract_type": "permanent",
+      "contract_time": "full_time",
+      "salary_min": 42000,
+      "salary_max": 48000,
+      "salary_is_predicted": "0"
+    },
+    {
+      "id": "4400002",
+      "title": "Développeur React",
+      "description": "Synthetic fixture. Front-end React / TypeScript à Lyon.",
+      "created": "2026-11-01T08:00:00Z",
+      "redirect_url": "https://www.adzuna.fr/land/ad/4400002",
+      "company": {"display_name": "Démo Web"},
+      "location": {"display_name": "Lyon, Rhône"},
+      "category": {"label": "IT Jobs"}
+    }
+  ]
+}

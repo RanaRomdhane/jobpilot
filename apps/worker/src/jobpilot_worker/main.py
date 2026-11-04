@@ -26,6 +26,7 @@ from jobpilot_core.tasks import TaskReporter, create_task_run
 from jobpilot_mcp_gmail.credentials import CredentialStore, GmailNotConnectedError
 from jobpilot_mcp_gmail.gmail_client import GmailAuthExpiredError, GmailClient
 from jobpilot_security.factory import build_detector
+from jobpilot_worker import job_runs
 from jobpilot_worker.resume import ResumePipeline, mark_failed
 from jobpilot_worker.triage import run_triage
 from jobpilot_worker.user_labels import UserLabelActions
@@ -211,13 +212,78 @@ async def scheduled_triage(ctx: Ctx) -> None:
     await triage(ctx, str(row.id))
 
 
+async def jobs_refresh(ctx: Ctx, task_id: str, locale: str | None = None) -> dict[str, Any]:
+    """Fetch every source, then embed, score, re-rank and update saved searches."""
+    rep = reporter(ctx, task_id)
+    lock = ctx["app_redis"].lock(
+        job_runs.JOBS_LOCK, timeout=WorkerSettings.job_timeout, blocking=False
+    )
+    if not await lock.acquire():
+        await rep.fail("another job refresh is in progress")
+        return {"skipped": True}
+    try:
+        await rep.start("job refresh starting")
+        result = await job_runs.refresh(ctx, rep, locale=locale)
+        fetch = result["fetch"]
+        await rep.succeed(result, f"{result['new']} new jobs from {fetch['sources_ok']} sources")
+        return result
+    except Exception as exc:
+        await rep.fail(f"{type(exc).__name__}: {exc}")
+        raise
+    finally:
+        await lock.release()
+
+
+async def jobs_match(
+    ctx: Ctx,
+    task_id: str,
+    job_ids: list[int] | None = None,
+    rescore_all: bool = False,
+    locale: str | None = None,
+) -> dict[str, Any]:
+    """Re-score against the (edited) profile and/or re-rank chosen jobs."""
+    rep = reporter(ctx, task_id)
+    await rep.start("matching")
+    try:
+        result = await job_runs.match(
+            ctx, rep, job_ids=job_ids, rescore_all=rescore_all, locale=locale
+        )
+    except Exception as exc:
+        await rep.fail(f"{type(exc).__name__}: {exc}")
+        raise
+    await rep.succeed(result, "matching done")
+    return result
+
+
+async def scheduled_jobs(ctx: Ctx) -> None:
+    """Cron: the twice-daily job refresh (saved searches are updated at the end)."""
+    async with ctx["sessionmaker"]() as session:
+        row = await create_task_run(session, "jobs_refresh", {"scheduled": True})
+    await jobs_refresh(ctx, str(row.id))
+
+
 class WorkerSettings:
     """arq reads these plain class attributes directly."""
 
-    functions = [ping, triage, user_label_change, parse_resume, ats_report]  # noqa: RUF012
+    functions = [  # noqa: RUF012
+        ping,
+        triage,
+        user_label_change,
+        parse_resume,
+        ats_report,
+        jobs_refresh,
+        jobs_match,
+    ]
     cron_jobs = [  # noqa: RUF012
         cron(heartbeat, second={0, 15, 30, 45}, run_at_startup=True),
         cron(scheduled_triage, minute={5, 35}, unique=True, timeout=3600),
+        cron(
+            scheduled_jobs,
+            hour=set(get_settings().jobs_fetch_hours),
+            minute={0},
+            unique=True,
+            timeout=3600,
+        ),
     ]
     on_startup = startup
     on_shutdown = shutdown

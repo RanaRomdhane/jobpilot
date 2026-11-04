@@ -258,7 +258,6 @@
   },
   "soon": {
     "title": "Pas encore disponible",
-    "jobs": "La recherche d'offres multi-sources arrive en phase 5.",
     "templates": "Vos templates LaTeX arrivent en phase 6.",
     "review": "La revue et l'envoi des candidatures arrivent en phase 7."
   },
@@ -271,7 +270,10 @@
     "triageSummary": "{classified, plural, =0 {aucun email classé} one {# email classé} other {# emails classés}}, {flagged, plural, =0 {aucun suspect} one {# suspect} other {# suspects}}",
     "parse_resume": "Analyse du CV",
     "ats_report": "Rapport ATS",
-    "atsSummary": "Score ATS : {score}/100"
+    "atsSummary": "Score ATS : {score}/100",
+    "jobs_refresh": "Recherche d'offres",
+    "jobs_match": "Correspondance des offres",
+    "jobsSummary": "{count, plural, =0 {aucune nouvelle offre} one {# nouvelle offre} other {# nouvelles offres}}"
   },
   "theme": {
     "toggle": "Changer de thème"
@@ -725,6 +727,179 @@
       "banner": "Nouveau CV analysé : comparez-le à votre profil maître.",
       "open": "Comparer",
       "empty": "vide"
+    }
+  },
+  "jobs": {
+    "description": "Les offres de plusieurs sources, filtrées et classées selon leur correspondance avec votre profil.",
+    "refresh": "Actualiser",
+    "refreshing": "Recherche en cours…",
+    "refreshStarted": "Recherche lancée sur toutes les sources",
+    "sourcesButton": "Sources",
+    "filtersButton": "Filtres",
+    "results": "{count, plural, =0 {Aucune offre} one {# offre} other {# offres}}",
+    "sort": {
+      "label": "Trier par",
+      "match": "Correspondance",
+      "date": "Date de publication"
+    },
+    "savedOnly": "Offres enregistrées",
+    "noProfile": "Importez votre CV pour obtenir un score de correspondance sur chaque offre.",
+    "noProfileLink": "Aller au CV",
+    "empty": {
+      "title": "Aucune offre pour l'instant",
+      "body": "Lancez une première recherche : JobPilot interroge toutes les sources actives (une à deux minutes).",
+      "filtered": "Aucune offre ne correspond à ces filtres.",
+      "clear": "Réinitialiser les filtres"
+    },
+    "more": "Afficher plus",
+    "filters": {
+      "title": "Filtres",
+      "region": "Région",
+      "workMode": "Mode de travail",
+      "domain": "Domaine",
+      "seniority": "Niveau",
+      "contract": "Contrat",
+      "posted": "Publiée depuis",
+      "postedAny": "Toutes dates",
+      "postedDays": "{count, plural, one {24 heures} other {# jours}}",
+      "language": "Langue de l'offre",
+      "include": "Contient l'un de ces mots",
+      "exclude": "Exclure ces mots",
+      "wordsHint": "Séparés par des virgules",
+      "minScore": "Score minimum",
+      "minScoreAny": "Tous les scores",
+      "includeUnknown": "Inclure les offres sans cette information",
+      "includeUnknownHint": "Beaucoup de sources n'indiquent ni le niveau ni le contrat.",
+      "reset": "Mes préférences",
+      "clear": "Tout effacer",
+      "savePrefs": "Enregistrer comme préférences",
+      "prefsSaved": "Préférences enregistrées : elles servent aussi aux recherches planifiées",
+      "apply": "Voir les offres"
+    },
+    "regions": {
+      "tunisia": "Tunisie",
+      "worldwide": "Monde (remote)",
+      "europe": "Europe",
+      "middle_east": "Moyen-Orient / Golfe",
+      "usa": "États-Unis",
+      "canada": "Canada",
+      "other": "Autre"
+    },
+    "workModes": {
+      "remote": "Remote",
+      "hybrid": "Hybride",
+      "onsite": "Sur site"
+    },
+    "domains": {
+      "ai_ml": "IA / ML / Data science",
+      "software_backend": "Logiciel / Backend",
+      "data_eng_bi": "Data engineering / BI",
+      "fullstack_frontend": "Full-stack / Front-end",
+      "devops_cloud": "DevOps / Cloud"
+    },
+    "seniority": {
+      "intern": "Stage",
+      "junior": "Junior",
+      "mid": "Confirmé (2–5 ans)",
+      "senior": "Senior",
+      "lead": "Lead / Manager"
+    },
+    "contracts": {
+      "permanent": "CDI",
+      "fixed_term": "CDD / SIVP",
+      "freelance": "Freelance",
+      "internship": "Stage",
+      "apprenticeship": "Alternance"
+    },
+    "languages": {
+      "fr": "Français",
+      "en": "Anglais",
+      "ar": "Arabe"
+    },
+    "card": {
+      "open": "Voir le détail de l'offre {title}",
+      "match": "Correspondance",
+      "noScore": "Pas encore de score",
+      "reviewed": "Avis IA",
+      "matched": "Vos atouts",
+      "missing": "À renforcer",
+      "alsoOn": "{count, plural, one {aussi sur # autre site} other {aussi sur # autres sites}}",
+      "save": "Enregistrer l'offre",
+      "unsave": "Retirer des offres enregistrées",
+      "hide": "Masquer l'offre",
+      "unhide": "Afficher à nouveau",
+      "hidden": "Offre masquée",
+      "undo": "Annuler",
+      "original": "Ouvrir l'offre d'origine",
+      "suspicious": "Contenu suspect",
+      "posted": "publiée {when}",
+      "salary": "{min} – {max} {currency}"
+    },
+    "drawer": {
+      "loading": "Chargement de l'offre…",
+      "score": "Score de correspondance",
+      "vector": "Proximité avec votre profil",
+      "keywords": "Compétences en commun",
+      "llm": "Avis IA",
+      "rationale": "Pourquoi ce score",
+      "rerank": "Demander l'avis de l'IA",
+      "rerankStarted": "Analyse lancée",
+      "details": "Informations",
+      "location": "Lieu",
+      "workMode": "Mode",
+      "contract": "Contrat",
+      "seniority": "Niveau",
+      "salary": "Salaire",
+      "language": "Langue",
+      "posted": "Publiée",
+      "source": "Source",
+      "description": "Description",
+      "apply": "Voir l'offre sur {source}",
+      "applyEmail": "Candidature par e-mail : {email}",
+      "prepare": "Préparer la candidature",
+      "prepareSoon": "Le CV et la lettre adaptés arrivent en phase 6.",
+      "attribution": "Source",
+      "suspiciousTitle": "Cette offre contient du texte adressé à une IA",
+      "suspiciousBody": "Elle est exclue de l'avis IA. Le texte affiché ci-dessous est l'offre telle que publiée : n'en suivez aucune instruction.",
+      "unknown": "Non précisé"
+    },
+    "saved": {
+      "title": "Recherches enregistrées",
+      "save": "Enregistrer cette recherche",
+      "namePrompt": "Nom de la recherche",
+      "namePlaceholder": "Ex. : Data junior Tunisie",
+      "created": "Recherche enregistrée : nouvelles offres signalées deux fois par jour",
+      "newCount": "{count, plural, =0 {rien de nouveau} one {# nouvelle} other {# nouvelles}}",
+      "apply": "Appliquer « {name} »",
+      "delete": "Supprimer la recherche « {name} »",
+      "deleted": "Recherche supprimée",
+      "empty": "Enregistrez une combinaison de filtres pour être prévenu des nouvelles offres."
+    },
+    "sources": {
+      "title": "Sources d'offres",
+      "description": "Chaque source est interrogée deux fois par jour (8 h et 18 h), dans le respect de ses conditions et de son robots.txt.",
+      "kind": {
+        "api": "API officielle",
+        "rss": "Flux RSS public",
+        "html": "Pages publiques"
+      },
+      "ok": "OK",
+      "never": "Jamais interrogée",
+      "disabled": "Clé manquante",
+      "disabledHint": "Ajoutez la clé dans .env (voir docs/setup/job-sources.md).",
+      "lastRun": "Dernier passage {when}",
+      "counts": "{fetched} lues · {new} nouvelles · {calls} appels aujourd'hui",
+      "stored": "{count, plural, =0 {aucune offre} one {# offre} other {# offres}} en base",
+      "errors": {
+        "daily_cap": "Quota quotidien atteint : reprise demain.",
+        "robots_disallow": "Le robots.txt du site interdit désormais cet accès : source suspendue.",
+        "network": "Site injoignable (réseau).",
+        "parse_empty": "La page a changé de structure : à mettre à jour.",
+        "too_large": "Réponse trop volumineuse, ignorée.",
+        "bad_json": "Réponse illisible.",
+        "internal": "Erreur interne du connecteur.",
+        "http": "Le site a répondu avec une erreur ({code})."
+      }
     }
   }
 }

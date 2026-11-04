@@ -250,7 +250,9 @@ async def get_master(_: Authenticated, session: Session) -> MasterOut | None:
 
 
 @router.put("/master", response_model=MasterOut)
-async def save_master(body: MasterIn, _: Authenticated, session: Session) -> MasterOut:
+async def save_master(
+    body: MasterIn, _: Authenticated, session: Session, state: State
+) -> MasterOut:
     """Your edited profile becomes the master. Item ids are kept; new items get fresh ids."""
     if body.source_resume_id is not None:
         await _upload(session, body.source_resume_id)
@@ -266,4 +268,7 @@ async def save_master(body: MasterIn, _: Authenticated, session: Session) -> Mas
     row.parse_meta = {**(row.parse_meta or {}), "sources": sources}
     await session.commit()
     await session.refresh(row)
+    # job match scores follow the profile: re-score in the background
+    task = await create_task_run(session, "jobs_match", {"reason": "master_saved"})
+    await state.arq.enqueue_job("jobs_match", str(task.id), None, True, None, _job_id=str(task.id))
     return _master_out(row)
