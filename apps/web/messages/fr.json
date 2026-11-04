@@ -273,7 +273,10 @@
     "atsSummary": "Score ATS : {score}/100",
     "jobs_refresh": "Recherche d'offres",
     "jobs_match": "Correspondance des offres",
-    "jobsSummary": "{count, plural, =0 {aucune nouvelle offre} one {# nouvelle offre} other {# nouvelles offres}}"
+    "jobsSummary": "{count, plural, =0 {aucune nouvelle offre} one {# nouvelle offre} other {# nouvelles offres}}",
+    "template_convert": "Conversion du template",
+    "template_preview": "Aperçu du template",
+    "documents_generate": "CV et lettre"
   },
   "theme": {
     "toggle": "Changer de thème"
@@ -963,7 +966,16 @@
       "sourceHint": "Jinja avec délimiteurs LaTeX : VAR pour une valeur (échappée automatiquement), BLOCK pour une boucle ou une condition.",
       "saveSource": "Enregistrer la source",
       "sourceSaved": "Source enregistrée : confirmez à nouveau le template",
-      "generic": "L'opération a échoué. Réessayez."
+      "generic": "L'opération a échoué. Réessayez.",
+      "reconvert": "Relancer la conversion",
+      "reconverting": "Conversion… {pct} %",
+      "reconverted": "Conversion terminée",
+      "notUsable": "Rien n'a encore été converti : relancez la conversion avant d'utiliser ce template.",
+      "partialWarning": "Les parties non converties resteront identiques dans chaque document généré.",
+      "errors": {
+        "llm_budget": "budget du modèle de langue épuisé pour le moment (limite quotidienne Groq). Relancez plus tard.",
+        "llm_error": "le modèle de langue n'a pas répondu correctement."
+      }
     },
     "rebuild": {
       "title": "Mettre à jour le profil principal",

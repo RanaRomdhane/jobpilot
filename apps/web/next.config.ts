@@ -21,7 +21,17 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // Our own PDFs (template previews, generated documents) are shown in an <iframe> on our own
+    // pages: same-origin framing only, everything else stays DENY.
+    const sameOriginFrame = [
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+    ];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/api/v1/templates/:id/preview.pdf", headers: sameOriginFrame },
+      { source: "/api/v1/documents/:id/pdf", headers: sameOriginFrame },
+    ];
   },
 };
 

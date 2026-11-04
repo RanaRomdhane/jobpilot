@@ -21,6 +21,7 @@ from jobpilot_agents.structured import complete_structured, response_format
 from jobpilot_core.config import LLMPurpose
 from jobpilot_core.llm import ChatResult, LLMProvider
 from jobpilot_core.llm.tokens import estimate_prompt_tokens
+from jobpilot_core.ratelimit import RateLimitExceededError
 from jobpilot_latex.convert import (
     Chunk,
     Replacement,
@@ -359,7 +360,8 @@ async def _convert_chunk(
                 chunk.source,
                 chunk.source,
                 {},
-                error=f"llm: {type(exc).__name__}",
+                # stable codes the UI translates: the minute/day budget, or anything else
+                error="llm_budget" if isinstance(exc, RateLimitExceededError) else "llm_error",
             )
         usage.extend(calls)
         try:

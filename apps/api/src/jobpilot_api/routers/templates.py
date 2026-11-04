@@ -181,7 +181,8 @@ async def get_template(
     return TemplateDetail.model_validate(
         {
             **_out(row, path.exists()),
-            "mapping": {k: v for k, v in mapping.items() if k != "extracted"},
+            "mapping": {k: v for k, v in mapping.items() if k != "extracted"}
+            | {"has_extracted": bool(mapping.get("extracted"))},
             "source": path.read_text(encoding="utf-8") if path.exists() else None,
             "original": original,
         }

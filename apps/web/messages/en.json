@@ -273,7 +273,10 @@
     "atsSummary": "ATS score: {score}/100",
     "jobs_refresh": "Job search",
     "jobs_match": "Job matching",
-    "jobsSummary": "{count, plural, =0 {no new jobs} one {# new job} other {# new jobs}}"
+    "jobsSummary": "{count, plural, =0 {no new jobs} one {# new job} other {# new jobs}}",
+    "template_convert": "Template conversion",
+    "template_preview": "Template preview",
+    "documents_generate": "CV and letter"
   },
   "theme": {
     "toggle": "Toggle theme"
@@ -963,7 +966,16 @@
       "sourceHint": "Jinja with LaTeX delimiters: VAR prints a value (escaped automatically), BLOCK loops or tests.",
       "saveSource": "Save source",
       "sourceSaved": "Source saved: confirm the template again",
-      "generic": "That did not work. Try again."
+      "generic": "That did not work. Try again.",
+      "reconvert": "Run the conversion again",
+      "reconverting": "Converting… {pct} %",
+      "reconverted": "Conversion finished",
+      "notUsable": "Nothing has been converted yet: run the conversion again before using this template.",
+      "partialWarning": "Parts that were not converted stay the same in every generated document.",
+      "errors": {
+        "llm_budget": "the language model's budget is used up for now (Groq daily limit). Try again later.",
+        "llm_error": "the language model did not answer correctly."
+      }
     },
     "rebuild": {
       "title": "Update the master profile",

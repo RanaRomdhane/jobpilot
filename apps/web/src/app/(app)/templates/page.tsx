@@ -280,6 +280,21 @@ function TemplateReview({ id, kind }: { id: number; kind: TemplateKind }) {
     },
     onError: (e: Error) => toast.error(e instanceof ApiError ? e.detail : t("generic")),
   });
+  const converting = useFollow((ok, error) => {
+    refresh();
+    void queryClient.invalidateQueries({ queryKey: ["templates", id] });
+    if (ok) toast.success(t("reconverted"));
+    else toast.error(t("previewFailed", { error: error ?? "" }));
+  });
+  const reconvert = useMutation({
+    mutationFn: () =>
+      unwrap(
+        api.POST("/api/v1/templates/{template_id}/convert", {
+          params: { path: { template_id: id } },
+        }),
+      ),
+    onSuccess: (r) => converting.follow(r.task_id),
+  });
   const confirm = useMutation({
     mutationFn: () =>
       unwrap(
@@ -316,6 +331,11 @@ function TemplateReview({ id, kind }: { id: number; kind: TemplateKind }) {
   };
   const chunks = m.chunks ?? [];
   const failed = chunks.filter((c) => !c.ok);
+  // the preamble alone (metadata) is not a usable template: nothing would be tailored
+  const usable = chunks.some((c) => c.ok && c.kind !== "preamble");
+  const hasExtracted = Boolean((d.mapping as { has_extracted?: boolean }).has_extracted);
+  const chunkError = (error: string | null) =>
+    error === "llm_budget" || error === "llm_error" ? t(`errors.${error}`) : (error ?? "");
 
   return (
     <div className="space-y-8">
@@ -324,9 +344,11 @@ function TemplateReview({ id, kind }: { id: number; kind: TemplateKind }) {
           <h2 id={`check-${id}`} className="text-base font-semibold">
             {t("checkTitle")}
           </h2>
-          <span className="text-sm text-muted-foreground">
-            {t("match", { pct: pct(m.check?.ratio) })}
-          </span>
+          {failed.length === 0 ? (
+            <span className="text-sm text-muted-foreground">
+              {t("match", { pct: pct(m.check?.ratio) })}
+            </span>
+          ) : null}
         </div>
         <p className="max-w-[65ch] text-sm text-muted-foreground">{t("checkHint")}</p>
         <ul className="divide-y rounded-lg border">
@@ -341,7 +363,7 @@ function TemplateReview({ id, kind }: { id: number; kind: TemplateKind }) {
                 <p className="font-medium">{c.title || t(`chunk.${c.kind}` as "chunk.preamble")}</p>
                 {c.ok ? null : (
                   <p className="text-xs break-words text-muted-foreground">
-                    {t("chunkFailed")} {c.error}
+                    {t("chunkFailed")} {chunkError(c.error)}
                   </p>
                 )}
               </div>
@@ -350,7 +372,23 @@ function TemplateReview({ id, kind }: { id: number; kind: TemplateKind }) {
           ))}
         </ul>
         {failed.length ? (
-          <p className="text-sm text-muted-foreground">{t("failedHint", { n: failed.length })}</p>
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-3">
+            <p className="min-w-0 flex-1 text-sm">{t("failedHint", { n: failed.length })}</p>
+            <Button
+              variant="outline"
+              onClick={() => reconvert.mutate()}
+              disabled={converting.progress !== null || reconvert.isPending}
+            >
+              {converting.progress !== null ? (
+                <Loader2 aria-hidden className="animate-spin" />
+              ) : (
+                <RefreshCw aria-hidden />
+              )}
+              {converting.progress !== null
+                ? t("reconverting", { pct: Math.round(converting.progress * 100) })
+                : t("reconvert")}
+            </Button>
+          </div>
         ) : null}
       </section>
 
@@ -455,17 +493,22 @@ function TemplateReview({ id, kind }: { id: number; kind: TemplateKind }) {
           </div>
         ) : null}
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => confirm.mutate()} disabled={confirm.isPending}>
+          <Button onClick={() => confirm.mutate()} disabled={confirm.isPending || !usable}>
             <CheckCircle2 aria-hidden />
             {d.mapping_confirmed ? t("reconfirm") : t("confirm")}
           </Button>
           {kind === "cv" ? (
-            <Button variant="outline" onClick={() => setRebuildOpen(true)}>
+            <Button variant="outline" onClick={() => setRebuildOpen(true)} disabled={!hasExtracted}>
               <UserRoundCog aria-hidden />
               {t("rebuild")}
             </Button>
           ) : null}
         </div>
+        {!usable ? (
+          <p className="text-sm text-muted-foreground">{t("notUsable")}</p>
+        ) : failed.length ? (
+          <p className="text-sm text-muted-foreground">{t("partialWarning")}</p>
+        ) : null}
         {d.mapping_confirmed ? (
           <p className="text-sm text-muted-foreground">{t("confirmedHint")}</p>
         ) : null}
