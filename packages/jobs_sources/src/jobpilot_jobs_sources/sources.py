@@ -448,6 +448,13 @@ class Adzuna:
 
 
 # ------------------------------------------------------------------ JSearch (RapidAPI, key)
+def _jsearch_jobs(data: object) -> list[dict[str, Any]]:
+    """Job dicts from a `/search-v2` body ({"data": {"jobs": [...]}}), or the legacy list shape."""
+    body = data.get("data") if isinstance(data, dict) else None
+    jobs = body.get("jobs") if isinstance(body, dict) else body
+    return [j for j in jobs if isinstance(j, dict)] if isinstance(jobs, list) else []
+
+
 class JSearch:
     info = SourceInfo(
         name="jsearch",
@@ -472,9 +479,11 @@ class JSearch:
         )
         out: list[RawJob] = []
         for term in terms:
+            # v5 of the API retired `/search` (404 "Endpoint does not exist") for `/search-v2`,
+            # which returns {"data": {"jobs": [...], "cursor": ...}}; one page is enough here
             data = await client.get_json(
-                "https://jsearch.p.rapidapi.com/search",
-                params={"query": term, "page": 1, "num_pages": 1, "date_posted": days},
+                "https://jsearch.p.rapidapi.com/search-v2",
+                params={"query": term, "date_posted": days},
                 headers={
                     "X-RapidAPI-Key": settings.rapidapi_key.get_secret_value(),
                     "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
@@ -483,7 +492,7 @@ class JSearch:
                 daily_cap=settings.jsearch_daily_cap,
                 interval_s=1,
             )
-            for j in data.get("data", []) if isinstance(data, dict) else []:
+            for j in _jsearch_jobs(data):
                 try:
                     place = ", ".join(
                         x

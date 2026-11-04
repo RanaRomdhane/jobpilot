@@ -18,7 +18,12 @@ from sqlalchemy import select
 
 from jobpilot_core.config import Settings
 from jobpilot_core.models import EmailMessage, GmailSyncState
-from jobpilot_mcp_gmail.gmail_client import GmailClient, HistoryExpiredError, ParsedMessage
+from jobpilot_mcp_gmail.gmail_client import (
+    GmailClient,
+    HistoryExpiredError,
+    MessageNotFoundError,
+    ParsedMessage,
+)
 from jobpilot_security import InjectionDetector
 
 if TYPE_CHECKING:
@@ -94,8 +99,14 @@ class GmailSync:
         async def ingest(gmail_id: str) -> None:
             nonlocal added, flagged, skipped, done
             async with sem:
-                msg = await self._gmail.get_message(gmail_id)
-                if set(msg.label_ids) & SKIPPED_LABELS:
+                try:
+                    msg = await self._gmail.get_message(gmail_id)
+                except MessageNotFoundError:
+                    # history still lists messages deleted since; one gone email must not
+                    # fail the whole sync (and block every later one behind the same history id)
+                    log.info("gmail message %s no longer exists; skipped", gmail_id)
+                    msg = None
+                if msg is None or set(msg.label_ids) & SKIPPED_LABELS:
                     skipped += 1
                 else:
                     row = await self._to_row(msg)
