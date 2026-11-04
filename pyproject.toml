@@ -57,6 +57,7 @@ ignore = ["S101"]  # asserts are fine in tests; production code uses explicit er
 "tests/**" = ["S105", "S106", "S311", "RUF001"]
 # CVs and dates use real typography (en dashes, bullets)
 "packages/resume/**" = ["RUF001"]
+"packages/core/src/jobpilot_core/resume.py" = ["RUF001", "RUF003"]
 "packages/jobs_sources/**" = ["RUF001"]
 # LaTeX typography and the Unicode characters the escaping normalises
 "packages/latex/**" = ["RUF001", "RUF002"]
