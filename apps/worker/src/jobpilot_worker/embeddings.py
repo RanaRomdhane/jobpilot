@@ -26,9 +26,11 @@ log = logging.getLogger(__name__)
 
 REPO = "Xenova/multilingual-e5-small"
 REVISION = "761b726dd34fb83930e26aab4e9ac3899aa1fa78"
-FILES: dict[str, str] = {  # path in the repo -> sha256
+# path in the repo -> sha256 of the public file (checksums, not secrets: "token" in
+# "tokenizer.json" trips gitleaks' generic-api-key rule, hence the inline allow)
+FILES: dict[str, str] = {
     "onnx/model_quantized.onnx": "f80102d3f2a1229f387d3c81909990d8945513e347b0eab049f7de3c6f98c193",
-    "tokenizer.json": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",
+    "tokenizer.json": "0b44a9d7b51c3c62626640cda0e2c2f70fdacdc25bbbd68038369d14ebdf4c39",  # gitleaks:allow
 }
 DIM = 384
 MAX_TOKENS = 512
