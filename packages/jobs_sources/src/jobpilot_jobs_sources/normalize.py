@@ -69,6 +69,17 @@ def dedup_hash(title: str, company: str | None, place: str | None) -> str:
     return hashlib.sha256(key.encode()).hexdigest()
 
 
+_EMAIL = re.compile(r"^[\w.+-]+@[\w-]+(\.[\w-]+)+$")
+
+
+def safe_url(url: str | None) -> str | None:
+    """Only absolute http(s) links reach the dashboard (no javascript:, data:, file:...)."""
+    if not url:
+        return None
+    u = url.strip()
+    return u[:2048] if re.match(r"^https?://[^\s/]+", u, re.I) else None
+
+
 def normalize(raw: RawJob) -> NormalizedJob:
     clean = html_to_text(raw.description_html or "")
     text = truncate(clean.text, MAX_DESCRIPTION)
@@ -80,7 +91,7 @@ def normalize(raw: RawJob) -> NormalizedJob:
     return NormalizedJob(
         source=raw.source,
         external_id=raw.external_id[:255],
-        url=raw.url,
+        url=safe_url(raw.url),
         title=truncate(raw.title.strip(), 500),
         company_name=(raw.company or "").strip()[:300] or None,
         location_raw=(raw.location or "").strip()[:500] or None,
@@ -98,6 +109,6 @@ def normalize(raw: RawJob) -> NormalizedJob:
         hidden_text=clean.hidden,
         posted_at=raw.posted_at,
         dedup_hash=dedup_hash(raw.title, raw.company, place),
-        apply_url=raw.apply_url or raw.url,
-        apply_email=raw.apply_email,
+        apply_url=safe_url(raw.apply_url) or safe_url(raw.url),
+        apply_email=raw.apply_email if raw.apply_email and _EMAIL.match(raw.apply_email) else None,
     )

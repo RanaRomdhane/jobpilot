@@ -1,6 +1,6 @@
 # JobPilot — Security model
 
-Status: v1.2 (Phase 4: CV intelligence). Extended in later phases and finalised in Phase 8.
+Status: v1.3 (Phase 5: job discovery). Extended in later phases and finalised in Phase 8.
 
 JobPilot reads attacker-controllable text (anyone can email you or publish a job post) and holds
 credentials that can act in your name. The design goal is that **a successful prompt injection can
@@ -126,6 +126,16 @@ embedded files are refused and deleted. Invisible text (white, tiny, transparent
 hidden runs) never reaches the parser: it is injection-scanned and reported. The parser and the
 ATS review are tool-less structured-output calls on spotlighted text, and a grounding check flags
 any parsed value that is not in the document before it can enter the master profile.
+
+### T10 — Malicious job postings and abusive crawling (Phase 5)
+
+ADR-0007. Postings are untrusted: HTML is reduced to text (hidden parts kept apart and scanned),
+only `http(s)` links and valid e-mails are kept, links open in a new tab with `noopener
+noreferrer`, and descriptions are rendered as text, never HTML. The injection heuristics run on
+every posting at ingestion; the guard model runs on each posting before the JobMatcherAgent (no
+tools) reads it, and flagged postings never reach the LLM. Feeds are parsed with `defusedxml`,
+responses are capped at 8 MB. Towards the sources: identifiable user agent, `robots.txt`
+(Protego), daily caps, pacing and caching; no login-walled pages, no LinkedIn/Indeed scraping.
 
 ## Residual risks
 

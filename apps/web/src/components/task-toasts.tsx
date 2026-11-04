@@ -7,7 +7,15 @@ import { toast } from "sonner";
 
 import type { TaskEvent } from "@/lib/api/client";
 
-const KNOWN = ["triage", "user_label_change", "ping", "parse_resume", "ats_report"] as const;
+const KNOWN = [
+  "triage",
+  "user_label_change",
+  "ping",
+  "parse_resume",
+  "ats_report",
+  "jobs_refresh",
+  "jobs_match",
+] as const;
 
 /** One SSE connection for the whole app: background-task results become toasts + fresh data. */
 export function TaskToasts() {
@@ -36,6 +44,13 @@ export function TaskToasts() {
                 flagged: r.flagged ?? 0,
               }),
             });
+          } else if (event.kind === "jobs_refresh") {
+            const r = (event.result ?? {}) as { new?: number };
+            toast.success(t("succeeded", { kind }), {
+              description: t("jobsSummary", { count: r.new ?? 0 }),
+            });
+          } else if (event.kind === "jobs_match") {
+            // quiet: the job list refreshes by itself
           } else if (event.kind === "parse_resume" || event.kind === "ats_report") {
             const r = (event.result ?? {}) as { score?: number };
             toast.success(t("succeeded", { kind }), {

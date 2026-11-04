@@ -227,3 +227,30 @@ def test_keyed_sources_stay_off_without_keys() -> None:
     bare = Settings(_env_file=None)
     assert not Adzuna().enabled(bare) and not JSearch().enabled(bare)
     assert Remotive().enabled(bare)
+
+
+def test_only_safe_links_and_emails_are_kept() -> None:
+    from jobpilot_jobs_sources.models import RawJob
+
+    n = normalize(
+        RawJob(
+            source="remoteok",
+            external_id="x",
+            title="Dev",
+            url="javascript:alert(document.cookie)",
+            apply_url="data:text/html,<script>x</script>",
+            apply_email="not an email <script>",
+        )
+    )
+    assert n.url is None and n.apply_url is None and n.apply_email is None
+    ok = normalize(
+        RawJob(
+            source="remoteok",
+            external_id="y",
+            title="Dev",
+            url="https://remoteok.com/remote-jobs/y",
+            apply_email="jobs@example.com",
+        )
+    )
+    assert ok.apply_url == "https://remoteok.com/remote-jobs/y"
+    assert ok.apply_email == "jobs@example.com"
