@@ -162,15 +162,23 @@ class DocumentFactory:
     async def compile(
         self, row: LatexTemplate, source: str, *, timeout_s: float = 90
     ) -> CompileResult:
+        """Compile; on a "Unicode character not set up" error, one automatic fix and retry."""
         mapping = row.mapping or {}
         engine: Engine = mapping.get("engine", "pdflatex")
-        return await compile_tex(
-            self.settings.latex_spool_dir,
-            source,
-            assets=tfiles.assets(self.settings.storage_dir, row.id, mapping.get("main", "")),
-            engine=engine,
-            timeout_s=timeout_s,
+        assets = tfiles.assets(self.settings.storage_dir, row.id, mapping.get("main", ""))
+        timeout = min(timeout_s, self.settings.latex_compile_timeout_s)
+        result = await compile_tex(
+            self.settings.latex_spool_dir, source, assets=assets, engine=engine, timeout_s=timeout
         )
+        bad = unsupported_chars(result)
+        if result.ok or not bad:
+            return result
+        fixed = replace_chars(source, bad)
+        retry = await compile_tex(
+            self.settings.latex_spool_dir, fixed, assets=assets, engine=engine, timeout_s=timeout
+        )
+        retry.errors = [f"auto-fix: replaced {''.join(sorted(bad))!r}", *retry.errors]
+        return retry
 
     async def convert(self, template_id: int, *, locale: str = "en") -> dict[str, Any]:
         if self.provider is None:
@@ -566,6 +574,28 @@ class DocumentFactory:
             session.add(doc)
             await session.commit()
             return doc.id
+
+
+_UNSUPPORTED = re.compile(r"Unicode character (.) \(U\+([0-9A-Fa-f]{4,6})\)")
+
+
+def unsupported_chars(result: CompileResult) -> set[str]:
+    """Characters pdfLaTeX reported as "not set up for use with LaTeX"."""
+    if result.ok:
+        return set()
+    found = {chr(int(code, 16)) for _, code in _UNSUPPORTED.findall(result.log)}
+    found |= {ch for e in result.errors for ch, _ in _UNSUPPORTED.findall(e)}
+    return found
+
+
+def replace_chars(source: str, chars: set[str]) -> str:
+    """Each unsupported character -> its ASCII decomposition, or nothing (emoji, symbols)."""
+    import unicodedata
+
+    for ch in chars:
+        ascii_ = unicodedata.normalize("NFKD", ch).encode("ascii", "ignore").decode()
+        source = source.replace(ch, ascii_)
+    return source
 
 
 def _headings(mapping: dict[str, Any], lang: str) -> dict[str, str]:

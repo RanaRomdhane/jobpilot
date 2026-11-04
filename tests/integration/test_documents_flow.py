@@ -339,3 +339,18 @@ async def test_templates_are_confined_to_their_folder(ctx: dict[str, Any]) -> No
     async with ctx["sm"]() as s:
         assert await s.scalar(select(LatexTemplate.id)) is None
     assert TemplateKind.CV.value == "cv"
+
+
+def test_unicode_compile_error_is_fixed_once() -> None:
+    from jobpilot_worker.documents import replace_chars, unsupported_chars
+
+    failed = CompileResult(
+        ok=False,
+        pdf=None,
+        pages=None,
+        errors=["LaTeX Error: Unicode character ① (U+2460) not set up for use with LaTeX."],
+        log="! LaTeX Error: Unicode character 🚀 (U+1F680)\nnot set up",
+    )
+    bad = unsupported_chars(failed)
+    assert bad == {"①", "🚀"}
+    assert replace_chars("step ① launch 🚀 ok", bad) == "step 1 launch  ok"
