@@ -12,15 +12,19 @@ and strict (an unknown variable is an error, not an empty string).
 
 from __future__ import annotations
 
+import logging
 import re
 from collections.abc import Iterable
 from typing import Any
 
 from jinja2 import StrictUndefined, TemplateSyntaxError
 from jinja2.sandbox import ImmutableSandboxedEnvironment
+from pydantic import ValidationError
 
 from jobpilot_core.resume import ResumeProfile
 from jobpilot_security import LatexSafe, latex_escape, latex_paragraphs, latex_url
+
+log = logging.getLogger(__name__)
 
 MONTHS = {
     "fr": [
@@ -208,3 +212,41 @@ def render(source: str, context: dict[str, Any]) -> str:
         raise TemplateError(f"line {exc.lineno}: {exc.message}") from exc
     except Exception as exc:  # undefined variable, bad filter use, sandbox violation
         raise TemplateError(f"{type(exc).__name__}: {exc}") from exc
+
+
+_CONTACT_ALIASES = {
+    "name": "full_name",
+    "full_name": "full_name",
+    "email": "email",
+    "phone": "phone",
+    "location": "location",
+}
+
+
+def profile_from_data(data: dict[str, Any], lang: str) -> ResumeProfile:
+    """Extracted data -> ResumeProfile, tolerant of the variable names (`name`, `link.github`,
+    a top-level `email`) and of one bad field (dropped, not fatal)."""
+    raw = {k: v for k, v in data.items() if k not in ("letter", "__headings__")}
+    contact = dict(raw.pop("contact", None) or {})
+    for alias, key in _CONTACT_ALIASES.items():
+        if isinstance(raw.get(alias), str):
+            contact.setdefault(key, raw.pop(alias))
+    links = list(raw.get("links") or [])
+    for kind, url in (raw.pop("link", None) or {}).items():
+        if url and not any(isinstance(lk, dict) and lk.get("url") == url for lk in links):
+            links.append({"kind": kind, "url": url})
+    raw["links"] = links
+    flat = raw.pop("skills_flat", None)
+    if flat and not raw.get("skills"):
+        raw["skills"] = [{"name": "Skills", "skills": flat}]
+    base: dict[str, Any] = {"language": lang if lang in ("fr", "en") else "other"}
+    if contact:
+        base["contact"] = contact
+    for key, value in raw.items():
+        try:
+            ResumeProfile.model_validate({**base, key: value})
+        except ValidationError:
+            log.info("template data: dropped invalid field %r", key)
+            continue
+        base[key] = value
+    return ResumeProfile.model_validate(base)

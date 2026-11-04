@@ -15,13 +15,12 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, Field
 
 from jobpilot_agents.structured import complete_structured, response_format
 from jobpilot_core.config import LLMPurpose
 from jobpilot_core.llm import ChatResult, LLMProvider
 from jobpilot_core.llm.tokens import estimate_prompt_tokens
-from jobpilot_core.resume import ResumeProfile
 from jobpilot_latex.convert import (
     Chunk,
     Replacement,
@@ -31,7 +30,14 @@ from jobpilot_latex.convert import (
     round_trip,
     split_chunks,
 )
-from jobpilot_latex.render import LABELS, TemplateError, check_syntax, profile_context, render
+from jobpilot_latex.render import (
+    LABELS,
+    TemplateError,
+    check_syntax,
+    profile_context,
+    profile_from_data,
+    render,
+)
 from jobpilot_security import SPOTLIGHT_POLICY, spotlight
 
 log = logging.getLogger(__name__)
@@ -216,44 +222,6 @@ def merge_data(into: dict[str, Any], part: dict[str, Any]) -> None:
             merge_data(into[key], value)
         else:
             into[key] = value
-
-
-_CONTACT_ALIASES = {
-    "name": "full_name",
-    "full_name": "full_name",
-    "email": "email",
-    "phone": "phone",
-    "location": "location",
-}
-
-
-def profile_from_data(data: dict[str, Any], lang: str) -> ResumeProfile:
-    """Extracted data -> ResumeProfile, tolerant of the variable names (`name`, `link.github`,
-    a top-level `email`) and of one bad field (dropped, not fatal)."""
-    raw = {k: v for k, v in data.items() if k not in ("letter", "__headings__")}
-    contact = dict(raw.pop("contact", None) or {})
-    for alias, key in _CONTACT_ALIASES.items():
-        if isinstance(raw.get(alias), str):
-            contact.setdefault(key, raw.pop(alias))
-    links = list(raw.get("links") or [])
-    for kind, url in (raw.pop("link", None) or {}).items():
-        if url and not any(isinstance(lk, dict) and lk.get("url") == url for lk in links):
-            links.append({"kind": kind, "url": url})
-    raw["links"] = links
-    flat = raw.pop("skills_flat", None)
-    if flat and not raw.get("skills"):
-        raw["skills"] = [{"name": "Skills", "skills": flat}]
-    base: dict[str, Any] = {"language": lang if lang in ("fr", "en") else "other"}
-    if contact:
-        base["contact"] = contact
-    for key, value in raw.items():
-        try:
-            ResumeProfile.model_validate({**base, key: value})
-        except ValidationError:
-            log.info("template data: dropped invalid field %r", key)
-            continue
-        base[key] = value
-    return ResumeProfile.model_validate(base)
 
 
 def render_context(

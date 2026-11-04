@@ -105,7 +105,7 @@ def apply_replacements(source: str, edits: list[Replacement]) -> str:
             raise ReplacementError("empty find")
         found = _find_all(text, e.find)
         if not found:
-            if e.replace and e.replace in text:
+            if "\\VAR{" in e.replace and e.replace in text:
                 continue
             raise ReplacementError(f"text not found: {e.find[:80]!r}")
         out, pos = [], 0
@@ -214,7 +214,7 @@ class RoundTrip:
 def round_trip(original: str, rendered: str, context_words: int = 6) -> RoundTrip:
     """Compare the visible words of the original LaTeX and of the rendered template."""
     a, b = _words(detex(original)), _words(detex(rendered))
-    numbers = [w for w in a if re.search(r"\d", w) and len(w) >= 3]
+    numbers = [w for w in a if re.search(r"\d", w) and len(w) >= 2]  # "65" (%) counts
     rendered_words = set(b)
     missing_numbers = sorted({n for n in numbers if n not in rendered_words})
     sm = difflib.SequenceMatcher(a=a, b=b, autojunk=False)

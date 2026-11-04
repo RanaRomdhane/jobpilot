@@ -54,6 +54,7 @@ from jobpilot_resume.tailoring import (
     validate_letter,
     validate_plan,
 )
+from jobpilot_security.text import fold
 from jobpilot_worker.matching import profile_row
 
 if TYPE_CHECKING:
@@ -108,7 +109,7 @@ def _lang(value: str | None, fallback: str = "fr") -> Literal["fr", "en"]:
 def job_keywords(job: JobPosting, match: JobMatch | None) -> list[str]:
     """The posting's keywords: what the matcher found, plus the tech vocabulary it names."""
     out = [*(match.matched_keywords if match else []), *(match.missing_keywords if match else [])]
-    text = f"{job.title}\n{job.description or ''}"
+    text = fold(f"{job.title}\n{job.description or ''}")
     out += [t for t in TECH_VOCAB if _pattern(t).search(text)]
     return list(dict.fromkeys(k for k in out if k))[:40]
 
