@@ -34,7 +34,7 @@ ROUTES: dict[str, str] = {
     "www.tanitjobs.com/rss/": "tanitjobs.rss",
     "www.keejob.com/offres-emploi/": "keejob.html",
     "api.adzuna.com/v1/api/jobs/fr/search/1": "adzuna.json",
-    "jsearch.p.rapidapi.com/search": "jsearch.json",
+    "jsearch.p.rapidapi.com/search-v2": "jsearch.json",
 }
 ROBOTS = "User-agent: *\nAllow: /\nDisallow: /*keyword\n"
 

@@ -8,13 +8,19 @@ from typing import Any
 import httpx
 import pytest
 
+from jobpilot_core.config import Settings
+from jobpilot_core.models import GmailSyncState
 from jobpilot_mcp_gmail.gmail_client import (
     GmailAuthExpiredError,
     GmailClient,
     HistoryExpiredError,
+    MessageNotFoundError,
     OAuthToken,
+    ParsedMessage,
     parse_message,
 )
+from jobpilot_security import InjectionDetector
+from jobpilot_worker.gmail_sync import GmailSync
 
 
 def b64(s: str) -> str:
@@ -104,6 +110,65 @@ async def test_history_404_means_full_sync() -> None:
     client, _ = make_client(lambda r: httpx.Response(404, json={}))
     with pytest.raises(HistoryExpiredError):
         await client.list_history(1)
+
+
+async def test_deleted_message_404_is_its_own_error() -> None:
+    client, _ = make_client(lambda r: httpx.Response(404, json={}))
+    with pytest.raises(MessageNotFoundError):
+        await client.get_message("gone")
+
+
+class Rows:
+    def __init__(self, rows: list[Any]) -> None:
+        self.rows = rows
+
+    def first(self) -> Any:
+        return self.rows[0]
+
+    def all(self) -> list[Any]:
+        return []  # no email is known yet
+
+
+async def test_sync_skips_a_message_deleted_after_listing() -> None:
+    class Gmail:
+        async def list_history(self, start: int) -> tuple[list[str], int]:
+            return ["gone", "kept"], 42
+
+        async def get_message(self, gmail_id: str) -> ParsedMessage:
+            if gmail_id == "gone":
+                raise MessageNotFoundError("404")
+            return parse_message(gmail_message(id=gmail_id, labelIds=["SPAM"]))
+
+    class Session:
+        def __init__(self, state: Any) -> None:
+            self.state = state
+
+        async def __aenter__(self) -> Session:
+            return self
+
+        async def __aexit__(self, *_: object) -> None:
+            return None
+
+        async def scalars(self, _: object) -> Rows:
+            return Rows([self.state])
+
+        def add(self, obj: object) -> None:
+            return None
+
+        async def commit(self) -> None:
+            return None
+
+    state = GmailSyncState(account_email="me@example.com", last_history_id=1)
+    sync = GmailSync(
+        Settings(_env_file=None),
+        lambda: Session(state),  # type: ignore[arg-type]
+        Gmail(),  # type: ignore[arg-type]
+        InjectionDetector(),
+        "me@example.com",
+    )
+    result = await sync.run()
+    assert (result.seen, result.added, result.skipped) == (2, 0, 2)
+    assert state.last_history_id == 42  # the sync moved past the deleted message
 
 
 async def test_list_message_ids_paginates() -> None:

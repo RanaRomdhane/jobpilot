@@ -1,24 +1,27 @@
 {
   "status": "OK",
   "request_id": "synthetic-fixture",
-  "parameters": {"query": "machine learning", "page": 1, "num_pages": 1},
-  "data": [
-    {
-      "job_id": "QUJDREVGR0gxMjM0NTY3OA==",
-      "employer_name": "Exemplia Gulf",
-      "job_publisher": "Company careers page",
-      "job_employment_type": "FULLTIME",
-      "job_title": "AI Engineer",
-      "job_apply_link": "https://careers.example.com/jobs/ai-engineer",
-      "job_description": "Synthetic fixture. Build LLM and computer vision products in Dubai. Python, PyTorch, AWS.",
-      "job_is_remote": false,
-      "job_posted_at_datetime_utc": "2026-11-02T06:00:00.000Z",
-      "job_city": "Dubai",
-      "job_state": "Dubai",
-      "job_country": "AE",
-      "job_min_salary": null,
-      "job_max_salary": null,
-      "job_salary_currency": null
-    }
-  ]
+  "parameters": {"query": "machine learning", "date_posted": "week"},
+  "data": {
+    "jobs": [
+      {
+        "job_id": "QUJDREVGR0gxMjM0NTY3OA==",
+        "employer_name": "Exemplia Gulf",
+        "job_publisher": "Company careers page",
+        "job_employment_type": "FULLTIME",
+        "job_title": "AI Engineer",
+        "job_apply_link": "https://careers.example.com/jobs/ai-engineer",
+        "job_description": "Synthetic fixture. Build LLM and computer vision products in Dubai. Python, PyTorch, AWS.",
+        "job_is_remote": false,
+        "job_posted_at_datetime_utc": "2026-11-02T06:00:00.000Z",
+        "job_city": "Dubai",
+        "job_state": "Dubai",
+        "job_country": "AE",
+        "job_min_salary": null,
+        "job_max_salary": null
+      },
+      "not-a-job"
+    ],
+    "cursor": "synthetic-cursor"
+  }
 }

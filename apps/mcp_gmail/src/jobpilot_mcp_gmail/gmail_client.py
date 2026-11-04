@@ -47,6 +47,10 @@ class HistoryExpiredError(GmailError):
     """startHistoryId is too old; a full sync is needed."""
 
 
+class MessageNotFoundError(GmailError):
+    """The message was deleted (or never existed) between being listed and being fetched."""
+
+
 class LabelNotAllowedError(GmailError):
     pass
 
@@ -141,6 +145,8 @@ class GmailClient:
                 continue
             if resp.status_code == 404 and path.startswith("/history"):
                 raise HistoryExpiredError("history id too old")
+            if resp.status_code == 404 and path.startswith("/messages/"):
+                raise MessageNotFoundError(f"gmail {method} {path.split('?')[0]} -> 404")
             if resp.status_code >= 400:
                 raise GmailError(f"gmail {method} {path.split('?')[0]} -> {resp.status_code}")
             return resp.json() if resp.content else {}
