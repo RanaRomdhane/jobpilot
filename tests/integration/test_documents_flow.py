@@ -117,7 +117,7 @@ PLAN = {
     ],
     "education": ["edu_1"],
     "skills": [{"id": "skl_1", "skills": ["Python", "PyTorch", "Kubernetes"]}],
-    "drop_first": ["b_3"],
+    "drop_first": ["b_2"],
 }
 
 LETTER = {
@@ -142,14 +142,14 @@ def pdf_with(text_: str, pages: int) -> bytes:
 
 
 class FakeTeX:
-    """Stands in for the sandbox: 2 pages while the project is in the CV, else 1."""
+    """Stands in for the sandbox: 2 pages while the second bullet is in the CV, else 1."""
 
     def __init__(self) -> None:
         self.sources: list[str] = []
 
     async def __call__(self, spool: Path, source: str, **kw: Any) -> CompileResult:
         self.sources.append(source)
-        pages = 2 if "GPT-2" in source and "letter" not in source[:40] else 1
+        pages = 2 if "cutting review time" in source and "letter" not in source[:40] else 1
         return CompileResult(ok=True, pdf=pdf_with(source, pages), pages=pages, log="ok")
 
 
@@ -285,12 +285,12 @@ async def test_generate_tailors_fits_and_guards(
     assert app.contact_email == "jobs@example.com"
     cv_doc = next(d for d in docs if d.kind.value == "cv")
     content = cv_doc.content or {}
-    # page fitting: the 2-page render dropped the project bullet the plan offered first
-    assert content["dropped_for_length"] == ["b_3"] and cv_doc.page_count == 1
+    # page fitting: the 2-page render dropped the bullet the plan offered first
+    assert content["dropped_for_length"] == ["b_2"] and cv_doc.page_count == 1
     assert "\\newpage" not in tex.sources[0]  # confirmed: forced breaks removed
     codes = {f["code"] for f in content["findings"]}
     assert {"new_number", "new_skill"} <= codes
-    bullets = content["profile"]["experiences"][0]["bullets"]
+    bullets = content["plan"]["experiences"][0]["bullets"]
     assert bullets[1]["text"] == MASTER["experiences"][0]["bullets"][1]["text"]  # reverted
     assert r"\textbf{BERT}" in tex.sources[-2] and "Kubernetes" not in tex.sources[-2]
     assert content["ats"]["after"] is not None
