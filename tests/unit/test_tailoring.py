@@ -395,3 +395,15 @@ def test_ids_written_in_a_letter_are_citations_not_words() -> None:
     assert findings == []
     assert kept[0].text == "Mon modèle BERT a atteint 73 %."
     assert kept[0].sources == ["b_1"]
+
+
+def test_a_project_listed_among_experiences_goes_back_to_projects() -> None:
+    p = plan()
+    p.experiences.insert(
+        0,
+        PlannedItem(id="prj_1", bullets=[PlannedBullet(source="b_4", text="Fine-tuned GPT-2")]),
+    )
+    v = validate_plan(MASTER, p)
+    assert [i.id for i in v.plan.experiences] == ["exp_1", "exp_2"]
+    assert [i.id for i in v.plan.projects] == ["prj_1"]
+    assert [(f.code, f.where) for f in v.findings] == [("wrong_group", "prj_1")]

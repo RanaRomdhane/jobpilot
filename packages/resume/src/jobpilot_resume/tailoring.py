@@ -350,6 +350,17 @@ def validate_plan(
             out.append(p)
         return out
 
+    # an item listed in the wrong group (a project among experiences) goes back to its own
+    sections = ("experiences", "projects", "extra_sections")
+    owner = {i: kind for kind in sections for i in items_of(kind)}
+    for kind in sections:
+        for p in list(getattr(plan, kind)):
+            home = owner.get(p.id, kind)
+            if home != kind:
+                findings.append(Finding("wrong_group", p.id, kind))
+                getattr(plan, kind).remove(p)
+                getattr(plan, home).append(p)
+
     plan.experiences = check_items("experiences", plan.experiences)
     planned = {p.id for p in plan.experiences}
     for exp in master.experiences:
