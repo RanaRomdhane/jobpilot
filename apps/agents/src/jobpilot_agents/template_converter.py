@@ -320,6 +320,21 @@ def template_problem(
     return None
 
 
+_SECTION_LISTS = re.compile(
+    r"\\BLOCK\{\s*for\s+\w+\s+in\s+"
+    r"(experiences|education|projects|skills|languages|certifications|extra_sections)\s*\}"
+)
+
+
+def guard_empty_section(template: str) -> str:
+    """Wrap a section in `if <its lists>`: tailoring can empty a list, leaving a bare heading."""
+    lists = list(dict.fromkeys(_SECTION_LISTS.findall(template)))
+    if not lists or template.lstrip().startswith("\\BLOCK{if"):
+        return template
+    body = template.rstrip("\n")
+    return f"\\BLOCK{{if {' or '.join(lists)}}}\n{body}\n\\BLOCK{{endif}}\n"
+
+
 def _complete_headings(proposal: ChunkProposal, template: str, title: str) -> None:
     """Every h.<key> the template uses gets a heading (the section's own title if undeclared)."""
     have = {h.key for h in proposal.headings}
@@ -334,7 +349,8 @@ def _apply(chunk: Chunk, mode: str, proposal: ChunkProposal) -> str:
         if not proposal.template:
             raise ReplacementError("no template returned")
         text = repair(proposal.template)
-        return text if text.endswith("\n") else text + "\n"
+        text = text if text.endswith("\n") else text + "\n"
+        return guard_empty_section(text) if chunk.kind == "section" else text
     edits = [Replacement(e.find, repair(e.replace)) for e in proposal.edits]
     return apply_replacements(chunk.source, edits) if edits else chunk.source
 

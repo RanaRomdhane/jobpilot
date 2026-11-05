@@ -497,7 +497,11 @@ class DocumentFactory:
             job.description or ""
         )
         kept, findings = validate_letter(
-            master, [(p.text, p.sources) for p in plan.paragraphs], job_text, keywords
+            master,
+            [(p.text, p.sources) for p in plan.paragraphs],
+            job_text,
+            keywords,
+            identity=f"{job.title} {job.company_name or ''} {job.location_raw or ''}",
         )
         mapping = tpl.mapping or {}
         ctx = profile_context(tailored, lang)

@@ -80,7 +80,11 @@ def plan(**kw: object) -> TailorPlan:
                         source="b_2", text="Cut review time by 35% by automating reviews"
                     ),
                 ],
-            )
+            ),
+            PlannedItem(
+                id="exp_2",
+                bullets=[PlannedBullet(source="b_3", text="Built 9 dashboards in Power BI")],
+            ),
         ],
         "education": ["edu_1"],
         "skills": [PlannedSkills(id="skl_1", skills=["pytorch", "Python"])],
@@ -206,7 +210,9 @@ def test_letter_keeps_grounded_sentences_only() -> None:
         ),
         ("I raised revenue by 300%.", []),
     ]
-    kept, findings = validate_letter(MASTER, paragraphs, job, ["Python", "Kubernetes"])
+    kept, findings = validate_letter(
+        MASTER, paragraphs, job, ["Python", "Kubernetes"], identity="ML Engineer Exemplia Gulf"
+    )
     assert [p.text for p in kept] == [
         "I am applying for the ML Engineer role at Exemplia Gulf. The 6 month mission fits me.",
         "At Exemplia Labs I built a BERT model reaching 73% accuracy on 4,000+ tasks.",
@@ -232,9 +238,8 @@ def test_drop_order_and_page_fitting() -> None:
     )
     v = validate_plan(MASTER, p)
     order = drop_order(v.plan)
-    assert (
-        order[0] == "b_2" and "b_4" in order and "b_1" not in order
-    )  # never an experience's first bullet
+    # the plan's choice first, the first project last; an experience's first bullet never goes
+    assert order == ["b_2", "b_4"]
     cv = build_tailored(MASTER, v.plan, drop={"b_2", "b_4"})
     assert [b.id for b in cv.experiences[0].bullets] == ["b_1"] and cv.projects == []
 
@@ -291,3 +296,86 @@ def test_dedupe_profile_undoes_overlapping_parse_passes() -> None:
     # the fuller wording the duplicate section kept wins, under the original bullet id
     assert clean.experiences[0].bullets[0].id == "b_1"
     assert "React" in clean.experiences[0].bullets[0].text
+
+
+def test_translation_keeps_marks_and_generic_words() -> None:
+    # R² in the source, IA for AI, Unicode hyphens: none of these is an invention
+    source = "Selected Random Forest achieving R² = 0.42 in an AI-powered on-premise stack"
+    text = "Sélection de Random Forest (R² = 0.42) dans une stack IA on\u2011premise"
+    assert check_text(text, source, _vocab_of(source), [], "b") == []
+
+
+def _vocab_of(text: str) -> set[str]:
+    from jobpilot_resume.tailoring import _vocab
+
+    return _vocab(text)
+
+
+def test_skill_named_inside_a_longer_entry_is_real() -> None:
+    master = MASTER.model_copy(deep=True)
+    master.skills[0].skills = ["Model deployment (Docker, FastAPI)", "LoRA fine-tuning", "SQL"]
+    p = plan(skills=[PlannedSkills(id="skl_1", skills=["Docker", "LoRA fine\u2011tuning", "Rust"])])
+    v = validate_plan(master, p)
+    assert v.plan.skills[0].skills == ["Docker", "LoRA fine-tuning"]
+    assert [(f.code, f.detail) for f in v.findings] == [("new_skill", "Rust")]
+
+
+def test_every_experience_stays_in_the_timeline() -> None:
+    p = plan()
+    p.experiences = p.experiences[:1]  # leaves out exp_2
+    v = validate_plan(MASTER, p)
+    assert [e.id for e in v.plan.experiences] == ["exp_1", "exp_2"]
+    assert v.plan.experiences[1].bullets[0].source == "b_3"
+    assert any(f.code == "restored_experience" for f in v.findings)
+
+
+def test_letter_cannot_claim_the_postings_words_or_availability() -> None:
+    job = (
+        "Exemplia Gulf cherche un ML Engineer. Vous diffuserez la culture Craft auprès des équipes."
+    )
+    kept, findings = validate_letter(
+        MASTER,
+        [
+            ("Exemplia Gulf diffuse la culture Craft auprès des équipes.", []),
+            ("Je sais diffuser la culture Craft auprès des équipes.", []),
+            ("Je suis disponible immédiatement pour un entretien.", []),
+            ("I am available from June.", []),
+            ("J'ai construit un modèle BERT atteignant 73% de précision.", ["b_1"]),
+        ],
+        job,
+        identity="ML Engineer Exemplia Gulf",
+    )
+    assert [p.text for p in kept] == [
+        "Exemplia Gulf diffuse la culture Craft auprès des équipes.",
+        "J'ai construit un modèle BERT atteignant 73% de précision.",
+    ]
+    codes = [f.code for f in findings]
+    assert codes.count("availability") == 2 and "new_term" in codes
+
+
+def test_page_fitting_keeps_the_standout_content_longest() -> None:
+    p = TailorPlan(
+        experiences=[
+            PlannedItem(
+                id="e",
+                bullets=[
+                    PlannedBullet(source="e1", text="x"),
+                    PlannedBullet(source="e2", text="x"),
+                ],
+            )
+        ],
+        projects=[
+            PlannedItem(
+                id="p1",
+                bullets=[
+                    PlannedBullet(source="a1", text="x"),
+                    PlannedBullet(source="a2", text="x"),
+                ],
+            ),
+            PlannedItem(id="p2", bullets=[PlannedBullet(source="b1", text="x")]),
+        ],
+        certifications=["c1", "c2", "c3"],
+        extra_sections=[PlannedItem(id="s", bullets=[PlannedBullet(source="s1", text="x")])],
+        drop_first=["a1", "e2"],
+    )
+    assert drop_order(p) == ["e2", "a2", "c3", "s1", "b1", "a1"]  # e1: an experience keeps one

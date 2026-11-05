@@ -96,11 +96,13 @@ Return a plan:
   For each, the bullets to keep, each with `source` = the id of the master bullet it rewrites
   and `text` = the rewritten bullet: same facts and numbers, translated if needed, wording
   aligned with the posting's vocabulary when the fact is the same. You may wrap up to two
-  important terms already in the bullet in **bold**. Keep every experience; drop weak projects
-  and bullets. One source per bullet, each source at most once.
+  important terms already in the bullet in **bold**. Keep every experience;
+  put the most relevant projects first; drop weak bullets. One source per bullet, each source
+  at most once.
 - education, certifications, languages: ids to show, in order.
 - skills: for the relevant groups (by id), the skills to show, most relevant first, written
-  exactly as in the profile.
+  exactly as in the profile (a tool named inside a longer entry, like "Docker" in "Model
+  deployment (Docker, FastAPI)", may be listed alone).
 - headline: the job title the candidate can honestly claim, close to the posting's wording
   (e.g. an "AI/ML Engineer" profile applying to "Data Scientist" stays an engineer).
 - summary: 2-3 sentences built from the profile's summary and the cited bullets (`sources`).
@@ -178,6 +180,12 @@ added by the template):
    numbers; each paragraph lists in `sources` the ids of the bullets it uses;
 4. availability and a short call to action.
 
+Everything said about the candidate comes from the profile. Words of the posting describe the
+company and the role only: never present them as the candidate's abilities or experience. Do
+not state availability, start dates, mobility or salary (the profile does not hold them): end
+with a simple request for an interview.
+Word sentences so that no adjective or participle refers to the candidate's gender (French:
+"Votre poste retient mon attention", never "Intéressé(e)" or "Intéressé·e"; no "enthousiaste").
 Only facts from the profile: never invent experience, numbers, tools, motivations about the
 company that the posting does not state, or skills the profile lacks. Mention the company only
 by what the posting says about it. Address the reader neutrally; never assume a gender.

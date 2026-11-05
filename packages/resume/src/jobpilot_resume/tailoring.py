@@ -21,6 +21,7 @@ answer degrades the tailoring, never the truth.
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
@@ -148,9 +149,18 @@ _TOKEN = re.compile(r"[A-Za-zÀ-ÿ0-9][\w.+#/-]*[\w+#]|[A-Za-zÀ-ÿ0-9]")
 _BOLD = re.compile(r"\*\*([^*]+)\*\*")
 
 
+_HYPHENS = str.maketrans({"\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2212": "-"})
+
+
+def _canon(text: str) -> str:
+    """One written form for comparisons: "R²" = "R2", every Unicode hyphen is "-"."""
+    return unicodedata.normalize("NFKC", text).translate(_HYPHENS)
+
+
 def _numbers(text: str) -> set[str]:
     """'4,000+' -> '4000'; '0,42' -> '0.42'; '96%' -> '96'."""
     out: set[str] = set()
+    text = _canon(text)
     # "10 000" / "10 000" (French thousands) -> "10000"
     text = re.sub(r"(?<=\d)[   ](?=\d{3}\b)", "", text)
     for raw in _NUMBER.findall(text):
@@ -160,7 +170,7 @@ def _numbers(text: str) -> set[str]:
 
 
 def _vocab(text: str) -> set[str]:
-    return {w for w in re.findall(r"[a-z0-9][a-z0-9+#.]*[a-z0-9+#]|[a-z0-9]", fold(text))}
+    return {w for w in re.findall(r"[a-z0-9][a-z0-9+#.]*[a-z0-9+#]|[a-z0-9]", fold(_canon(text)))}
 
 
 def _techy(token: str, first: bool) -> bool:
@@ -177,7 +187,7 @@ def _techy(token: str, first: bool) -> bool:
 
 def suspicious_terms(text: str, allowed: set[str]) -> list[str]:
     """Technical-looking tokens of `text` that `allowed` (folded vocabulary) does not contain."""
-    plain = _BOLD.sub(r"\1", text)
+    plain = _canon(_BOLD.sub(r"\1", text))
     out: list[str] = []
     for sentence in re.split(r"(?<=[.;:!?])\s+", plain):
         for i, tok in enumerate(_TOKEN.findall(sentence)):
@@ -276,7 +286,7 @@ def check_text(
     new_numbers = sorted(_numbers(text) - _numbers(source))
     if new_numbers:
         findings.append(Finding("new_number", where, ", ".join(new_numbers)))
-    terms = suspicious_terms(text, _vocab(source) | profile_vocab)
+    terms = suspicious_terms(text, _vocab(source) | profile_vocab | ROLE_WORDS)
     if terms:
         findings.append(Finding("new_term", where, ", ".join(dict.fromkeys(terms))))
     folded = fold(_BOLD.sub(r"\1", text))
@@ -339,6 +349,13 @@ def validate_plan(
         return out
 
     plan.experiences = check_items("experiences", plan.experiences)
+    planned = {p.id for p in plan.experiences}
+    for exp in master.experiences:
+        if exp.id not in planned:
+            findings.append(Finding("restored_experience", exp.id, exp.title))
+            first = [PlannedBullet(source=b.id, text=b.text) for b in exp.bullets[:1]]
+            used_sources.update(b.source for b in first)
+            plan.experiences.append(PlannedItem(id=exp.id, bullets=first))
     plan.projects = check_items("projects", plan.projects)
     plan.extra_sections = check_items("extra_sections", plan.extra_sections)
 
@@ -362,11 +379,15 @@ def validate_plan(
         if g.id not in groups:
             findings.append(Finding("unknown_id", g.id, "skills"))
             continue
-        own = {fold(s): s for s in groups[g.id].skills}
+        own = {fold(_canon(s)): s for s in groups[g.id].skills}
+        entries = " | ".join(own)
         chosen = []
         for s in g.skills:
-            if fold(s) in own:
-                chosen.append(own[fold(s)])  # the master spelling
+            key = fold(_canon(s)).strip()
+            if key in own:
+                chosen.append(own[key])  # the master spelling
+            elif key and _mentions(entries, key):
+                chosen.append(_canon(s).strip())  # named inside a longer master entry
             else:
                 findings.append(Finding("new_skill", g.id, s))
         g.skills = list(dict.fromkeys(chosen))
@@ -414,6 +435,12 @@ def all_texts(profile: ResumeProfile) -> dict[str, str]:
 # --------------------------------------------------------------------------- cover letters
 
 
+_FIRST_PERSON = re.compile(r"(?<![a-z])(je|j'|j\u2019|mon|ma|mes|i|i'm|my)(?![a-z])")
+_AVAILABILITY = re.compile(
+    r"disponib|immediately|available|availability|start (?:right away|immediately)|des maintenant"
+)
+
+
 @dataclass(slots=True)
 class CheckedParagraph:
     text: str
@@ -425,36 +452,41 @@ def validate_letter(
     paragraphs: list[tuple[str, list[str]]],
     job_text: str,
     job_keywords: list[str] | None = None,
+    identity: str = "",
 ) -> tuple[list[CheckedParagraph], list[Finding]]:
     """Keep only the sentences whose facts come from the cited bullets, the profile or the job.
 
     Numbers must be in the cited bullets, the profile's summary/headline or the posting itself
     (e.g. "6 months"); technical terms in the profile or the posting; and a job keyword the
     profile does not contain (a skill the candidate lacks) is never claimed. A sentence that
-    fails is removed; an empty paragraph is dropped.
+    fails is removed; an empty paragraph is dropped. In a sentence about the candidate ("I", "je",
+    "mon"...) terms may only come from the profile or the job's `identity` (title, company): a
+    phrase of the posting cannot become a claimed ability. Availability is never stated, the
+    profile does not hold it.
     """
     texts = all_texts(master)
     profile_vocab = _vocab(profile_text(master))
     job_vocab = _vocab(job_text)
+    identity_vocab = _vocab(identity)
     findings: list[Finding] = []
     out: list[CheckedParagraph] = []
     for n, (text, sources) in enumerate(paragraphs, start=1):
         valid_sources = [s for s in dict.fromkeys(sources) if s in texts]
         for s in set(sources) - set(valid_sources):
             findings.append(Finding("unknown_id", s, f"paragraph {n}"))
-        basis = " ".join(
-            [
-                master.summary or "",
-                master.headline or "",
-                job_text,
-                *(texts[s] for s in valid_sources),
-            ]
+        own = " ".join(
+            [master.summary or "", master.headline or "", *(texts[s] for s in valid_sources)]
         )
+        basis = f"{own} {job_text}"
         kept: list[str] = []
         for sentence in re.split(r"(?<=[.!?])\s+", text.strip()):
             if not sentence:
                 continue
-            problems = check_text(sentence, basis, profile_vocab | job_vocab, [], f"p{n}")
+            about_me = bool(_FIRST_PERSON.search(fold(sentence)))
+            allowed = profile_vocab | identity_vocab if about_me else profile_vocab | job_vocab
+            problems = check_text(sentence, own if about_me else basis, allowed, [], f"p{n}")
+            if _AVAILABILITY.search(fold(sentence)):
+                problems.append(Finding("availability", f"p{n}", sentence[:80]))
             claimed = [
                 kw
                 for kw in (job_keywords or [])
@@ -532,20 +564,35 @@ def build_tailored(
         projects=pick("projects", plan.projects, keep_empty=False),
         skills=skills,
         languages=[by_id["languages"][i].model_copy() for i in plan.languages],
-        certifications=[by_id["certifications"][i].model_copy() for i in plan.certifications],
+        certifications=[
+            by_id["certifications"][i].model_copy() for i in plan.certifications if i not in dropped
+        ],
         links=[lk.model_copy() for lk in master.links],
         extra_sections=extras,
     )
 
 
 def drop_order(plan: TailorPlan) -> list[str]:
-    """Bullets to remove, one at a time, until the CV fits: the plan's own choice first, then
-    the last bullet of the last project / extra section / experience (least recent, least
-    relevant come last in the plan's ordering)."""
-    order = list(plan.drop_first)
-    for group in (plan.extra_sections, plan.projects, plan.experiences):
+    """What to remove, one at a time, until the CV fits (ids of bullets and certifications).
+
+    1. extra bullets of items (the plan's own choice first, then from the least relevant item,
+       which comes last in the plan); every item keeps its first bullet;
+    2. certifications beyond the first two;
+    3. extra sections;
+    4. whole projects, least relevant first; the plan's first project is the very last resort.
+    Experiences are never removed.
+    """
+    groups = (plan.projects, plan.experiences)
+    firsts = {i.bullets[0].source for g in groups for i in g if i.bullets}
+    extras = {b.source for s in plan.extra_sections for b in s.bullets}
+    order = [b for b in plan.drop_first if b not in firsts and b not in extras]
+    for group in groups:
         for item in reversed(group):
-            for b in reversed(item.bullets[1:] if group is plan.experiences else item.bullets):
+            for b in reversed(item.bullets[1:]):
                 if b.source not in order:
                     order.append(b.source)
+    order += list(reversed(plan.certifications[2:]))
+    order += [b.source for s in reversed(plan.extra_sections) for b in reversed(s.bullets)]
+    for item in reversed(plan.projects):
+        order += [b.source for b in item.bullets[:1]]
     return order
