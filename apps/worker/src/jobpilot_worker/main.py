@@ -22,6 +22,7 @@ from jobpilot_core.health import WORKER_HEARTBEAT_KEY, WORKER_HEARTBEAT_TTL_S
 from jobpilot_core.llm import DbUsageSink, LLMConfigurationError, LLMProvider, build_provider
 from jobpilot_core.log import configure_logging
 from jobpilot_core.models import EmailMessage, OAuthCredential
+from jobpilot_core.ratelimit import RateLimitExceededError
 from jobpilot_core.tasks import TaskReporter, create_task_run
 from jobpilot_mcp_gmail.credentials import CredentialStore, GmailNotConnectedError
 from jobpilot_mcp_gmail.gmail_client import GmailAuthExpiredError, GmailClient
@@ -274,6 +275,10 @@ async def _factory_task(rep: TaskReporter, label: str, run: Any) -> dict[str, An
     except FactoryError as exc:
         await rep.fail(exc.code if not exc.detail else f"{exc.code}: {exc.detail}")
         return {"error": exc.code}
+    except RateLimitExceededError:
+        # the provider's daily budget: nothing is lost, it can simply be retried later
+        await rep.fail("llm_budget")
+        return {"error": "llm_budget"}
     except Exception as exc:
         await rep.fail(f"{type(exc).__name__}: {exc}")
         raise

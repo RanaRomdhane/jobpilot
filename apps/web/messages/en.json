@@ -1033,7 +1033,8 @@
       "job_flagged": "Flagged posting: confirm to continue.",
       "llm_unavailable": "The language model is not configured.",
       "job_not_found": "Job not found.",
-      "generic": "Generation failed. Try again."
+      "generic": "Generation failed. Try again.",
+      "llm_budget": "The language model's daily budget is used up for now. Try again later: nothing is lost."
     }
   }
 }

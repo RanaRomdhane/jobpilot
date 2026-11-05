@@ -35,6 +35,7 @@ const FACTORY_ERRORS = [
   "job_flagged",
   "llm_unavailable",
   "job_not_found",
+  "llm_budget",
 ] as const;
 
 /** The tailored CV + cover letter for one job: generate, then open the PDFs. Never sends. */

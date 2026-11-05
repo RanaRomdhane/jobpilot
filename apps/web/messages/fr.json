@@ -1033,7 +1033,8 @@
       "job_flagged": "Offre signalée : confirmez pour continuer.",
       "llm_unavailable": "Le modèle de langue n'est pas configuré.",
       "job_not_found": "Offre introuvable.",
-      "generic": "La génération a échoué. Réessayez."
+      "generic": "La génération a échoué. Réessayez.",
+      "llm_budget": "Le budget quotidien du modèle de langue est épuisé pour le moment. Réessayez plus tard : rien n'est perdu."
     }
   }
 }
