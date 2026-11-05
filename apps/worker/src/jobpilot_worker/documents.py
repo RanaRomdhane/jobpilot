@@ -55,6 +55,7 @@ from jobpilot_resume.tailoring import (
     Finding,
     build_tailored,
     drop_order,
+    feminine_forms,
     profile_text,
     validate_letter,
     validate_plan,
@@ -429,10 +430,19 @@ class DocumentFactory:
     ) -> dict[str, Any]:
         assert self.provider is not None
         plan, _ = await tailor_cv(
-            self.provider, master, job, lang=lang, page_budget=tpl.page_budget, tpm=self.tpm
+            self.provider,
+            master,
+            job,
+            lang=lang,
+            page_budget=tpl.page_budget,
+            tpm=self.tpm,
+            form=self.settings.candidate_french_form,
         )
         plan.language = lang
         checked = validate_plan(master, plan, keywords)
+        if lang == "fr" and self.settings.candidate_french_form == "feminine":
+            checked.plan.headline = feminine_forms(checked.plan.headline)
+            checked.plan.summary.text = feminine_forms(checked.plan.summary.text)
         mapping = tpl.mapping or {}
         source = self._prepare(await self.template_source(tpl.id), mapping)
         dropped: set[str] = set()
@@ -491,7 +501,13 @@ class DocumentFactory:
     ) -> dict[str, Any]:
         assert self.provider is not None
         plan, _ = await write_letter(
-            self.provider, master, job_dict, lang=lang, tone=tone, tpm=self.tpm
+            self.provider,
+            master,
+            job_dict,
+            lang=lang,
+            tone=tone,
+            tpm=self.tpm,
+            form=self.settings.candidate_french_form,
         )
         job_text = f"{job.title}\n{job.company_name or ''}\n{job.location_raw or ''}\n" + (
             job.description or ""
@@ -503,6 +519,9 @@ class DocumentFactory:
             keywords,
             identity=f"{job.title} {job.company_name or ''} {job.location_raw or ''}",
         )
+        if lang == "fr" and self.settings.candidate_french_form == "feminine":
+            for paragraph in kept:
+                paragraph.text = feminine_forms(paragraph.text)
         mapping = tpl.mapping or {}
         ctx = profile_context(tailored, lang)
         ctx["h"] = _headings(mapping, lang)

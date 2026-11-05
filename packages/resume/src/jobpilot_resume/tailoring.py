@@ -471,6 +471,39 @@ def _lift_inline_ids(text: str, known: dict[str, str]) -> tuple[str, list[str]]:
     return (_ID_LEFTOVERS.sub("", text) if cited else text), cited
 
 
+_ROLE_FEMININE = {
+    "ingénieur": "ingénieure",
+    "développeur": "développeuse",
+    "chercheur": "chercheuse",
+    "consultant": "consultante",
+}
+# not "le poste d'Ingénieur" or "diplôme d'ingénieur": those are the title and the degree
+_ROLE = re.compile(
+    r"(?<![dD]['’])(?<!\bde )(?<!poste )\b(" + "|".join(_ROLE_FEMININE) + r")\b", re.IGNORECASE
+)
+_I_AM_PARTICIPLE = re.compile(
+    r"\b(je (?:suis|serais|serai|reste|resterais)\s+"
+    r"(?:(?:très|particulièrement|vraiment)\s+)?\w+é)\b",
+    re.IGNORECASE,
+)
+_ROLE_SPECIALISED = re.compile(r"(ingénieure[^.]*?)\bspécialisé\b", re.IGNORECASE)
+
+
+def feminine_forms(text: str) -> str:
+    """Correct what the model left masculine about the candidate, in French text.
+
+    The model is asked for feminine forms; this covers the title and the phrases that recur.
+    """
+
+    def role(m: re.Match[str]) -> str:
+        new = _ROLE_FEMININE[m.group(1).lower()]
+        return new.capitalize() if m.group(1)[0].isupper() else new
+
+    text = _ROLE.sub(role, text)
+    text = _I_AM_PARTICIPLE.sub(r"\1e", text)
+    return _ROLE_SPECIALISED.sub(r"\1spécialisée", text)
+
+
 @dataclass(slots=True)
 class CheckedParagraph:
     text: str

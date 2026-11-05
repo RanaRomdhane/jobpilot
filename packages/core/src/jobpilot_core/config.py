@@ -151,6 +151,8 @@ class Settings(BaseSettings):
 
     # ---- application factory (Phase 6)
     cover_letter_tone: Literal["formal", "modern"] = "formal"
+    # how French documents refer to the candidate; never inferred from the name
+    candidate_french_form: Literal["neutral", "feminine", "masculine"] = "neutral"
     cv_page_budget: int = 1
     latex_compile_timeout_s: float = 90.0
     scrape_min_interval_s: float = 6.0  # between two pages of the same HTML site

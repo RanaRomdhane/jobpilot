@@ -28,6 +28,18 @@ BUDGET_SHARE = 0.85
 REQUEST_OVERHEAD = 80
 LANGUAGE_NAMES = {"fr": "French", "en": "English"}
 Tone = Literal["formal", "modern"]
+FrenchForm = Literal["neutral", "feminine", "masculine"]
+
+_FORM_RULES: dict[str, str] = {
+    "neutral": """Word sentences so that no adjective or participle refers to the candidate's gender
+(French: "Votre poste retient mon attention", never "Intéressé(e)" or "Intéressé·e"; no
+"enthousiaste").""",
+    "feminine": """In French, use feminine forms for the candidate ("Ingénieure IA", "spécialisée",
+"honorée"). A degree or the posting's own title keeps its form ("diplôme d'ingénieur", "le poste
+d'Ingénieur").""",
+    "masculine": """In French, use masculine forms for the candidate ("Ingénieur IA", "spécialisé",
+"honoré"). A degree or the posting's own title keeps its form.""",
+}
 
 
 def profile_digest(profile: ResumeProfile) -> str:
@@ -83,7 +95,7 @@ def _budget(messages: list[dict[str, Any]], schema: dict[str, Any], tpm: int) ->
 # --------------------------------------------------------------------------- CV
 
 
-def tailor_instructions(lang: str, page_budget: int) -> str:
+def tailor_instructions(lang: str, page_budget: int, form: FrenchForm = "neutral") -> str:
     return f"""You tailor a candidate's CV to one job posting, for the candidate. Write in
 {LANGUAGE_NAMES.get(lang, "French")} (the posting's language).
 
@@ -112,6 +124,8 @@ Return a plan:
   least useful first.
 - language: "fr" or "en".
 
+{_FORM_RULES[form]}
+
 {SPOTLIGHT_POLICY}"""
 
 
@@ -127,9 +141,10 @@ async def tailor_cv(
     lang: str,
     page_budget: int,
     tpm: int,
+    form: FrenchForm = "neutral",
 ) -> tuple[TailorPlan, list[ChatResult]]:
     messages: list[dict[str, Any]] = [
-        {"role": "system", "content": tailor_instructions(lang, page_budget)},
+        {"role": "system", "content": tailor_instructions(lang, page_budget, form)},
         {
             "role": "user",
             "content": "Candidate profile (trusted):\n"
@@ -165,7 +180,7 @@ class LetterPlan(BaseModel):
     suspicious: bool = False
 
 
-def letter_instructions(lang: str, tone: Tone) -> str:
+def letter_instructions(lang: str, tone: Tone, form: FrenchForm = "neutral") -> str:
     style = (
         'formal and classic ("Madame, Monsieur" register in French), measured sentences'
         if tone == "formal"
@@ -187,8 +202,7 @@ Everything said about the candidate comes from the profile. Words of the posting
 company and the role only: never present them as the candidate's abilities or experience. Do
 not state availability, start dates, mobility or salary (the profile does not hold them): end
 with a simple request for an interview.
-Word sentences so that no adjective or participle refers to the candidate's gender (French:
-"Votre poste retient mon attention", never "Intéressé(e)" or "Intéressé·e"; no "enthousiaste").
+{_FORM_RULES[form]}
 Only facts from the profile: never invent experience, numbers, tools, motivations about the
 company that the posting does not state, or skills the profile lacks. Mention the company only
 by what the posting says about it. Address the reader neutrally; never assume a gender.
@@ -206,9 +220,10 @@ async def write_letter(
     lang: str,
     tone: Tone,
     tpm: int,
+    form: FrenchForm = "neutral",
 ) -> tuple[LetterPlan, list[ChatResult]]:
     messages: list[dict[str, Any]] = [
-        {"role": "system", "content": letter_instructions(lang, tone)},
+        {"role": "system", "content": letter_instructions(lang, tone, form)},
         {
             "role": "user",
             "content": "Candidate profile (trusted):\n"

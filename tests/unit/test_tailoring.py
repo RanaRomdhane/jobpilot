@@ -12,6 +12,7 @@ from jobpilot_resume.tailoring import (
     build_tailored,
     check_text,
     drop_order,
+    feminine_forms,
     suspicious_terms,
     validate_letter,
     validate_plan,
@@ -407,3 +408,21 @@ def test_a_project_listed_among_experiences_goes_back_to_projects() -> None:
     assert [i.id for i in v.plan.experiences] == ["exp_1", "exp_2"]
     assert [i.id for i in v.plan.projects] == ["prj_1"]
     assert [(f.code, f.where) for f in v.findings] == [("wrong_group", "prj_1")]
+
+
+def test_feminine_forms_cover_the_candidate_not_the_post_or_the_degree() -> None:
+    assert feminine_forms("Ingénieur IA / Machine Learning") == "Ingénieure IA / Machine Learning"
+    assert feminine_forms("Développeur Python") == "Développeuse Python"
+    assert (
+        feminine_forms("Ingénieur IA avec un diplôme d'ingénieur, spécialisé en NLP.")
+        == "Ingénieure IA avec un diplôme d'ingénieur, spécialisée en NLP."
+    )
+    assert (
+        feminine_forms("Le poste d'Ingénieur IA d'Exemplia. Je serais honoré d'en parler.")
+        == "Le poste d'Ingénieur IA d'Exemplia. Je serais honorée d'en parler."
+    )
+    assert feminine_forms("Je suis très motivé.") == "Je suis très motivée."
+    assert feminine_forms("Je suis disponible pour un entretien.") == (
+        "Je suis disponible pour un entretien."
+    )
+    assert feminine_forms("J'ai développé un modèle.") == "J'ai développé un modèle."
