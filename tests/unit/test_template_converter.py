@@ -180,3 +180,20 @@ async def test_only_failed_chunks_are_converted_again() -> None:
     assert again.check is not None and again.check.ok
     assert r"\VAR{b.text|rich}" in again.template and r"\VAR{contact.email}" in again.template
     assert again.data["experiences"][0]["company"] == "Exemplia Labs"
+
+
+def test_repair_links_phone_and_date_ranges() -> None:
+    src = (
+        r"\link{\VAR{p.url}}{GitHub} \href{\VAR{c.url|url}}{x} "
+        r"\link{tel:\VAR{contact.phone|url}}{y}"
+        "\n"
+        r"\VAR{exp.start|date(lang)} -- \VAR{exp.end|date(lang)}"
+    )
+    out = repair(src)
+    assert r"\link{\VAR{p.url|url}}{GitHub}" in out
+    assert r"\href{\VAR{c.url|url}}{x}" in out  # already filtered: unchanged
+    assert r"\link{tel:\VAR{contact.phone|tel}}{y}" in out
+    assert r"\VAR{exp|daterange(lang, ' -- ')}" in out
+    from jobpilot_latex.render import render
+
+    assert render(r"\VAR{p|tel}", {"p": "(+33) 1 02 03 04 05"}) == "+33102030405"

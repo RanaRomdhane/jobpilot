@@ -256,9 +256,24 @@ _FILTER_OUTSIDE = re.compile(r"\\VAR\{([^{}]+)\}((?:\|\w+(?:\([^(){}]*\))?)+)")
 _LITERAL_NEWLINE = re.compile(r"\\n(?![A-Za-z])")
 
 
+# a value printed as a link target without |url (escaping alone would break `_` or `#` in it)
+_UNFILTERED_LINK = re.compile(r"(\\(?:href|link|url)\{)\\VAR\{\s*([A-Za-z_][\w.]*)\s*\}")
+# a phone number is not a URL: |url rejects it; |tel keeps + and digits
+_TEL_URL = re.compile(r"tel:\\VAR\{\s*([A-Za-z_][\w.]*)\s*\|\s*url\s*\}")
+# start -- end printed separately loses "present" for a current role
+_TWO_DATES = re.compile(
+    r"\\VAR\{\s*(\w+)\.start\s*\|\s*date\(lang\)\s*\}\s*(?:--|\u2013|-)\s*"
+    r"\\VAR\{\s*\1\.end\s*\|\s*date\(lang\)\s*\}"
+)
+
+
 def repair(template: str) -> str:
-    """Fix the two slips models make with the LaTeX delimiters (both are unambiguous)."""
-    return _LITERAL_NEWLINE.sub("\n", _FILTER_OUTSIDE.sub(r"\\VAR{\1\2}", template))
+    """Fix the slips models make with the LaTeX delimiters (each fix is unambiguous)."""
+    out = _FILTER_OUTSIDE.sub(r"\\VAR{\1\2}", template)
+    out = _LITERAL_NEWLINE.sub("\n", out)
+    out = _TEL_URL.sub(r"tel:\\VAR{\1|tel}", out)
+    out = _UNFILTERED_LINK.sub(r"\1\\VAR{\2|url}", out)
+    return _TWO_DATES.sub(lambda m: rf"\VAR{{{m.group(1)}|daterange(lang, ' -- ')}}", out)
 
 
 def _complete_headings(proposal: ChunkProposal, template: str, title: str) -> None:

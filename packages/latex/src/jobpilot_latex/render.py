@@ -167,10 +167,15 @@ def make_env() -> ImmutableSandboxedEnvironment:
     def url(value: Any) -> LatexSafe:
         return LatexSafe(latex_url(value))
 
+    def tel(value: Any) -> LatexSafe:
+        # "(+33) 1 02 03 04 05" -> "+33102030405": only + and digits, safe in any URL
+        return LatexSafe(re.sub(r"[^0-9+]", "", str(value or "")))
+
     env.filters.update(
         ljoin=ljoin,
         rich=rich,
         url=url,
+        tel=tel,
         paragraphs=latex_paragraphs,
         date=format_date,
         daterange=date_range,
