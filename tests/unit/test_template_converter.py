@@ -219,14 +219,16 @@ LETTER_DATA = {
         "recipient": ["Exemplia Team", "Tunis"],
         "opening": "Dear Hiring Manager,",
         "paragraphs": [
-            "I am writing about the Data Engineer role, which fits my background in pipelines very well.",
-            "I built a BERT model reaching 73% accuracy, and I also ran large clusters in production for years.",
+            "I am writing about the Data Engineer role, which fits my background in pipelines "
+            "very well.",
+            "I built a BERT model reaching 73% accuracy, and I also ran large clusters in "
+            "production for years.",
         ],
         "closing": "Sincerely,",
     }
 }
 
-GOOD_LETTER = r"""\begin{letter}{\VAR{letter.recipient|ljoin(' \ ')}}
+GOOD_LETTER = r"""\begin{letter}{\VAR{letter.recipient|ljoin(' \\\\ ')}}
 \opening{\VAR{letter.opening}}
 
 \BLOCK{for p in letter.paragraphs}
@@ -242,11 +244,14 @@ async def test_letter_with_hardcoded_sentences_is_rejected() -> None:
     # passes a round trip (fixed text always "matches"), and would repeat old claims forever
     lazy = GOOD_LETTER.replace(
         r"\VAR{p|rich}",
-        "I built a BERT model reaching 73\% accuracy, and I also ran large clusters in production "
-        "for years, which is a sentence nobody can tailor.\n\VAR{p|rich}",
+        r"I built a BERT model reaching 73\% accuracy, and I also ran large clusters in production "
+        "for years, which is a sentence nobody can tailor.\n\\VAR{p|rich}",
     )
     provider = ScriptedProvider(
-        {"edits": [{"find": "Ada Example", "replace": r"\VAR{name}"}], "data": {"name": "Ada Example"}},
+        {
+            "edits": [{"find": "Ada Example", "replace": r"\VAR{name}"}],
+            "data": {"name": "Ada Example"},
+        },
         {"template": lazy, "data": LETTER_DATA},
         {"template": r"\opening{\VAR{letter.opening}}", "data": LETTER_DATA},
         {"template": GOOD_LETTER, "data": LETTER_DATA},
@@ -279,10 +284,10 @@ def test_handle_filter() -> None:
 
 
 def test_detex_keeps_text_after_layout_commands() -> None:
-    src = r"space{0.05 cm}" "
-" r"egin{twocolentry}{" "
+    src = r"""\vspace{0.05 cm}
+\begin{twocolentry}{
   June 2025
 }
   Intern
-" r"\end{twocolentry}"
+\end{twocolentry}"""
     assert detex(src) == "June 2025 Intern"

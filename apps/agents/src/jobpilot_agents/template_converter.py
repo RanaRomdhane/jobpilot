@@ -291,7 +291,8 @@ _PARAGRAPH_LOOP = re.compile(r"\\BLOCK\{\s*for\s+\w+\s+in\s+letter\.paragraphs\s
 
 def _personal_values(data: dict[str, Any]) -> list[str]:
     """Contact details the part contained: they may not stay hardcoded in the template."""
-    contact = data.get("contact") if isinstance(data.get("contact"), dict) else {}
+    raw = data.get("contact")
+    contact: dict[str, Any] = raw if isinstance(raw, dict) else {}
     values = [data.get(k) for k in ("name", "email", "phone", "location")]
     values += [contact.get(k) for k in ("full_name", "email", "phone", "location")]
     return [v for v in dict.fromkeys(values) if isinstance(v, str) and len(v) >= 4]
