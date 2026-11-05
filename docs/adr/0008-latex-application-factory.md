@@ -30,7 +30,7 @@ document may contain a fact the master profile does not.
    similarity), which fixed a Phase 4 parser defect (duplicated sections, dropped bold words).
 5. **Tailoring returns a plan, not a document** (ids + rewritten bullets with their source ids);
    `validate_plan` repairs it and `build_tailored` assembles facts from the master. Page budget:
-   compile, and while over budget drop the plan's least useful bullet and recompile (≤ 8 rounds).
+   compile, and while over budget drop the plan's least useful bullet and recompile (≤ 16 rounds; experience goes last and always keeps its first bullet).
 6. **Versioning**: each generation adds a `generated_document` version per kind on a draft
    `application` (one per job); files live under `storage/documents/<application>/`.
 7. **ATS before/after** is the job-keyword coverage of the master profile vs. the text read back

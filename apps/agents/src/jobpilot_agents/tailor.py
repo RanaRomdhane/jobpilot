@@ -94,7 +94,8 @@ responsibilities. A skill the job asks for and the profile lacks stays absent.
 Return a plan:
 - experiences / projects / extra_sections: the items to show, most relevant first, by their id.
   For each, the bullets to keep, each with `source` = the id of the master bullet it rewrites
-  and `text` = the rewritten bullet: same facts and numbers, translated if needed, wording
+  and `text` = the rewritten bullet: same facts and numbers, translated if needed (a metric
+  keeps its exact meaning: in French "accuracy" is "exactitude", never "précision"), wording
   aligned with the posting's vocabulary when the fact is the same. You may wrap up to two
   important terms already in the bullet in **bold**. Keep every experience;
   put the most relevant projects first; drop weak bullets. One source per bullet, each source
@@ -177,8 +178,10 @@ Write 3 or 4 paragraphs (220-330 words in total), no salutation and no closing f
 added by the template):
 1. the role and the company, and why this candidate fits in one sentence;
 2-3. the 2-3 strongest achievements of the profile that match the posting, with their real
-   numbers; each paragraph lists in `sources` the ids of the bullets it uses;
-4. availability and a short call to action.
+   numbers; each paragraph lists in `sources` the ids of the bullets it uses (every number and
+   tool of the paragraph comes from those bullets; ids never appear in `text`; a metric keeps
+   its exact meaning: in French "accuracy" is "exactitude", never "précision");
+4. a short request for an interview.
 
 Everything said about the candidate comes from the profile. Words of the posting describe the
 company and the role only: never present them as the candidate's abilities or experience. Do

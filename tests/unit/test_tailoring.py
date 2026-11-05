@@ -303,6 +303,9 @@ def test_translation_keeps_marks_and_generic_words() -> None:
     source = "Selected Random Forest achieving R² = 0.42 in an AI-powered on-premise stack"
     text = "Sélection de Random Forest (R² = 0.42) dans une stack IA on\u2011premise"
     assert check_text(text, source, _vocab_of(source), [], "b") == []
+    assert (
+        check_text("ResNet-50 et ViT", "ResNet50 and ViT", _vocab_of("ResNet50 ViT"), [], "b") == []
+    )
     hyphens = "Fine-tuned GPT-2 and macro-F1 on CIFAR-10 with t-SNE"
     assert check_text("GPT-2, macro-F1 sur CIFAR-10 avec t-SNE", hyphens, set(), [], "b") == []
 
@@ -383,3 +386,12 @@ def test_page_fitting_keeps_the_standout_content_longest() -> None:
         drop_first=["a1", "e2"],
     )
     assert drop_order(p) == ["e2", "c3", "s1", "a2", "b1", "a1"]  # e1: an experience keeps one
+
+
+def test_ids_written_in_a_letter_are_citations_not_words() -> None:
+    kept, findings = validate_letter(
+        MASTER, [("Mon modèle BERT a atteint 73 % (b_1, b_1).", [])], ""
+    )
+    assert findings == []
+    assert kept[0].text == "Mon modèle BERT a atteint 73 %."
+    assert kept[0].sources == ["b_1"]

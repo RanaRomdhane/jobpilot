@@ -140,7 +140,8 @@ id; the model cannot change them. Every rewritten bullet cites its master bullet
 to the master wording if it adds a number, a technical term the profile does not contain, or a
 job keyword the candidate lacks. Skills are picked from the master's own lists; the headline may
 only use profile words and generic role words. Cover-letter sentences failing the same checks are
-removed. Every correction is stored with the document and shown in the UI. The job posting is
+removed; a first-person sentence may use the profile's terms only, never the posting's, and
+availability is never stated. Every correction is stored with the document and shown in the UI. The job posting is
 spotlighted as untrusted data, and a posting flagged for injection is only used after an explicit
 confirmation.
 

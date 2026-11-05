@@ -194,6 +194,8 @@ def suspicious_terms(text: str, allowed: set[str]) -> list[str]:
             if not _techy(tok, first=i == 0):
                 continue
             parts = [p for p in re.split(r"[/-]", fold(tok).strip(".")) if p]
+            if "".join(parts) in allowed:
+                continue  # "ResNet-50" is the profile's "ResNet50"
             if parts and not all(p in allowed or p.rstrip("s") in allowed for p in parts):
                 out.append(tok)
     return out
@@ -444,6 +446,20 @@ _AVAILABILITY = re.compile(
 )
 
 
+_INLINE_ID = re.compile(r"\b[a-z]{1,4}_[0-9a-f]+\b")
+_ID_LEFTOVERS = re.compile(
+    r"\s*[(\[]\s*(?:(?:sources?|id)\s*:?\s*)?[,;\s]*[)\]]|\s+(?=[,;.!?](?:\s|$))"
+)
+
+
+def _lift_inline_ids(text: str, known: dict[str, str]) -> tuple[str, list[str]]:
+    """Take bullet ids the model wrote into its prose out of it; they are citations."""
+    cited = [m for m in _INLINE_ID.findall(text) if m in known]
+    for id_ in cited:
+        text = re.sub(rf",?\s*\b{re.escape(id_)}\b", "", text)
+    return (_ID_LEFTOVERS.sub("", text) if cited else text), cited
+
+
 @dataclass(slots=True)
 class CheckedParagraph:
     text: str
@@ -473,7 +489,9 @@ def validate_letter(
     identity_vocab = _vocab(identity)
     findings: list[Finding] = []
     out: list[CheckedParagraph] = []
-    for n, (text, sources) in enumerate(paragraphs, start=1):
+    for n, (raw, listed) in enumerate(paragraphs, start=1):
+        text, cited = _lift_inline_ids(raw, texts)
+        sources = [*listed, *cited]
         valid_sources = [s for s in dict.fromkeys(sources) if s in texts]
         for s in set(sources) - set(valid_sources):
             findings.append(Finding("unknown_id", s, f"paragraph {n}"))
