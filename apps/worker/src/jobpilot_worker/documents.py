@@ -71,7 +71,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 DOCS_DIR = "documents"
-MAX_FIT_ROUNDS = 8
+MAX_FIT_ROUNDS = 16
 LETTER_PAGES = 1
 SOURCE_NAMES = {
     "remotive": "Remotive",

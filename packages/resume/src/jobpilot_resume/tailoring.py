@@ -193,7 +193,7 @@ def suspicious_terms(text: str, allowed: set[str]) -> list[str]:
         for i, tok in enumerate(_TOKEN.findall(sentence)):
             if not _techy(tok, first=i == 0):
                 continue
-            parts = [p for p in re.split(r"[/]", fold(tok).strip(".")) if p]
+            parts = [p for p in re.split(r"[/-]", fold(tok).strip(".")) if p]
             if parts and not all(p in allowed or p.rstrip("s") in allowed for p in parts):
                 out.append(tok)
     return out
@@ -436,8 +436,11 @@ def all_texts(profile: ResumeProfile) -> dict[str, str]:
 
 
 _FIRST_PERSON = re.compile(r"(?<![a-z])(je|j'|j\u2019|mon|ma|mes|i|i'm|my)(?![a-z])")
+# a start date or immediate availability; "disponible pour un entretien" is only a courtesy
 _AVAILABILITY = re.compile(
-    r"disponib|immediately|available|availability|start (?:right away|immediately)|des maintenant"
+    r"disponib\w*\s+(?:immediat|tout de suite|de suite|des\b|a partir|a compter)"
+    r"|available\s+(?:immediately|from|to start|right away)"
+    r"|start\s+(?:immediately|right away)"
 )
 
 
@@ -575,24 +578,26 @@ def build_tailored(
 def drop_order(plan: TailorPlan) -> list[str]:
     """What to remove, one at a time, until the CV fits (ids of bullets and certifications).
 
-    1. extra bullets of items (the plan's own choice first, then from the least relevant item,
-       which comes last in the plan); every item keeps its first bullet;
-    2. certifications beyond the first two;
-    3. extra sections;
-    4. whole projects, least relevant first; the plan's first project is the very last resort.
-    Experiences are never removed.
+    Experience is what a recruiter reads first, so it goes last:
+    1. the plan's own choice (never an item's first bullet);
+    2. certifications beyond the first two, then extra sections;
+    3. extra bullets of projects, then whole projects, least relevant first, down to one;
+    4. extra bullets of experiences, least relevant first;
+    5. the last project: only if nothing else helped.
+    An experience always keeps its first bullet.
     """
-    groups = (plan.projects, plan.experiences)
-    firsts = {i.bullets[0].source for g in groups for i in g if i.bullets}
+    firsts = {
+        i.bullets[0].source for g in (plan.projects, plan.experiences) for i in g if i.bullets
+    }
     extras = {b.source for s in plan.extra_sections for b in s.bullets}
     order = [b for b in plan.drop_first if b not in firsts and b not in extras]
-    for group in groups:
-        for item in reversed(group):
-            for b in reversed(item.bullets[1:]):
-                if b.source not in order:
-                    order.append(b.source)
     order += list(reversed(plan.certifications[2:]))
     order += [b.source for s in reversed(plan.extra_sections) for b in reversed(s.bullets)]
     for item in reversed(plan.projects):
+        order += [b.source for b in reversed(item.bullets[1:])]
+    for item in reversed(plan.projects[1:]):
         order += [b.source for b in item.bullets[:1]]
-    return order
+    for item in reversed(plan.experiences):
+        order += [b.source for b in reversed(item.bullets[1:])]
+    order += [b.source for item in plan.projects[:1] for b in item.bullets[:1]]
+    return list(dict.fromkeys(order))

@@ -303,6 +303,8 @@ def test_translation_keeps_marks_and_generic_words() -> None:
     source = "Selected Random Forest achieving R² = 0.42 in an AI-powered on-premise stack"
     text = "Sélection de Random Forest (R² = 0.42) dans une stack IA on\u2011premise"
     assert check_text(text, source, _vocab_of(source), [], "b") == []
+    hyphens = "Fine-tuned GPT-2 and macro-F1 on CIFAR-10 with t-SNE"
+    assert check_text("GPT-2, macro-F1 sur CIFAR-10 avec t-SNE", hyphens, set(), [], "b") == []
 
 
 def _vocab_of(text: str) -> set[str]:
@@ -340,6 +342,7 @@ def test_letter_cannot_claim_the_postings_words_or_availability() -> None:
             ("Je sais diffuser la culture Craft auprès des équipes.", []),
             ("Je suis disponible immédiatement pour un entretien.", []),
             ("I am available from June.", []),
+            ("Je serais disponible pour un entretien.", []),
             ("J'ai construit un modèle BERT atteignant 73% de précision.", ["b_1"]),
         ],
         job,
@@ -347,6 +350,7 @@ def test_letter_cannot_claim_the_postings_words_or_availability() -> None:
     )
     assert [p.text for p in kept] == [
         "Exemplia Gulf diffuse la culture Craft auprès des équipes.",
+        "Je serais disponible pour un entretien.",
         "J'ai construit un modèle BERT atteignant 73% de précision.",
     ]
     codes = [f.code for f in findings]
@@ -378,4 +382,4 @@ def test_page_fitting_keeps_the_standout_content_longest() -> None:
         extra_sections=[PlannedItem(id="s", bullets=[PlannedBullet(source="s1", text="x")])],
         drop_first=["a1", "e2"],
     )
-    assert drop_order(p) == ["e2", "a2", "c3", "s1", "b1", "a1"]  # e1: an experience keeps one
+    assert drop_order(p) == ["e2", "c3", "s1", "a2", "b1", "a1"]  # e1: an experience keeps one
