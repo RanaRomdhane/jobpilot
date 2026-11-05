@@ -174,3 +174,16 @@ def test_asset_names_are_confined(name: str) -> None:
 def test_asset_names_allowed() -> None:
     assert str(safe_relpath("TLCcoverletter.sty")) == "TLCcoverletter.sty"
     assert str(safe_relpath("fonts\\Roboto.ttf")) == "fonts/Roboto.ttf"
+
+
+def test_profile_link_is_the_shortest_of_its_kind() -> None:
+    profile = ResumeProfile.model_validate(
+        {
+            "links": [
+                {"kind": "github", "url": "https://github.com/ada/project-one"},
+                {"kind": "github", "url": "https://github.com/ada"},
+                {"kind": "github", "url": "https://github.com/ada/another-project"},
+            ]
+        }
+    )
+    assert profile_context(profile, "en")["link"]["github"] == "https://github.com/ada"

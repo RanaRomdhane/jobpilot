@@ -202,7 +202,11 @@ def profile_context(profile: ResumeProfile, lang: str | None = None) -> dict[str
     """Template variables for a CV: the profile itself plus a few conveniences."""
     lang = _lang(lang or profile.language)
     data = profile.model_dump(mode="json")
-    links = {lnk.kind: lnk.url for lnk in profile.links}
+    # several links of a kind (a profile and its repositories): the shortest is the profile itself
+    links: dict[str, str] = {}
+    for lnk in profile.links:
+        if lnk.kind not in links or len(lnk.url) < len(links[lnk.kind]):
+            links[lnk.kind] = lnk.url
     return {
         **data,
         "lang": lang,
