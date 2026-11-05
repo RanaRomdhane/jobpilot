@@ -113,6 +113,9 @@ Rules:
 - headings: for each \\VAR{{h.<key>}} you use, the original title and its translation:
   {{"key": "experience", "en": "Professional Experience", "fr": "Expérience professionnelle"}}.
   key is one of: {", ".join(HEADING_KEYS)}.
+- Items have only the fields listed above. Text with no field of its own (a subtitle, a tag such
+  as "Published Research", a note after a title) stays inside the closest text field, e.g. the
+  project's name. Superscripts are written as Unicode in data ("R²").
 - Never invent content and never drop any: every visible word of the original must come back.
 
 {SPOTLIGHT_POLICY}"""
@@ -304,6 +307,65 @@ async def convert_template(
                 headings[h["key"]] = {"en": h["en"], "fr": h["fr"]}
             merge_data(data, converted.data)
     template = "".join(c.template for c in out)
+    check: RoundTrip | None = None
+    try:
+        check_syntax(template)
+        check = round_trip(source, render(template, render_context(data, headings, lang)))
+    except TemplateError as exc:
+        log.warning("converted template does not render: %s", exc)
+    return Conversion(kind, template, out, headings, data, check, usage)
+
+
+async def convert_failed(
+    provider: LLMProvider,
+    source: str,
+    kind: Kind,
+    *,
+    template: str,
+    failed: set[tuple[str, str]],
+    data: dict[str, Any],
+    headings: dict[str, dict[str, str]],
+    tpm: int,
+    lang: str = "en",
+    retries: int = 2,
+) -> Conversion:
+    """Re-convert only the chunks that failed last time (`failed` = {(kind, title)}).
+
+    A failed chunk was kept verbatim, so its original text is still in `template`: it is
+    replaced in place when the new attempt passes its checks. Chunks that already passed are not
+    sent to the model again (the conversion of a CV costs ~40k tokens; one section ~4k).
+    """
+    out: list[ConvertedChunk] = []
+    data = {k: v for k, v in data.items()}
+    headings = dict(headings)
+    usage: list[ChatResult] = []
+    for chunk in split_chunks(source):
+        if chunk.kind == "end" or not chunk.source.strip():
+            continue
+        mode = chunk_mode(chunk, kind)
+        if (chunk.kind, chunk.title) not in failed:
+            out.append(ConvertedChunk(chunk.kind, chunk.title, mode, chunk.source, "", {}))
+            continue
+        if template.count(chunk.source) != 1:
+            out.append(
+                ConvertedChunk(
+                    chunk.kind,
+                    chunk.title,
+                    mode,
+                    chunk.source,
+                    "",
+                    {},
+                    error="edited since: run a full conversion",
+                )
+            )
+            continue
+        converted = await _convert_chunk(provider, chunk, kind, mode, lang, tpm, retries, usage)
+        out.append(converted)
+        if converted.error is None:
+            template = template.replace(chunk.source, converted.template)
+            for h in converted.data.pop("__headings__", []):
+                headings[h["key"]] = {"en": h["en"], "fr": h["fr"]}
+            merge_data(data, converted.data)
     check: RoundTrip | None = None
     try:
         check_syntax(template)

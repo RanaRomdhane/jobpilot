@@ -21,7 +21,12 @@ from typing import TYPE_CHECKING, Any, Literal
 from sqlalchemy import func, select
 
 from jobpilot_agents.tailor import LetterPlan, Tone, tailor_cv, write_letter
-from jobpilot_agents.template_converter import convert_template, render_context
+from jobpilot_agents.template_converter import (
+    ConvertedChunk,
+    convert_failed,
+    convert_template,
+    render_context,
+)
 from jobpilot_core.config import Settings
 from jobpilot_core.enums import (
     ApplicationStatus,
@@ -180,7 +185,10 @@ class DocumentFactory:
         retry.errors = [f"auto-fix: replaced {''.join(sorted(bad))!r}", *retry.errors]
         return retry
 
-    async def convert(self, template_id: int, *, locale: str = "en") -> dict[str, Any]:
+    async def convert(
+        self, template_id: int, *, locale: str = "en", full: bool = False
+    ) -> dict[str, Any]:
+        """Convert the template; after a partial failure, only the failed parts (unless `full`)."""
         if self.provider is None:
             raise FactoryError("llm_unavailable")
         async with self.sm() as session:
@@ -188,25 +196,38 @@ class DocumentFactory:
             mapping = dict(row.mapping or {})
             source = tfiles.read_main(self.settings.storage_dir, row.id, mapping["main"])
             kind = row.kind.value
-        await self._progress(0.05, "converting the template, section by section")
-        conv = await convert_template(self.provider, source, kind, tpm=self.tpm, lang="en")  # type: ignore[arg-type]
         root = tfiles.template_root(self.settings.storage_dir, template_id)
+        previous = mapping.get("chunks") or []
+        failed = {(c["kind"], c["title"]) for c in previous if not c.get("ok")}
+        current = root / tfiles.TEMPLATE_FILE
+        if failed and not full and current.exists() and len(failed) < len(previous):
+            await self._progress(0.05, f"converting the {len(failed)} parts that failed")
+            conv = await convert_failed(
+                self.provider,
+                source,
+                kind,  # type: ignore[arg-type]
+                template=current.read_text(encoding="utf-8"),
+                failed=failed,
+                data=mapping.get("extracted") or {},
+                headings=mapping.get("headings") or {},
+                tpm=self.tpm,
+            )
+            by_key = {(c["kind"], c["title"]): c for c in previous}
+            records = []
+            for c in conv.chunks:
+                if (c.kind, c.title) in failed:
+                    records.append(_chunk_record(c))
+                else:
+                    records.append(by_key.get((c.kind, c.title)) or _chunk_record(c))
+        else:
+            await self._progress(0.05, "converting the template, section by section")
+            conv = await convert_template(self.provider, source, kind, tpm=self.tpm, lang="en")  # type: ignore[arg-type]
+            records = [_chunk_record(c) for c in conv.chunks if c.mode != "keep"]
         (root / tfiles.TEMPLATE_FILE).write_text(conv.template, encoding="utf-8")
         mapping.update(
             headings=conv.headings,
             check=_check_dict(conv.check),
-            chunks=[
-                {
-                    "kind": c.kind,
-                    "title": c.title,
-                    "mode": c.mode,
-                    "ok": c.error is None,
-                    "error": c.error,
-                    "ratio": c.check.ratio if c.check else None,
-                }
-                for c in conv.chunks
-                if c.mode != "keep"
-            ],
+            chunks=records,
             extracted=conv.data,
             variables=sorted(set(re.findall(r"\\VAR\{\s*([A-Za-z_][\w.]*)", conv.template))),
             warnings=layout_warnings(conv.template),
@@ -220,7 +241,8 @@ class DocumentFactory:
             await session.commit()
         await self._progress(0.8, "test compile with the template's own data")
         preview = await self.preview(template_id, use="extracted")
-        return {"ok": conv.ok, "chunks": len(mapping["chunks"]), "preview": preview}
+        ok = all(r["ok"] for r in records) and bool(conv.check and conv.check.ok)
+        return {"ok": ok, "chunks": len(records), "preview": preview}
 
     async def template_source(self, template_id: int) -> str:
         root = tfiles.template_root(self.settings.storage_dir, template_id)
@@ -600,6 +622,17 @@ def replace_chars(source: str, chars: set[str]) -> str:
 
 def _headings(mapping: dict[str, Any], lang: str) -> dict[str, str]:
     return {k: v.get(lang) or v.get("en") or "" for k, v in (mapping.get("headings") or {}).items()}
+
+
+def _chunk_record(c: ConvertedChunk) -> dict[str, Any]:
+    return {
+        "kind": c.kind,
+        "title": c.title,
+        "mode": c.mode,
+        "ok": c.error is None,
+        "error": c.error,
+        "ratio": c.check.ratio if c.check else None,
+    }
 
 
 def _check_dict(check: Any) -> dict[str, Any] | None:

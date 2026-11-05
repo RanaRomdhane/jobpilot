@@ -226,7 +226,7 @@ _CONTACT_ALIASES = {
 def profile_from_data(data: dict[str, Any], lang: str) -> ResumeProfile:
     """Extracted data -> ResumeProfile, tolerant of the variable names (`name`, `link.github`,
     a top-level `email`) and of one bad field (dropped, not fatal)."""
-    raw = {k: v for k, v in data.items() if k not in ("letter", "__headings__")}
+    raw = {k: _unlatex(v) for k, v in data.items() if k not in ("letter", "__headings__")}
     contact = dict(raw.pop("contact", None) or {})
     for alias, key in _CONTACT_ALIASES.items():
         if isinstance(raw.get(alias), str):
@@ -250,3 +250,22 @@ def profile_from_data(data: dict[str, Any], lang: str) -> ResumeProfile:
             continue
         base[key] = value
     return ResumeProfile.model_validate(base)
+
+
+_SUPERSCRIPTS = str.maketrans("0123456789+-", "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻")
+
+
+_SUP_CMD = re.compile(r"\\textsuperscript\{([0-9+-]{1,3})\}")
+_SUP_CARET = re.compile(r"(?<=[A-Za-z])\^([0-9])")
+
+
+def _unlatex(node: Any) -> Any:
+    """LaTeX the model left in data values: superscripts (textsuperscript, R^2) -> R²."""
+    if isinstance(node, str):
+        node = _SUP_CMD.sub(lambda m: m.group(1).translate(_SUPERSCRIPTS), node)
+        return _SUP_CARET.sub(lambda m: m.group(1).translate(_SUPERSCRIPTS), node)
+    if isinstance(node, list):
+        return [_unlatex(v) for v in node]
+    if isinstance(node, dict):
+        return {k: _unlatex(v) for k, v in node.items()}
+    return node

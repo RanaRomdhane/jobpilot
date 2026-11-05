@@ -193,6 +193,8 @@ def detex(source: str) -> str:
 
 
 def _words(text: str) -> list[str]:
+    # "R^2", "R²" and "R\textsuperscript{2}" (detexed to "R2") are the same word
+    text = re.sub(r"(?<=\w)\^(?=\w)", "", text)
     folded = unicodedata.normalize("NFKD", text.lower())
     folded = "".join(c for c in folded if not unicodedata.combining(c))
     return re.findall(r"[a-z0-9]+(?:[.,/+#][a-z0-9]+)*", folded)

@@ -152,3 +152,31 @@ def test_repair() -> None:
         r"\VAR{b.text|rich} and \link{\VAR{c.url|url}}{x}"
     )
     assert repair(r"x\n  \BLOCK{endif} \newline \nb") == "x\n  \\BLOCK{endif} \\newline \\nb"
+
+
+async def test_only_failed_chunks_are_converted_again() -> None:
+    from jobpilot_agents.template_converter import convert_failed
+
+    wrong = {"template": r"\section{\VAR{h.experience}} nothing", "data": {}}
+    first = await convert_template(
+        ScriptedProvider(replies()[0], replies()[1], wrong, wrong, wrong),  # type: ignore[arg-type]
+        CV,
+        "cv",
+        tpm=0,
+    )
+    assert [c.error is None for c in first.chunks[:3]] == [True, True, False]
+    provider = ScriptedProvider(replies()[2])  # one call: the failed section only
+    again = await convert_failed(
+        provider,  # type: ignore[arg-type]
+        CV,
+        "cv",
+        template=first.template,
+        failed={("section", "Experience")},
+        data=first.data,
+        headings=first.headings,
+        tpm=0,
+    )
+    assert len(provider.calls) == 1
+    assert again.check is not None and again.check.ok
+    assert r"\VAR{b.text|rich}" in again.template and r"\VAR{contact.email}" in again.template
+    assert again.data["experiences"][0]["company"] == "Exemplia Labs"
