@@ -171,7 +171,12 @@ def make_env() -> ImmutableSandboxedEnvironment:
         # "(+33) 1 02 03 04 05" -> "+33102030405": only + and digits, safe in any URL
         return LatexSafe(re.sub(r"[^0-9+]", "", str(value or "")))
 
+    def handle(value: Any) -> str:
+        # https://linkedin.com/in/jane-doe/ -> jane-doe (the template adds its own prefix)
+        return str(value or "").rstrip("/").rsplit("/", 1)[-1]
+
     env.filters.update(
+        handle=handle,
         ljoin=ljoin,
         rich=rich,
         url=url,

@@ -30,6 +30,7 @@ from jobpilot_latex.convert import (
     apply_replacements,
     round_trip,
     split_chunks,
+    static_words,
 )
 from jobpilot_latex.render import (
     LABELS,
@@ -113,6 +114,12 @@ Rules:
 - headings: for each \\VAR{{h.<key>}} you use, the original title and its translation:
   {{"key": "experience", "en": "Professional Experience", "fr": "Expérience professionnelle"}}.
   key is one of: {", ".join(HEADING_KEYS)}.
+- A cover letter's body (mode "rewrite") keeps its layout commands but NONE of its sentences:
+  recipient lines through letter.recipient, the salutation through letter.opening, ONE loop
+  \\BLOCK{{for p in letter.paragraphs}}\\VAR{{p|rich}}<blank line>\\BLOCK{{endfor}} replacing every
+  paragraph, the closing through letter.closing. data.letter holds the original text.
+- A URL prefix already in the template (https://github.com/\\github) needs only the last part:
+  \\VAR{{link.github|handle}}. Every occurrence of a personal value becomes a variable.
 - Items have only the fields listed above. Text with no field of its own (a subtitle, a tag such
   as "Published Research", a note after a title) stays inside the closest text field, e.g. the
   project's name. Superscripts are written as Unicode in data ("R²").
@@ -185,6 +192,8 @@ def output_budget(messages: list[dict[str, Any]], mode: str, tpm: int) -> int:
 
 
 def chunk_mode(chunk: Chunk, kind: Kind) -> str:
+    if chunk.kind == "body" and kind == "cover_letter":
+        return "rewrite"
     return "rewrite" if chunk.kind == "section" and kind == "cv" else "edits"
 
 
@@ -274,6 +283,40 @@ def repair(template: str) -> str:
     out = _TEL_URL.sub(r"tel:\\VAR{\1|tel}", out)
     out = _UNFILTERED_LINK.sub(r"\1\\VAR{\2|url}", out)
     return _TWO_DATES.sub(lambda m: rf"\VAR{{{m.group(1)}|daterange(lang, ' -- ')}}", out)
+
+
+MAX_STATIC_WORDS = {"section": 12, "body": 12}
+_PARAGRAPH_LOOP = re.compile(r"\\BLOCK\{\s*for\s+\w+\s+in\s+letter\.paragraphs\s*\}")
+
+
+def _personal_values(data: dict[str, Any]) -> list[str]:
+    """Contact details the part contained: they may not stay hardcoded in the template."""
+    contact = data.get("contact") if isinstance(data.get("contact"), dict) else {}
+    values = [data.get(k) for k in ("name", "email", "phone", "location")]
+    values += [contact.get(k) for k in ("full_name", "email", "phone", "location")]
+    return [v for v in dict.fromkeys(values) if isinstance(v, str) and len(v) >= 4]
+
+
+def template_problem(
+    chunk: Chunk, mode: str, kind: Kind, template: str, data: dict[str, Any]
+) -> str | None:
+    """What the round trip cannot see: content left hardcoded instead of becoming a variable."""
+    if mode == "rewrite":
+        fixed = static_words(template)
+        limit = MAX_STATIC_WORDS.get(chunk.kind, 12)
+        if len(fixed) > limit:
+            sample = " ".join(fixed[:12])
+            return (
+                f"too much fixed text ({len(fixed)} words, at most {limit}): {sample}... "
+                "Every sentence must come from a variable"
+            )
+    if kind == "cover_letter" and chunk.kind == "body" and not _PARAGRAPH_LOOP.search(template):
+        return "the letter body must loop over letter.paragraphs"
+    tags = re.sub(r"\\(?:VAR|BLOCK)\{[^{}]*\}", " ", template)
+    left = [v for v in _personal_values(data) if v in tags]
+    if left:
+        return f"personal values still hardcoded: {left}: use the variables"
+    return None
 
 
 def _complete_headings(proposal: ChunkProposal, template: str, title: str) -> None:
@@ -446,6 +489,9 @@ async def _convert_chunk(
             _complete_headings(proposal, template, chunk.title)
             heads = {h.key: {"en": h.en, "fr": h.fr} for h in proposal.headings}
             check_syntax(template)
+            problem = template_problem(chunk, mode, kind, template, proposal.data)
+            if problem:
+                raise ReplacementError(problem)
             rendered = render(template, render_context(proposal.data, heads, lang))
         except (ReplacementError, TemplateError) as exc:
             error = str(exc)

@@ -155,7 +155,8 @@ _DROP_WITH_ARGS = re.compile(
     r"|setcolumnwidth|needspace|titlerule|rule|selectfont|linespread|label|ref|pageref"
     r"|usepackage|RequirePackage|documentclass|newcommand|renewcommand|def"
     r"|newenvironment|input|include|pagestyle|thispagestyle|AND|newpage|clearpage)\*?"
-    r"(?:\s*\[[^\]]*\])*(?:\s*\{(?:[^{}]|\{[^{}]*\})*\})*"
+    # arguments must touch the command: a {group} after whitespace is the next thing's text
+    r"(?:\[[^\]]*\])*(?:\{(?:[^{}]|\{[^{}]*\})*\})*"
 )
 _URL_CMD = re.compile(r"\\(?:href|link|hrefWithoutArrow)\s*\{(?:[^{}]|\{[^{}]*\})*\}")
 _CMD = re.compile(r"\\[A-Za-z@]+\*?")
@@ -242,3 +243,15 @@ def layout_warnings(source: str) -> list[str]:
     if re.search(r"\\(input|include)\s*\{\s*/", source):
         out.append("absolute_input")
     return out
+
+
+_TEMPLATE_TAGS = re.compile(r"\\(?:VAR|BLOCK)\{[^{}]*\}|\\#\{[^{}]*\}")
+
+
+def static_words(template: str) -> list[str]:
+    """Visible words a template prints whatever the data: its fixed text.
+
+    A round trip cannot see text left hardcoded (it always "matches" the original), so a
+    converted part must not keep more than a few words of its own.
+    """
+    return _words(detex(_TEMPLATE_TAGS.sub(" ", template)))

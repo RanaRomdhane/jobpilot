@@ -197,3 +197,92 @@ def test_repair_links_phone_and_date_ranges() -> None:
     from jobpilot_latex.render import render
 
     assert render(r"\VAR{p|tel}", {"p": "(+33) 1 02 03 04 05"}) == "+33102030405"
+
+
+LETTER = r"""\documentclass{letter}
+\def\name{Ada Example}
+\begin{document}
+\begin{letter}{Exemplia Team \ Tunis}
+\opening{Dear Hiring Manager,}
+
+I am writing about the Data Engineer role, which fits my background in pipelines very well.
+
+I built a BERT model reaching 73\% accuracy, and I also ran large clusters in production for years.
+
+\closing{Sincerely,}
+\end{letter}
+\end{document}
+"""
+
+LETTER_DATA = {
+    "letter": {
+        "recipient": ["Exemplia Team", "Tunis"],
+        "opening": "Dear Hiring Manager,",
+        "paragraphs": [
+            "I am writing about the Data Engineer role, which fits my background in pipelines very well.",
+            "I built a BERT model reaching 73% accuracy, and I also ran large clusters in production for years.",
+        ],
+        "closing": "Sincerely,",
+    }
+}
+
+GOOD_LETTER = r"""\begin{letter}{\VAR{letter.recipient|ljoin(' \ ')}}
+\opening{\VAR{letter.opening}}
+
+\BLOCK{for p in letter.paragraphs}
+\VAR{p|rich}
+
+\BLOCK{endfor}
+\closing{\VAR{letter.closing}}
+\end{letter}
+"""
+
+
+async def test_letter_with_hardcoded_sentences_is_rejected() -> None:
+    # passes a round trip (fixed text always "matches"), and would repeat old claims forever
+    lazy = GOOD_LETTER.replace(
+        r"\VAR{p|rich}",
+        "I built a BERT model reaching 73\% accuracy, and I also ran large clusters in production "
+        "for years, which is a sentence nobody can tailor.\n\VAR{p|rich}",
+    )
+    provider = ScriptedProvider(
+        {"edits": [{"find": "Ada Example", "replace": r"\VAR{name}"}], "data": {"name": "Ada Example"}},
+        {"template": lazy, "data": LETTER_DATA},
+        {"template": r"\opening{\VAR{letter.opening}}", "data": LETTER_DATA},
+        {"template": GOOD_LETTER, "data": LETTER_DATA},
+    )
+    conv = await convert_template(provider, LETTER, "cover_letter", tpm=0)  # type: ignore[arg-type]
+    body = conv.chunks[1]
+    assert body.kind == "body" and body.mode == "rewrite" and body.error is None
+    retries = [c["messages"][-1]["content"] for c in provider.calls[2:]]
+    assert "too much fixed text" in retries[0] and "letter.paragraphs" in retries[1]
+    assert r"\BLOCK{for p in letter.paragraphs}" in conv.template
+    assert "73" not in conv.template
+
+
+async def test_personal_values_may_not_stay_hardcoded() -> None:
+    provider = ScriptedProvider(
+        {"edits": [], "data": {"name": "Ada Example"}},  # the name stays in the preamble
+        *[{"edits": [], "data": {}}] * 3,
+    )
+    conv = await convert_template(provider, LETTER, "cover_letter", tpm=0)  # type: ignore[arg-type]
+    # the preamble keeps failing its check, so it stays verbatim and is reported
+    assert conv.chunks[0].error is None or "hardcoded" in conv.chunks[0].error
+
+
+def test_handle_filter() -> None:
+    from jobpilot_latex.render import render
+
+    tpl = r"\VAR{u|handle}"
+    assert render(tpl, {"u": "https://linkedin.com/in/ada-example/"}) == "ada-example"
+    assert render(tpl, {"u": ""}) == ""
+
+
+def test_detex_keeps_text_after_layout_commands() -> None:
+    src = r"space{0.05 cm}" "
+" r"egin{twocolentry}{" "
+  June 2025
+}
+  Intern
+" r"\end{twocolentry}"
+    assert detex(src) == "June 2025 Intern"

@@ -93,8 +93,6 @@ def compile_job(job_dir: Path, spec: dict[str, object]) -> dict[str, object]:
         "openin_any": "p",
         "openout_any": "p",
         "max_print_line": "10000",
-        "SOURCE_DATE_EPOCH": "0",  # reproducible PDFs (same input -> same bytes)
-        "FORCE_SOURCE_DATE": "1",
     }
     cmd = [
         ENGINE,
