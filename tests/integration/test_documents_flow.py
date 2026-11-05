@@ -110,9 +110,7 @@ PLAN = {
     "projects": [
         {
             "id": "prj_1",
-            "bullets": [
-                {"source": "b_3", "text": "Fine-tuned GPT-2 with Adam to 91.25% accuracy"}
-            ],
+            "bullets": [{"source": "b_3", "text": "Fine-tuned GPT-2 with Adam to 91.25% accuracy"}],
         }
     ],
     "education": ["edu_1"],

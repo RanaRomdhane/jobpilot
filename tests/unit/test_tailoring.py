@@ -53,9 +53,7 @@ MASTER = ResumeProfile.model_validate(
             {
                 "id": "prj_1",
                 "name": "Vision demo",
-                "bullets": [
-                    {"id": "b_4", "text": "Fine-tuned GPT-2 with Adam to 91.25% accuracy"}
-                ],
+                "bullets": [{"id": "b_4", "text": "Fine-tuned GPT-2 with Adam to 91.25% accuracy"}],
             }
         ],
         "skills": [{"id": "skl_1", "name": "Code", "skills": ["Python", "SQL", "PyTorch"]}],
@@ -122,9 +120,7 @@ def test_invented_metric_is_reverted() -> None:
 
 def test_number_formats_are_equivalent() -> None:
     assert (
-        check_text(
-            "Atteint 73 % sur 4 000+ tâches", "73% accuracy on 4,000+ tasks", set(), [], "b"
-        )
+        check_text("Atteint 73 % sur 4 000+ tâches", "73% accuracy on 4,000+ tasks", set(), [], "b")
         == []
     )
     assert check_text("on 4000 tasks", "on 4,000+ tasks", set(), [], "b") == []
