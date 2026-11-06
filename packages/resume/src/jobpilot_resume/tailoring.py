@@ -12,7 +12,9 @@ to change them. `validate_plan` checks every piece of text the model did write:
   in the source bullet or elsewhere in the master profile, and no job keyword the profile does
   not contain was slipped in;
 - skills are picked from the master group's own list, the headline only uses words the profile
-  or a short list of generic role words contain.
+  or a short list of generic role words contain;
+- a claim that a bullet is "critical", "guaranteed", "reliable" or shows "mastery" must be in its
+  source too. The list is short and cannot catch every inflated phrase: a person still reviews.
 
 A rewrite that fails is replaced by the master bullet's original text (with a warning), so a bad
 answer degrades the tailoring, never the truth.
@@ -166,6 +168,8 @@ def _numbers(text: str) -> set[str]:
     for raw in _NUMBER.findall(text):
         n = re.sub(r"(?<=\d)[,.](?=\d{3}\b)", "", raw)  # thousands separators
         out.add(n.replace(",", "."))
+    for count in re.findall(r"\b(\d+)\s?[kK]\b", text):  # "30K" is also "30 000"
+        out.add(str(int(count) * 1_000))
     return out
 
 
@@ -199,6 +203,85 @@ def suspicious_terms(text: str, allowed: set[str]) -> list[str]:
             if parts and not all(p in allowed or p.rstrip("s") in allowed for p in parts):
                 out.append(tok)
     return out
+
+
+# inflation that passes the number and term checks; matched on folded text, in French and English
+_CLAIMS: dict[str, re.Pattern[str]] = {
+    "critical": re.compile(r"\b(?:critiques?|critical)\b"),
+    "guarantee": re.compile(r"\b(?:garant|guarant)\w*"),
+    "mastery": re.compile(r"\b(?:maitris\w*|mastery|mastered)\b"),
+    "expertise": re.compile(r"\b(?:expertise|expertes?|experts?)\b"),
+    "industrialisation": re.compile(r"\bindustriali[sz]\w*"),
+    "reliability": re.compile(r"\b(?:fiab\w*|reliab\w*|robust\w*)"),
+    "business": re.compile(r"\b(?:metiers?|business)\b"),
+}
+_PARTICIPLE = re.compile(r"\w+(?:ant|ing)\b")
+
+
+def unsupported_claims(text: str, source: str) -> list[str]:
+    """The kinds of claim `text` makes that `source` does not."""
+    said, basis = fold(text), fold(source)
+    return [name for name, p in _CLAIMS.items() if p.search(said) and not p.search(basis)]
+
+
+def drop_unsupported_claims(text: str, source: str) -> tuple[str, list[str]]:
+    """`text` without its unsupported claim, and which claims it made.
+
+    A trailing ", garantissant la pertinence" goes and the fact before it stays. A claim in the
+    sentence itself cannot be cut out: the result is then empty, for the caller to handle.
+    """
+    claims = unsupported_claims(text, source)
+    if not claims:
+        return text, []
+    clauses = text.strip().split(", ")
+    for i, clause in enumerate(clauses[1:], start=1):
+        if unsupported_claims(clause, source):
+            head = ", ".join(clauses[:i])
+            if _PARTICIPLE.match(clause) and not unsupported_claims(head, source):
+                end = text.strip()[-1]
+                return head + (end if end in ".!?" else ""), claims
+            break
+    return "", claims
+
+
+def _content_words(text: str) -> list[str]:
+    return [w for w in re.findall(r"[a-z0-9]+", fold(_canon(text))) if len(w) > 3]
+
+
+def posting_phrases(text: str, job_text: str, profile_vocab: set[str]) -> list[str]:
+    """Three-word runs `text` shares with the posting, mostly in words the profile does not use.
+
+    A translated fact can share one such word with the posting ("modèles d'apprentissage
+    automatique"); "plateformes logicielles modulaires" copies a phrase that describes the job.
+    """
+    words = _content_words(job_text)
+    posted = {tuple(words[i : i + 3]) for i in range(len(words) - 2)}
+    said = _content_words(text)
+    known = profile_vocab | ROLE_WORDS
+    found: list[str] = []
+    for i in range(len(said) - 2):
+        run = tuple(said[i : i + 3])
+        if run in posted and sum(w not in known for w in run) >= 2:
+            found.append(" ".join(run))
+    return found
+
+
+_PRECISION = (
+    (re.compile(r"\b([Dd])e précision\b"), r"\1'exactitude"),
+    (re.compile(r"\b([Ll])a précision\b"), r"\1'exactitude"),
+    (re.compile(r"\bprécision\b"), "exactitude"),
+    (re.compile(r"\bPrécision\b"), "Exactitude"),
+)
+
+
+def keep_metric(text: str, source: str) -> str:
+    """French "précision" is another metric: a source that says accuracy keeps "exactitude"."""
+    basis = fold(source)
+    if "accuracy" not in basis or "precision" in basis:
+        return text
+    for pattern, replacement in _PRECISION:
+        text = pattern.sub(replacement, text)
+    return text
 
 
 # --------------------------------------------------------------------------- the plan
@@ -238,6 +321,9 @@ class TailorPlan(BaseModel):
     keywords_used: list[str] = Field(default_factory=list, max_length=30)
     # bullet ids to drop first when the CV is over its page budget (least useful first)
     drop_first: list[str] = Field(default_factory=list, max_length=40)
+
+
+_AUTHORSHIP = re.compile(r"\b(?:(?:co-?)?author(?:ed)?|(?:co-?)?auteure?)\b")
 
 
 @dataclass(slots=True)
@@ -307,7 +393,10 @@ def check_text(
 
 
 def validate_plan(
-    master: ResumeProfile, plan: TailorPlan, job_keywords: list[str] | None = None
+    master: ResumeProfile,
+    plan: TailorPlan,
+    job_keywords: list[str] | None = None,
+    job_text: str = "",
 ) -> Validated:
     """Repair `plan` in place against the master profile; report every repair."""
     keywords = job_keywords or []
@@ -341,6 +430,11 @@ def validate_plan(
                     findings.append(Finding("reused_source", b.source, p.id))
                     continue
                 used_sources.add(b.source)
+                b.text, claims = drop_unsupported_claims(
+                    keep_metric(b.text, own[b.source]), own[b.source]
+                )
+                if claims:
+                    findings.append(Finding("unsupported_claim", b.source, ", ".join(claims)))
                 problems = check_text(b.text, own[b.source], vocab, keywords, b.source)
                 if problems or not b.text.strip():
                     findings.extend(problems)
@@ -372,19 +466,47 @@ def validate_plan(
     plan.projects = check_items("projects", plan.projects)
     plan.extra_sections = check_items("extra_sections", plan.extra_sections)
 
+    # a paper the candidate wrote stays on the CV whatever the job
+    for project in master.projects:
+        papers = [
+            PlannedBullet(source=b.id, text=b.text)
+            for b in project.bullets
+            if _AUTHORSHIP.search(fold(b.text)) and b.id not in used_sources
+        ]
+        if papers:
+            findings.append(Finding("restored_publication", project.id, project.name))
+            used_sources.update(b.source for b in papers)
+            shown = next((p for p in plan.projects if p.id == project.id), None)
+            if shown:
+                shown.bullets.extend(papers)
+            else:
+                plan.projects.append(PlannedItem(id=project.id, bullets=papers))
+
     def check_ids(kind: str, ids: list[str]) -> list[str]:
         known = items_of(kind)
+        # the model sometimes writes "German (B2)" for the item named "German"
+        names = {
+            fold(_canon(n)): k
+            for k, item in known.items()
+            for n in [getattr(item, "name", None) or getattr(item, "institution", None)]
+            if n
+        }
         out = []
         for i in dict.fromkeys(ids):
+            folded = fold(_canon(i))
+            named = next((k for n, k in names.items() if folded.startswith(n)), None)
             if i in known:
                 out.append(i)
+            elif named:
+                out.append(named)
             else:
                 findings.append(Finding("unknown_id", i, kind))
-        return out
+        return list(dict.fromkeys(out))
 
-    plan.education = check_ids("education", plan.education)
+    # a CV always has its education and languages, even if the model named them instead of citing
+    plan.education = check_ids("education", plan.education) or [e.id for e in master.education]
     plan.certifications = check_ids("certifications", plan.certifications)
-    plan.languages = check_ids("languages", plan.languages)
+    plan.languages = check_ids("languages", plan.languages) or [x.id for x in master.languages]
 
     groups = items_of("skills")
     kept_groups: list[PlannedSkills] = []
@@ -419,6 +541,17 @@ def validate_plan(
     sources = all_texts(master)
     cited = " ".join(sources.get(s, "") for s in plan.summary.sources)
     basis = f"{master.summary or ''} {master.headline or ''} {cited}"
+    summary: list[str] = []
+    for sentence in re.split(r"(?<=[.!?])\s+", plan.summary.text.strip()):
+        kept_text, claims = drop_unsupported_claims(keep_metric(sentence, basis), basis)
+        if claims:
+            findings.append(Finding("unsupported_claim", "summary", ", ".join(claims)))
+        copied = posting_phrases(kept_text, job_text, vocab)
+        if copied:
+            findings.append(Finding("posting_phrase", "summary", ", ".join(copied)))
+        elif kept_text:
+            summary.append(kept_text)
+    plan.summary.text = " ".join(summary)
     if plan.summary.text:
         problems = check_text(plan.summary.text, basis, vocab, keywords, "summary")
         if problems:
@@ -448,7 +581,7 @@ def all_texts(profile: ResumeProfile) -> dict[str, str]:
 # --------------------------------------------------------------------------- cover letters
 
 
-_FIRST_PERSON = re.compile(r"(?<![a-z])(je|j'|j\u2019|mon|ma|mes|i|i'm|my)(?![a-z])")
+_FIRST_PERSON = re.compile(r"(?<![a-z])(?:j['\u2019]|(?:je|mon|ma|mes|i|i'm|my)(?![a-z]))")
 # a start date or immediate availability; "disponible pour un entretien" is only a courtesy
 _AVAILABILITY = re.compile(
     r"disponib\w*\s+(?:immediat|tout de suite|de suite|des\b|a partir|a compter)"
@@ -548,8 +681,17 @@ def validate_letter(
             if not sentence:
                 continue
             about_me = bool(_FIRST_PERSON.search(fold(sentence)))
+            sentence = keep_metric(sentence, own)
+            sentence, claims = drop_unsupported_claims(sentence, own if about_me else basis)
+            if claims:
+                findings.append(Finding("unsupported_claim", f"p{n}", ", ".join(claims)))
+            if not sentence:
+                continue
             allowed = profile_vocab | identity_vocab if about_me else profile_vocab | job_vocab
             problems = check_text(sentence, own if about_me else basis, allowed, [], f"p{n}")
+            copied = posting_phrases(sentence, job_text, profile_vocab) if about_me else []
+            if copied:
+                problems.append(Finding("posting_phrase", f"p{n}", ", ".join(copied)))
             if _AVAILABILITY.search(fold(sentence)):
                 problems.append(Finding("availability", f"p{n}", sentence[:80]))
             claimed = [
@@ -646,7 +788,7 @@ def drop_order(plan: TailorPlan) -> list[str]:
     3. extra bullets of projects, then whole projects, least relevant first, down to one;
     4. extra bullets of experiences, least relevant first;
     5. the last project: only if nothing else helped.
-    An experience always keeps its first bullet.
+    An experience always keeps its first bullet, and a project's paper goes after everything else.
     """
     firsts = {
         i.bullets[0].source for g in (plan.projects, plan.experiences) for i in g if i.bullets
@@ -662,4 +804,8 @@ def drop_order(plan: TailorPlan) -> list[str]:
     for item in reversed(plan.experiences):
         order += [b.source for b in reversed(item.bullets[1:])]
     order += [b.source for item in plan.projects[:1] for b in item.bullets[:1]]
-    return list(dict.fromkeys(order))
+    papers = {
+        b.source for i in plan.projects for b in i.bullets if _AUTHORSHIP.search(fold(b.text))
+    }
+    unique = list(dict.fromkeys(order))
+    return [b for b in unique if b not in papers] + [b for b in unique if b in papers]

@@ -13,6 +13,7 @@ from jobpilot_resume.tailoring import (
     check_text,
     drop_order,
     feminine_forms,
+    keep_metric,
     suspicious_terms,
     validate_letter,
     validate_plan,
@@ -343,7 +344,7 @@ def test_letter_cannot_claim_the_postings_words_or_availability() -> None:
             ("Je suis disponible immédiatement pour un entretien.", []),
             ("I am available from June.", []),
             ("Je serais disponible pour un entretien.", []),
-            ("J'ai construit un modèle BERT atteignant 73% de précision.", ["b_1"]),
+            ("J'ai construit un modèle BERT atteignant 73% d'exactitude.", ["b_1"]),
         ],
         job,
         identity="ML Engineer Exemplia Gulf",
@@ -351,7 +352,7 @@ def test_letter_cannot_claim_the_postings_words_or_availability() -> None:
     assert [p.text for p in kept] == [
         "Exemplia Gulf diffuse la culture Craft auprès des équipes.",
         "Je serais disponible pour un entretien.",
-        "J'ai construit un modèle BERT atteignant 73% de précision.",
+        "J'ai construit un modèle BERT atteignant 73% d'exactitude.",
     ]
     codes = [f.code for f in findings]
     assert codes.count("availability") == 2 and "new_term" in codes
@@ -422,3 +423,185 @@ def test_feminine_forms_cover_the_candidate_not_the_post_or_the_degree() -> None
         "Je suis disponible pour un entretien."
     )
     assert feminine_forms("J'ai développé un modèle.") == "J'ai développé un modèle."
+
+
+def test_unsupported_claims_are_cut_from_a_letter() -> None:
+    kept, findings = validate_letter(
+        MASTER,
+        [
+            (
+                "J'ai construit un modèle BERT à 73 % d'exactitude, "
+                "démontrant ma maîtrise des modèles NLP.",
+                ["b_1"],
+            ),
+            ("J'apporte mon expertise sur des sujets métiers critiques.", []),
+        ],
+        job_text="",
+    )
+    assert [p.text for p in kept] == ["J'ai construit un modèle BERT à 73 % d'exactitude."]
+    assert [f.code for f in findings] == ["unsupported_claim", "unsupported_claim"]
+
+
+def test_a_claim_the_source_makes_is_kept() -> None:
+    master = MASTER.model_copy(deep=True)
+    master.experiences[0].bullets[0].text = "Built a reliable BERT model reaching 73% accuracy"
+    kept, findings = validate_letter(
+        master, [("J'ai construit un modèle BERT fiable.", ["b_1"])], job_text=""
+    )
+    assert [p.text for p in kept] == ["J'ai construit un modèle BERT fiable."]
+    assert findings == []
+
+
+def test_unsupported_claims_are_cut_from_the_cv() -> None:
+    p = plan(
+        experiences=[
+            PlannedItem(
+                id="exp_1",
+                bullets=[
+                    PlannedBullet(
+                        source="b_1",
+                        text="Built a BERT model reaching 73% accuracy, guaranteeing quality",
+                    ),
+                    PlannedBullet(source="b_2", text="Delivered critical automated reviews"),
+                ],
+            )
+        ],
+        summary=PlannedSummary(
+            text="ML engineer for critical needs. Builds NLP products with Python.", sources=[]
+        ),
+    )
+    checked = validate_plan(MASTER, p)
+    bullets = checked.plan.experiences[0].bullets
+    assert bullets[0].text == "Built a BERT model reaching 73% accuracy"
+    assert bullets[1].text == "Automated reviews, cutting review time by 35%"  # back to the master
+    assert checked.plan.summary.text == "Builds NLP products with Python."
+
+
+def test_a_paper_stays_on_the_cv_and_is_dropped_last() -> None:
+    master = MASTER.model_copy(deep=True)
+    master.projects[0].bullets.append(
+        master.projects[0]
+        .bullets[0]
+        .model_copy(
+            update={"id": "b_paper", "text": "First author of a paper at a demo conference"}
+        )
+    )
+    checked = validate_plan(master, plan(projects=[]))
+    project = checked.plan.projects[0]
+    assert [b.source for b in project.bullets] == ["b_paper"]
+    assert "restored_publication" in [f.code for f in checked.findings]
+
+    p = plan(
+        projects=[
+            PlannedItem(
+                id="prj_1",
+                bullets=[
+                    PlannedBullet(source="b_4", text="Fine-tuned GPT-2"),
+                    PlannedBullet(source="b_paper", text="Premier auteur d'un article"),
+                ],
+            )
+        ],
+        drop_first=["b_paper"],
+    )
+    assert drop_order(p)[-1] == "b_paper"
+
+
+def test_accuracy_never_becomes_precision_in_french() -> None:
+    p = plan(
+        experiences=[
+            PlannedItem(
+                id="exp_1",
+                bullets=[
+                    PlannedBullet(
+                        source="b_1",
+                        text="Modèle BERT atteignant 73 % de précision sur 4 000 tâches",
+                    )
+                ],
+            )
+        ]
+    )
+    bullet = validate_plan(MASTER, p).plan.experiences[0].bullets[0]
+    assert bullet.text == "Modèle BERT atteignant 73 % d'exactitude sur 4 000 tâches"
+    kept, _ = validate_letter(
+        MASTER, [("J'ai obtenu une précision de 73 % avec BERT.", ["b_1"])], job_text=""
+    )
+    assert kept[0].text == "J'ai obtenu une exactitude de 73 % avec BERT."
+    # a source that really reports precision keeps the word
+    assert keep_metric("une précision de 80 %", "precision of 80% and accuracy of 70%") == (
+        "une précision de 80 %"
+    )
+
+
+def test_a_sentence_with_j_ai_is_about_the_candidate() -> None:
+    job = "Vous traiterez des problématiques métiers avec la culture Craft."
+    for apostrophe in ("'", "’"):
+        kept, findings = validate_letter(
+            MASTER,
+            [
+                (
+                    f"J{apostrophe}ai construit un modèle BERT, "
+                    "démontrant ma capacité sur des problématiques métiers.",
+                    ["b_1"],
+                ),
+                (f"J{apostrophe}ai diffusé la culture Craft.", []),
+            ],
+            job,
+        )
+        assert [p.text for p in kept] == [f"J{apostrophe}ai construit un modèle BERT."]
+        assert {f.code for f in findings} == {"unsupported_claim", "new_term"}
+
+
+def test_languages_and_education_survive_ids_the_model_got_wrong() -> None:
+    checked = validate_plan(MASTER, plan(languages=["English (C1)"], education=["Exemplia School"]))
+    assert checked.plan.languages == ["lng_1"]
+    assert checked.plan.education == ["edu_1"]
+
+
+def test_a_phrase_of_the_posting_is_not_the_candidates_experience() -> None:
+    job = "Vous intégrerez des solutions au sein de plateformes logicielles modulaires."
+    p = plan(
+        summary=PlannedSummary(
+            text="Builds NLP products with Python. "
+            "J'ai livré des modèles dans des plateformes logicielles modulaires.",
+            sources=[],
+        )
+    )
+    checked = validate_plan(MASTER, p, job_text=job)
+    assert checked.plan.summary.text == "Builds NLP products with Python."
+    assert "posting_phrase" in [f.code for f in checked.findings]
+
+    kept, findings = validate_letter(
+        MASTER,
+        [
+            ("Votre équipe travaille sur des plateformes logicielles modulaires.", []),
+            ("J'ai travaillé sur des plateformes logicielles modulaires.", []),
+        ],
+        job,
+    )
+    assert [p.text for p in kept] == [
+        "Votre équipe travaille sur des plateformes logicielles modulaires."
+    ]
+    assert [f.code for f in findings] == ["posting_phrase"]
+
+
+def test_a_translated_fact_sharing_words_with_the_posting_stays() -> None:
+    job = "Vous concevrez des modèles apprentissage automatique pour nos clients."
+    kept, findings = validate_letter(
+        MASTER, [("J'ai conçu des modèles d'apprentissage automatique.", [])], job
+    )
+    assert len(kept) == 1
+    assert findings == []
+
+
+def test_items_named_instead_of_cited_are_recognised() -> None:
+    checked = validate_plan(
+        MASTER,
+        plan(certifications=["Deep Learning (Exemplia Institute)"], languages=["English (C1)"]),
+    )
+    assert checked.plan.certifications == ["crt_1"]
+    assert checked.plan.languages == ["lng_1"]
+    assert not [f for f in checked.findings if f.code == "unknown_id"]
+
+
+def test_thousands_written_with_k_match_the_full_number() -> None:
+    assert check_text("Analyse de 30 000 lignes", "Analyzed 30K+ rows", set(), [], "b") == []

@@ -41,6 +41,13 @@ d'Ingénieur").""",
 "honoré"). A degree or the posting's own title keeps its form.""",
 }
 
+_NO_INFLATION = """State what the source says and stop. Do not add impact, importance or skill the
+source does not state: no "critical" or "business" framing, no "guaranteeing", "reliable",
+"mastery" or "expertise", no "industrialisation" or production use. Do not end a sentence with a
+clause that interprets the fact ("démontrant ma maîtrise...", "garantissant la pertinence...").
+A phrase of the posting never describes the candidate: if the posting says "modern software
+architectures" and the profile does not, the candidate is not said to work in them."""
+
 
 def profile_digest(profile: ResumeProfile) -> str:
     """The master profile as compact, id-tagged lines (much cheaper than its JSON)."""
@@ -102,6 +109,7 @@ def tailor_instructions(lang: str, page_budget: int, form: FrenchForm = "neutral
 You may only SELECT, REORDER and REPHRASE what the profile contains. Never invent or upgrade
 anything: no new tools, skills, metrics, numbers, employers, titles, dates, degrees or
 responsibilities. A skill the job asks for and the profile lacks stays absent.
+{_NO_INFLATION}
 
 Return a plan:
 - experiences / projects / extra_sections: the items to show, most relevant first, by their id.
@@ -109,16 +117,18 @@ Return a plan:
   and `text` = the rewritten bullet: same facts and numbers, translated if needed (a metric
   keeps its exact meaning: in French "accuracy" is "exactitude", never "précision"), wording
   aligned with the posting's vocabulary when the fact is the same. You may wrap up to two
-  important terms already in the bullet in **bold**. Keep every experience;
-  put the most relevant projects first; drop weak bullets. One source per bullet, each source
-  at most once.
+  important terms already in the bullet in **bold**. List every experience of the profile, each
+  with at least one bullet, even an old or less relevant one; put the most relevant projects
+  first; drop weak bullets. A bullet saying the candidate wrote a paper is always kept and never
+  in drop_first. One source per bullet, each source at most once.
 - education, certifications, languages: ids to show, in order.
 - skills: for the relevant groups (by id), the skills to show, most relevant first, written
   exactly as in the profile (a tool named inside a longer entry, like "Docker" in "Model
   deployment (Docker, FastAPI)", may be listed alone).
 - headline: the job title the candidate can honestly claim, close to the posting's wording
   (e.g. an "AI/ML Engineer" profile applying to "Data Scientist" stays an engineer).
-- summary: 2-3 sentences built from the profile's summary and the cited bullets (`sources`).
+- summary: 2-3 sentences built from the profile's summary and the cited bullets (`sources`). Name
+  a degree once and plainly (French: "titulaire d'un diplôme d'ingénieur en informatique").
 - keywords_used: the posting's keywords the CV really covers.
 - drop_first: bullet ids to remove first if the CV is longer than {page_budget} page(s),
   least useful first.
@@ -198,7 +208,8 @@ added by the template):
    its exact meaning: in French "accuracy" is "exactitude", never "précision");
 4. a short request for an interview.
 
-Everything said about the candidate comes from the profile. Words of the posting describe the
+Everything said about the candidate comes from the profile. {_NO_INFLATION}
+Words of the posting describe the
 company and the role only: never present them as the candidate's abilities or experience. Do
 not state availability, start dates, mobility or salary (the profile does not hold them): end
 with a simple request for an interview.

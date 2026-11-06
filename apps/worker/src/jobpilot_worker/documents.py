@@ -439,7 +439,7 @@ class DocumentFactory:
             form=self.settings.candidate_french_form,
         )
         plan.language = lang
-        checked = validate_plan(master, plan, keywords)
+        checked = validate_plan(master, plan, keywords, job_text=job.get("description") or "")
         if lang == "fr" and self.settings.candidate_french_form == "feminine":
             checked.plan.headline = feminine_forms(checked.plan.headline)
             checked.plan.summary.text = feminine_forms(checked.plan.summary.text)
