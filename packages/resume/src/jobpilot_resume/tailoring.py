@@ -17,7 +17,9 @@ to change them. `validate_plan` checks every piece of text the model did write:
   source too. The list is short and cannot catch every inflated phrase: a person still reviews.
 
 A rewrite that fails is replaced by the master bullet's original text (with a warning), so a bad
-answer degrades the tailoring, never the truth.
+answer degrades the tailoring, never the truth. When the document's language differs from the
+master's, the worker then has those bullets translated; `apply_translations` holds each translation
+to the same checks and keeps the master wording if it fails.
 """
 
 from __future__ import annotations
@@ -576,6 +578,65 @@ def all_texts(profile: ResumeProfile) -> dict[str, str]:
                     parts.append(b.text)
             out[item.id] = " ".join(parts)
     return out
+
+
+# --------------------------------------------------------------------------- translation
+
+
+def _plan_bullets(plan: TailorPlan) -> list[PlannedBullet]:
+    groups = (plan.experiences, plan.projects, plan.extra_sections)
+    return [b for group in groups for item in group for b in item.bullets]
+
+
+def master_worded_bullets(master: ResumeProfile, plan: TailorPlan) -> dict[str, str]:
+    """source id -> master text of the validated plan's bullets still in the master's wording.
+
+    `validate_plan` puts these there: an omitted experience or paper, or a rewrite that failed a
+    check. The model may also have copied a bullet as it was.
+    """
+    texts = all_texts(master)
+    return {
+        b.source: texts[b.source]
+        for b in _plan_bullets(plan)
+        if b.source in texts and _BOLD.sub(r"\1", b.text).strip() == texts[b.source].strip()
+    }
+
+
+def apply_translations(
+    master: ResumeProfile,
+    plan: TailorPlan,
+    pending: dict[str, str],
+    translations: dict[str, str],
+    job_keywords: list[str] | None = None,
+) -> tuple[list[str], list[Finding]]:
+    """Put each translation of a `pending` bullet that passes the guardrail into `plan`.
+
+    A translation is held to what a rewrite is held to, against its master bullet. One that fails
+    leaves the master wording in place. Returns the translated ids and what was refused.
+    """
+    vocab = _vocab(profile_text(master))
+    by_source = {b.source: b for b in _plan_bullets(plan)}
+    translated: list[str] = []
+    findings: list[Finding] = []
+    for source_id, source in pending.items():
+        answer = translations.get(source_id, "").strip()
+        if not answer or answer == source.strip():
+            findings.append(Finding("translation_missing", source_id))
+            continue
+        text, claims = drop_unsupported_claims(keep_metric(answer, source), source)
+        if not text.strip():
+            findings.append(Finding("translation_rejected", source_id, ", ".join(claims)))
+            continue
+        problems = check_text(text, source, vocab, job_keywords or [], source_id)
+        if problems:
+            detail = "; ".join(f"{p.code}: {p.detail}" for p in problems)
+            findings.append(Finding("translation_rejected", source_id, detail))
+            continue
+        if claims:
+            findings.append(Finding("unsupported_claim", source_id, ", ".join(claims)))
+        by_source[source_id].text = text
+        translated.append(source_id)
+    return translated, findings
 
 
 # --------------------------------------------------------------------------- cover letters

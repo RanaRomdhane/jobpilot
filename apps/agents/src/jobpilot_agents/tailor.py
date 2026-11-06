@@ -17,15 +17,19 @@ from pydantic import BaseModel, Field
 from jobpilot_agents.structured import complete_structured, response_format
 from jobpilot_core.config import LLMPurpose
 from jobpilot_core.llm import ChatResult, LLMProvider
-from jobpilot_core.llm.tokens import estimate_prompt_tokens
+from jobpilot_core.llm.tokens import estimate_prompt_tokens, estimate_text_tokens
 from jobpilot_core.resume import ResumeProfile, compact_schema
-from jobpilot_resume.tailoring import TailorPlan
+from jobpilot_resume.tailoring import PlannedBullet, TailorPlan
 from jobpilot_security import SPOTLIGHT_POLICY, spotlight
 
 JOB_CHARS = 3_000
 MAX_OUTPUT = 4_000
 BUDGET_SHARE = 0.85
 REQUEST_OVERHEAD = 80
+# reasoning models spend output tokens before answering, hence the floor
+TRANSLATE_MIN_OUTPUT = 800
+TRANSLATE_OVERHEAD = 300  # the JSON around the bullets
+TRANSLATE_GROWTH = 2  # French runs longer than English, and the estimate is per source token
 LANGUAGE_NAMES = {"fr": "French", "en": "English"}
 Tone = Literal["formal", "modern"]
 FrenchForm = Literal["neutral", "feminine", "masculine"]
@@ -173,6 +177,57 @@ async def tailor_cv(
         parse=TailorPlan.model_validate,
         max_tokens=_budget(messages, schema, tpm),
     )
+
+
+# --------------------------------------------------------------------------- bullet translation
+
+
+class TranslatedBullets(BaseModel):
+    bullets: list[PlannedBullet]
+
+
+def translate_instructions(lang: str, form: FrenchForm = "neutral") -> str:
+    return f"""Translate CV bullets into {LANGUAGE_NAMES.get(lang, "French")}. Each input line is
+"[id] text". Return every id once: `source` = the id, `text` = the translation of that line.
+Translate only: the same facts, numbers, and tool and product names, with nothing added or removed
+and no added importance or skill. A metric keeps its exact meaning: in French "accuracy" is
+"exactitude", never "précision".
+{_FORM_RULES[form]}"""
+
+
+def translation_output_tokens(bullets: dict[str, str]) -> int:
+    """Room for the answer: this request is sized to its bullets, not to a whole plan."""
+    source_tokens = sum(estimate_text_tokens(text) for text in bullets.values())
+    return max(TRANSLATE_MIN_OUTPUT, TRANSLATE_OVERHEAD + TRANSLATE_GROWTH * source_tokens)
+
+
+async def translate_bullets(
+    provider: LLMProvider,
+    bullets: dict[str, str],
+    *,
+    lang: str,
+    tpm: int,
+    form: FrenchForm = "neutral",
+) -> tuple[dict[str, str], list[ChatResult]]:
+    """Translate master bullets (id -> text) in one request, with only those bullets as context.
+
+    The answer is unchecked: `jobpilot_resume.tailoring.apply_translations` decides what is kept.
+    """
+    messages: list[dict[str, Any]] = [
+        {"role": "system", "content": translate_instructions(lang, form)},
+        {"role": "user", "content": "\n".join(f"[{k}] {v}" for k, v in bullets.items())},
+    ]
+    schema = compact_schema(TranslatedBullets.model_json_schema())
+    answer, usage = await complete_structured(
+        provider,
+        LLMPurpose.TAILOR,
+        messages,
+        name="bullet_translations",
+        schema=schema,
+        parse=TranslatedBullets.model_validate,
+        max_tokens=min(translation_output_tokens(bullets), _budget(messages, schema, tpm)),
+    )
+    return {b.source: b.text for b in answer.bullets}, usage
 
 
 # --------------------------------------------------------------------------- cover letter
