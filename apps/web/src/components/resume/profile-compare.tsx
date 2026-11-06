@@ -42,7 +42,7 @@ export function ProfileCompare({
 }: {
   master: Profile;
   incoming: Profile;
-  resumeId: number;
+  resumeId: number | null;
   alreadyMerged: boolean;
   onApplied: () => void;
 }) {

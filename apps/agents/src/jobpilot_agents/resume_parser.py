@@ -21,7 +21,7 @@ from jobpilot_core.config import LLMPurpose
 from jobpilot_core.llm import ChatResult, LLMProvider
 from jobpilot_core.llm.tokens import estimate_prompt_tokens
 from jobpilot_core.ratelimit import RateLimitExceededError
-from jobpilot_core.resume import Link, ResumeProfile, ensure_ids, llm_schema
+from jobpilot_core.resume import Link, ResumeProfile, dedupe_profile, ensure_ids, llm_schema
 from jobpilot_security import SPOTLIGHT_POLICY, spotlight
 
 log = logging.getLogger(__name__)
@@ -212,5 +212,6 @@ async def parse_resume_text(provider: LLMProvider, cv_text: str, *, tpm: int) ->
         log.info("single-call parse failed (%s); retrying in %d smaller calls", exc, len(SPLIT))
         passes = plan_passes(text, tpm, split=True)
         merged, suspected, usage = await _run(provider, text, passes)
-    profile = ensure_ids(tidy_links(ResumeProfile.model_validate(merged), text))
+    # passes overlap: drop what one pass repeated from another (keeps the fullest wording)
+    profile = ensure_ids(dedupe_profile(tidy_links(ResumeProfile.model_validate(merged), text)))
     return ParseOutcome(profile, suspected, len(passes), truncated, usage)

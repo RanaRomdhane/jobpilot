@@ -112,10 +112,42 @@ with provider-wide pauses on 429. The guard model has its own budget.
 - User-initiated Gmail label changes (re-classify, clear the suspicious flag) run in a separate
   worker service limited to `JobPilot/*` labels and unreachable from any agent (ADR-0005).
 
-### T8 — LaTeX code execution (Phase 6)
+### T8 — LaTeX code execution and injection (Phase 6)
 
-Compilation runs in a container with no network, read-only root fs, no capabilities, pids/memory/
-CPU limits and shell-escape disabled; it is driven through a spool volume.
+- **Sandbox.** TeX runs only in the `latex` container: no network, read-only root fs, all
+  capabilities dropped, no-new-privileges, pids/memory/CPU limits. The worker hands jobs over a
+  spool volume; nothing reaches the container over a socket.
+- **Each compile** runs on a private copy in a tmpfs with `latexmk -norc` (a `latexmkrc` is Perl,
+  so any rc file or symlink in a job is refused before compiling), `-no-shell-escape` and
+  `shell_escape=f` (`\write18` off), `openin_any=p` / `openout_any=p` (no absolute paths, `..` or
+  dotfiles: `\input{/etc/passwd}` and `\openout` outside the job fail), a hard timeout that kills
+  the whole process group, and capped PDF/log sizes. Verified against those exact attacks.
+- **Injection through values.** Every value inserted into a template goes through one function,
+  `latex_escape` (single pass; `\ & % $ # _ { } ~ ^ < > | [ ]`, control and bidi characters
+  removed, Unicode dashes/spaces normalised), applied automatically to every `\VAR{}` by the
+  Jinja environment (`finalize`). URLs go through `latex_url` (http/https/mailto only). The only
+  markup a value can carry is `**bold**` and `[label](url)`, parsed before escaping. The Jinja
+  environment is sandboxed and strict. Template syntax inside data stays text.
+- **Uploads.** Template files are validated by name and type (`safe_relpath`), zips are size- and
+  count-capped, encrypted entries and path traversal are refused, and the stored files live under
+  `storage/templates/<id>/`, outside any web root.
+
+### T11 — Fabricated facts in tailored documents (Phase 6)
+
+The TailorAgent and CoverLetterAgent have no tools and return a plan, not a document. Employers,
+titles, schools, degrees, dates, links and contact details are copied from the master profile by
+id; the model cannot change them. Every rewritten bullet cites its master bullet, and is reverted
+to the master wording if it adds a number, a technical term the profile does not contain, or a
+job keyword the candidate lacks. Skills are picked from the master's own lists; the headline may
+only use profile words and generic role words. Cover-letter sentences failing the same checks are
+removed; a first-person sentence may use the profile's terms only, never the posting's, and
+availability is never stated. A short list of inflated claims ("critical", "guaranteeing",
+"reliable", "mastery", "expertise", "industrialisation", "business") must also be in the source, or
+the claim is cut. A first-person sentence that copies a three-word phrase from the posting is cut
+too. These checks cannot catch every inflated phrase, so a person still reviews each
+document. Every correction is stored with the document and shown in the UI. The job posting is
+spotlighted as untrusted data, and a posting flagged for injection is only used after an explicit
+confirmation.
 
 ### T9 — Malicious or manipulated CV files (Phase 4)
 

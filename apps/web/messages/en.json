@@ -273,7 +273,10 @@
     "atsSummary": "ATS score: {score}/100",
     "jobs_refresh": "Job search",
     "jobs_match": "Job matching",
-    "jobsSummary": "{count, plural, =0 {no new jobs} one {# new job} other {# new jobs}}"
+    "jobsSummary": "{count, plural, =0 {no new jobs} one {# new job} other {# new jobs}}",
+    "template_convert": "Template conversion",
+    "template_preview": "Template preview",
+    "documents_generate": "CV and letter"
   },
   "theme": {
     "toggle": "Toggle theme"
@@ -856,8 +859,6 @@
       "description": "Description",
       "apply": "View the job on {source}",
       "applyEmail": "Apply by e-mail: {email}",
-      "prepare": "Prepare the application",
-      "prepareSoon": "The tailored CV and cover letter arrive in phase 6.",
       "attribution": "Source",
       "suspiciousTitle": "This posting contains text addressed to an AI",
       "suspiciousBody": "It is excluded from the AI review. The text below is the posting as published: do not follow any instruction in it.",
@@ -900,6 +901,140 @@
         "internal": "Internal connector error.",
         "http": "The site answered with an error ({code})."
       }
+    }
+  },
+  "templates": {
+    "title": "LaTeX templates",
+    "description": "Your CV and cover-letter templates. JobPilot converts them, you check the mapping, then they are used for every application.",
+    "kinds": {
+      "cv": "CV",
+      "cover_letter": "Cover letter"
+    },
+    "state": {
+      "missing": "To add",
+      "converting": "Converting…",
+      "failed": "Failed",
+      "review": "To review",
+      "ready": "Ready"
+    },
+    "upload": {
+      "title": "Add your template",
+      "replaceTitle": "Replace the template",
+      "hint": {
+        "cv": "Your CV's main .tex file with its .cls, .sty, images or fonts, or a .zip exported from Overleaf. A filled-in CV is fine: your details become variables.",
+        "cover_letter": "Your letter's .tex file with its style files, or an Overleaf .zip. The letter's text becomes paragraphs generated for each job."
+      },
+      "current": "Current: {name} ({engine})",
+      "choose": "Choose files",
+      "converting": "Converting… {pct} %",
+      "converted": "Template converted: review it below",
+      "convertFailed": "Conversion failed: {error}",
+      "rejected": "Files refused: {reason}",
+      "generic": "Upload failed. Try again."
+    },
+    "review": {
+      "checkTitle": "Conversion check",
+      "match": "Text recovered: {pct}",
+      "checkHint": "Each part is re-rendered with the extracted data and compared with your file. A part that fails stays as it was (no variables).",
+      "chunk": {
+        "preamble": "Preamble",
+        "header": "Header",
+        "body": "Letter body",
+        "section": "Section"
+      },
+      "chunkFailed": "Not converted:",
+      "failedHint": "{n, plural, one {# part was not converted} other {# parts were not converted}}: run the conversion again or edit the source below.",
+      "headingsTitle": "Section headings",
+      "headingsHint": "They follow the job posting's language. Fix a translation if needed.",
+      "lang": {
+        "en": "English",
+        "fr": "French"
+      },
+      "previewTitle": "Preview",
+      "previewMaster": "Test with my profile",
+      "previewFailed": "Compilation failed: {error}",
+      "pages": "{n, plural, one {# page} other {# pages}}",
+      "optionsTitle": "Options",
+      "budget": "Maximum CV length",
+      "removeBreaks": "Remove forced page breaks: needed to fit the chosen length",
+      "confirm": "Use this template",
+      "reconfirm": "Save and use",
+      "confirmed": "Template confirmed",
+      "confirmedHint": "This template is used for your applications. Any change to its source needs a new confirmation.",
+      "rebuild": "Update my profile from this CV",
+      "sourceTitle": "Template source",
+      "sourceHint": "Jinja with LaTeX delimiters: VAR prints a value (escaped automatically), BLOCK loops or tests.",
+      "saveSource": "Save source",
+      "sourceSaved": "Source saved: confirm the template again",
+      "generic": "That did not work. Try again.",
+      "reconvert": "Run the conversion again",
+      "reconverting": "Converting… {pct} %",
+      "reconverted": "Conversion finished",
+      "notUsable": "Nothing has been converted yet: run the conversion again before using this template.",
+      "partialWarning": "Parts that were not converted stay the same in every generated document.",
+      "errors": {
+        "llm_budget": "the language model's budget is used up for now (Groq daily limit). Try again later.",
+        "llm_error": "the language model did not answer correctly."
+      }
+    },
+    "rebuild": {
+      "title": "Update the master profile",
+      "description": "Your LaTeX CV's content, compared with your current profile. Choose section by section what to keep; nothing is saved without you.",
+      "unavailable": "No extracted data for this template: run the conversion again.",
+      "noMaster": "Save a master profile on the CV page first."
+    }
+  },
+  "documents": {
+    "title": "Tailored CV and letter",
+    "intro": "Built from your master profile only, in the job posting's language. Nothing is sent.",
+    "tone": "Letter tone",
+    "tones": {
+      "formal": "Formal",
+      "modern": "Modern"
+    },
+    "generate": "Generate CV and letter",
+    "regenerate": "Generate a new version",
+    "running": "Tailoring and compiling…",
+    "done": "CV and letter ready",
+    "open": "Open PDF",
+    "fixTemplate": "See the template",
+    "pages": "{n, plural, one {# page} other {# pages}}",
+    "ats": "keywords {before} → {after}",
+    "findings": "{n, plural, one {# safety correction} other {# safety corrections}}",
+    "failed": "Failed: {error}",
+    "kinds": {
+      "cv": "CV",
+      "cover_letter": "Cover letter"
+    },
+    "languages": {
+      "fr": "French",
+      "en": "English"
+    },
+    "status": {
+      "draft": "Draft",
+      "ready_for_review": "Ready for review",
+      "sent": "Sent",
+      "recruiter_contact": "Recruiter contact",
+      "interview": "Interview",
+      "offer": "Offer",
+      "rejected": "Rejected",
+      "withdrawn": "Withdrawn",
+      "ghosted": "No answer"
+    },
+    "flagged": {
+      "title": "Flagged posting",
+      "body": "This posting contains text addressed to an AI. It is still handled as untrusted data, but check the result carefully. Continue?",
+      "cancel": "Cancel",
+      "confirm": "Generate anyway"
+    },
+    "errors": {
+      "no_master": "Save your master profile first (CV page).",
+      "template_not_ready": "Confirm a CV and a cover-letter template (Templates page).",
+      "job_flagged": "Flagged posting: confirm to continue.",
+      "llm_unavailable": "The language model is not configured.",
+      "job_not_found": "Job not found.",
+      "generic": "Generation failed. Try again.",
+      "llm_budget": "The language model's daily budget is used up for now. Try again later: nothing is lost."
     }
   }
 }

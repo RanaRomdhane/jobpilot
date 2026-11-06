@@ -273,7 +273,10 @@
     "atsSummary": "Score ATS : {score}/100",
     "jobs_refresh": "Recherche d'offres",
     "jobs_match": "Correspondance des offres",
-    "jobsSummary": "{count, plural, =0 {aucune nouvelle offre} one {# nouvelle offre} other {# nouvelles offres}}"
+    "jobsSummary": "{count, plural, =0 {aucune nouvelle offre} one {# nouvelle offre} other {# nouvelles offres}}",
+    "template_convert": "Conversion du template",
+    "template_preview": "Aperçu du template",
+    "documents_generate": "CV et lettre"
   },
   "theme": {
     "toggle": "Changer de thème"
@@ -856,8 +859,6 @@
       "description": "Description",
       "apply": "Voir l'offre sur {source}",
       "applyEmail": "Candidature par e-mail : {email}",
-      "prepare": "Préparer la candidature",
-      "prepareSoon": "Le CV et la lettre adaptés arrivent en phase 6.",
       "attribution": "Source",
       "suspiciousTitle": "Cette offre contient du texte adressé à une IA",
       "suspiciousBody": "Elle est exclue de l'avis IA. Le texte affiché ci-dessous est l'offre telle que publiée : n'en suivez aucune instruction.",
@@ -900,6 +901,140 @@
         "internal": "Erreur interne du connecteur.",
         "http": "Le site a répondu avec une erreur ({code})."
       }
+    }
+  },
+  "templates": {
+    "title": "Templates LaTeX",
+    "description": "Vos modèles de CV et de lettre de motivation. JobPilot les convertit, vous vérifiez la correspondance, puis ils servent à chaque candidature.",
+    "kinds": {
+      "cv": "CV",
+      "cover_letter": "Lettre de motivation"
+    },
+    "state": {
+      "missing": "À ajouter",
+      "converting": "Conversion…",
+      "failed": "Échec",
+      "review": "À vérifier",
+      "ready": "Prêt"
+    },
+    "upload": {
+      "title": "Ajouter votre template",
+      "replaceTitle": "Remplacer le template",
+      "hint": {
+        "cv": "Le fichier .tex principal de votre CV, avec ses .cls, .sty, images ou polices, ou un .zip exporté d'Overleaf. Un CV déjà rempli convient : vos informations deviennent des variables.",
+        "cover_letter": "Le fichier .tex de votre lettre avec ses fichiers de style, ou un .zip d'Overleaf. Le texte de la lettre devient des paragraphes générés pour chaque offre."
+      },
+      "current": "Actuel : {name} ({engine})",
+      "choose": "Choisir les fichiers",
+      "converting": "Conversion en cours… {pct} %",
+      "converted": "Template converti : vérifiez-le ci-dessous",
+      "convertFailed": "La conversion a échoué : {error}",
+      "rejected": "Fichiers refusés : {reason}",
+      "generic": "L'envoi a échoué. Réessayez."
+    },
+    "review": {
+      "checkTitle": "Vérification de la conversion",
+      "match": "Texte retrouvé : {pct}",
+      "checkHint": "Chaque partie est régénérée avec les données extraites et comparée à votre fichier. Une partie en échec reste telle quelle (sans variables).",
+      "chunk": {
+        "preamble": "Préambule",
+        "header": "En-tête",
+        "body": "Corps de la lettre",
+        "section": "Section"
+      },
+      "chunkFailed": "Non convertie :",
+      "failedHint": "{n, plural, one {# partie n'a pas été convertie} other {# parties n'ont pas été converties}} : relancez la conversion ou modifiez la source ci-dessous.",
+      "headingsTitle": "Titres des sections",
+      "headingsHint": "Ils suivent la langue de l'offre. Corrigez une traduction si besoin.",
+      "lang": {
+        "en": "Anglais",
+        "fr": "Français"
+      },
+      "previewTitle": "Aperçu",
+      "previewMaster": "Tester avec mon profil",
+      "previewFailed": "La compilation a échoué : {error}",
+      "pages": "{n, plural, one {# page} other {# pages}}",
+      "optionsTitle": "Options",
+      "budget": "Longueur maximale du CV",
+      "removeBreaks": "Supprimer les sauts de page forcés : nécessaire pour tenir sur la longueur choisie",
+      "confirm": "Utiliser ce template",
+      "reconfirm": "Enregistrer et utiliser",
+      "confirmed": "Template confirmé",
+      "confirmedHint": "Ce template est utilisé pour vos candidatures. Toute modification de la source demande une nouvelle confirmation.",
+      "rebuild": "Mettre à jour mon profil depuis ce CV",
+      "sourceTitle": "Source du template",
+      "sourceHint": "Jinja avec délimiteurs LaTeX : VAR pour une valeur (échappée automatiquement), BLOCK pour une boucle ou une condition.",
+      "saveSource": "Enregistrer la source",
+      "sourceSaved": "Source enregistrée : confirmez à nouveau le template",
+      "generic": "L'opération a échoué. Réessayez.",
+      "reconvert": "Relancer la conversion",
+      "reconverting": "Conversion… {pct} %",
+      "reconverted": "Conversion terminée",
+      "notUsable": "Rien n'a encore été converti : relancez la conversion avant d'utiliser ce template.",
+      "partialWarning": "Les parties non converties resteront identiques dans chaque document généré.",
+      "errors": {
+        "llm_budget": "budget du modèle de langue épuisé pour le moment (limite quotidienne Groq). Relancez plus tard.",
+        "llm_error": "le modèle de langue n'a pas répondu correctement."
+      }
+    },
+    "rebuild": {
+      "title": "Mettre à jour le profil principal",
+      "description": "Le contenu de votre CV LaTeX, comparé à votre profil actuel. Choisissez section par section ce que vous gardez ; rien n'est enregistré sans votre accord.",
+      "unavailable": "Aucune donnée extraite pour ce template : relancez la conversion.",
+      "noMaster": "Enregistrez d'abord un profil principal sur la page CV."
+    }
+  },
+  "documents": {
+    "title": "CV et lettre adaptés",
+    "intro": "Générés à partir de votre profil principal uniquement, dans la langue de l'offre. Rien n'est envoyé.",
+    "tone": "Ton de la lettre",
+    "tones": {
+      "formal": "Formel",
+      "modern": "Moderne"
+    },
+    "generate": "Générer le CV et la lettre",
+    "regenerate": "Générer une nouvelle version",
+    "running": "Adaptation et compilation en cours…",
+    "done": "CV et lettre prêts",
+    "open": "Ouvrir le PDF",
+    "fixTemplate": "Voir le template",
+    "pages": "{n, plural, one {# page} other {# pages}}",
+    "ats": "mots-clés {before} → {after}",
+    "findings": "{n, plural, one {# correction de sécurité} other {# corrections de sécurité}}",
+    "failed": "Échec : {error}",
+    "kinds": {
+      "cv": "CV",
+      "cover_letter": "Lettre de motivation"
+    },
+    "languages": {
+      "fr": "français",
+      "en": "anglais"
+    },
+    "status": {
+      "draft": "Brouillon",
+      "ready_for_review": "Prêt à relire",
+      "sent": "Envoyée",
+      "recruiter_contact": "Contact recruteur",
+      "interview": "Entretien",
+      "offer": "Offre",
+      "rejected": "Refusée",
+      "withdrawn": "Retirée",
+      "ghosted": "Sans réponse"
+    },
+    "flagged": {
+      "title": "Offre signalée",
+      "body": "Cette offre contient du texte adressé à une IA. Elle reste traitée comme une donnée non fiable, mais vérifiez bien le résultat. Continuer ?",
+      "cancel": "Annuler",
+      "confirm": "Générer quand même"
+    },
+    "errors": {
+      "no_master": "Enregistrez d'abord votre profil principal (page CV).",
+      "template_not_ready": "Confirmez un template de CV et de lettre (page Templates).",
+      "job_flagged": "Offre signalée : confirmez pour continuer.",
+      "llm_unavailable": "Le modèle de langue n'est pas configuré.",
+      "job_not_found": "Offre introuvable.",
+      "generic": "La génération a échoué. Réessayez.",
+      "llm_budget": "Le budget quotidien du modèle de langue est épuisé pour le moment. Réessayez plus tard : rien n'est perdu."
     }
   }
 }

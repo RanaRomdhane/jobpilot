@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import type { TaskEvent } from "@/lib/api/client";
+import { isFollowed } from "@/lib/api/task-stream";
 
 const KNOWN = [
   "triage",
@@ -15,6 +16,9 @@ const KNOWN = [
   "ats_report",
   "jobs_refresh",
   "jobs_match",
+  "template_convert",
+  "template_preview",
+  "documents_generate",
 ] as const;
 
 /** One SSE connection for the whole app: background-task results become toasts + fresh data. */
@@ -31,6 +35,11 @@ export function TaskToasts() {
       source.addEventListener("task", (message) => {
         const event = JSON.parse((message as MessageEvent<string>).data) as TaskEvent;
         if (event.status !== "succeeded" && event.status !== "failed") return;
+        if (isFollowed(event.id)) {
+          // the page that started it reports the outcome; just refresh the data
+          void queryClient.invalidateQueries();
+          return;
+        }
         const kind = (KNOWN as readonly string[]).includes(event.kind)
           ? t(event.kind as (typeof KNOWN)[number])
           : event.kind;

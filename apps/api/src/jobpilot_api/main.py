@@ -16,6 +16,7 @@ from jobpilot_api.routers import (
     applications,
     ats,
     auth,
+    documents,
     emails,
     gmail,
     health,
@@ -24,6 +25,7 @@ from jobpilot_api.routers import (
     resume,
     security,
     tasks,
+    templates,
 )
 from jobpilot_api.routers import (
     settings as settings_router,
@@ -87,6 +89,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     v1.include_router(ats.router)
     v1.include_router(jobs.router)
     v1.include_router(jobs.saved_router)
+    v1.include_router(templates.router)
+    v1.include_router(documents.router)
     v1.include_router(security.router)
     v1.include_router(settings_router.router)
     v1.include_router(tasks.router)
