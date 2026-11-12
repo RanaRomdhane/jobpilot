@@ -46,6 +46,9 @@ class ScriptedProvider:
         content = reply if isinstance(reply, str) else json.dumps(reply)
         return ChatResult(content, "gpt-oss", "groq", 100, 50, finish_reason=self.finish)
 
+    async def remember(self, *_: Any, **__: Any) -> None:
+        return None
+
 
 async def test_parser_assigns_ids_and_spotlights_the_cv() -> None:
     provider = ScriptedProvider(PROFILE)
