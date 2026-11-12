@@ -69,7 +69,22 @@ class LLMProvider(Protocol):
         max_tokens: int | None = None,
         use_cache: bool = True,
         reasoning_effort: ReasoningEffort | None = None,
+        store: bool = True,
     ) -> ChatResult: ...
+
+    async def remember(
+        self,
+        purpose: LLMPurpose,
+        messages: list[dict[str, Any]],
+        result: ChatResult,
+        *,
+        response_format: dict[str, Any] | None = None,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
+    ) -> None:
+        """Store `result` as the answer to this request, once the caller has validated it."""
+        ...
 
 
 class OpenAICompatibleProvider:
@@ -151,6 +166,56 @@ class OpenAICompatibleProvider:
         )
         return self._guard_client
 
+    @staticmethod
+    def _payload(
+        model: str,
+        messages: list[dict[str, Any]],
+        response_format: dict[str, Any] | None,
+        temperature: float,
+        max_tokens: int | None,
+        reasoning_effort: ReasoningEffort | None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {"messages": messages, "temperature": temperature}
+        if response_format is not None:
+            payload["response_format"] = response_format
+        if max_tokens is not None:
+            payload["max_completion_tokens"] = max_tokens
+        if reasoning_effort is not None and supports_reasoning_effort(model):
+            payload["reasoning_effort"] = reasoning_effort
+        return payload
+
+    async def _store(self, key: str, result: ChatResult) -> None:
+        if result.finish_reason not in ("stop", None):
+            return
+        await self._cache.set(
+            key,
+            {
+                "content": result.content,
+                "model": result.model,
+                "provider": result.provider,
+                "input_tokens": result.input_tokens,
+                "output_tokens": result.output_tokens,
+                "finish_reason": result.finish_reason,
+            },
+        )
+
+    async def remember(
+        self,
+        purpose: LLMPurpose,
+        messages: list[dict[str, Any]],
+        result: ChatResult,
+        *,
+        response_format: dict[str, Any] | None = None,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
+    ) -> None:
+        model = self.model(purpose)
+        payload = self._payload(
+            model, messages, response_format, temperature, max_tokens, reasoning_effort
+        )
+        await self._store(cache_key(self.name, model, payload), result)
+
     async def complete(
         self,
         purpose: LLMPurpose,
@@ -161,17 +226,15 @@ class OpenAICompatibleProvider:
         max_tokens: int | None = None,
         use_cache: bool = True,
         reasoning_effort: ReasoningEffort | None = None,
+        store: bool = True,
         max_wait_s: float | None = None,
     ) -> ChatResult:
+        """`use_cache` reads and writes the cache; `store=False` leaves the writing to the caller
+        (`remember`), for answers that must be validated first."""
         model = self.model(purpose)
-        payload: dict[str, Any] = {"messages": messages, "temperature": temperature}
-        if response_format is not None:
-            payload["response_format"] = response_format
-        if max_tokens is not None:
-            payload["max_completion_tokens"] = max_tokens
-        if reasoning_effort is not None and supports_reasoning_effort(model):
-            payload["reasoning_effort"] = reasoning_effort
-
+        payload = self._payload(
+            model, messages, response_format, temperature, max_tokens, reasoning_effort
+        )
         key = cache_key(self.name, model, payload)
         if use_cache:
             hit = await self._cache.get(key)
@@ -193,18 +256,8 @@ class OpenAICompatibleProvider:
             output_tokens=resp.usage.completion_tokens if resp.usage else 0,
             finish_reason=choice.finish_reason,
         )
-        if use_cache and choice.finish_reason in ("stop", None):
-            await self._cache.set(
-                key,
-                {
-                    "content": result.content,
-                    "model": result.model,
-                    "provider": result.provider,
-                    "input_tokens": result.input_tokens,
-                    "output_tokens": result.output_tokens,
-                    "finish_reason": result.finish_reason,
-                },
-            )
+        if use_cache and store:
+            await self._store(key, result)
         return result
 
 
@@ -243,6 +296,7 @@ class FallbackProvider:
         max_tokens: int | None = None,
         use_cache: bool = True,
         reasoning_effort: ReasoningEffort | None = None,
+        store: bool = True,
     ) -> ChatResult:
         kwargs: dict[str, Any] = {
             "response_format": response_format,
@@ -250,6 +304,7 @@ class FallbackProvider:
             "max_tokens": max_tokens,
             "use_cache": use_cache,
             "reasoning_effort": reasoning_effort,
+            "store": store,
         }
         try:
             return await self.primary.complete(
@@ -257,6 +312,29 @@ class FallbackProvider:
             )
         except RateLimitExceededError:
             return await self.fallback.complete(purpose, messages, **kwargs)
+
+    async def remember(
+        self,
+        purpose: LLMPurpose,
+        messages: list[dict[str, Any]],
+        result: ChatResult,
+        *,
+        response_format: dict[str, Any] | None = None,
+        temperature: float = 0.0,
+        max_tokens: int | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
+    ) -> None:
+        # stored under the provider that answered, like `complete` does
+        answered_by = self.fallback if result.provider == self.fallback.name else self.primary
+        await answered_by.remember(
+            purpose,
+            messages,
+            result,
+            response_format=response_format,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            reasoning_effort=reasoning_effort,
+        )
 
 
 def build_provider(
