@@ -138,7 +138,10 @@ The TailorAgent and CoverLetterAgent have no tools and return a plan, not a docu
 titles, schools, degrees, dates, links and contact details are copied from the master profile by
 id; the model cannot change them. Every rewritten bullet cites its master bullet, and is reverted
 to the master wording if it adds a number, a technical term the profile does not contain, or a
-job keyword the candidate lacks. Skills are picked from the master's own lists; the headline may
+job keyword the candidate lacks. When the document's language differs from the master's, a bullet
+left in the master wording gets one translation request with no job text; the translation must pass
+the same checks against its master bullet, or the master wording stays. Skills are picked from the
+master's own lists; the headline may
 only use profile words and generic role words. Cover-letter sentences failing the same checks are
 removed; a first-person sentence may use the profile's terms only, never the posting's, and
 availability is never stated. A short list of inflated claims ("critical", "guaranteeing",

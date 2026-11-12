@@ -18,9 +18,18 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
+from openai import APIError
 from sqlalchemy import func, select
 
-from jobpilot_agents.tailor import LetterPlan, Tone, tailor_cv, write_letter
+from jobpilot_agents.structured import StructuredOutputError
+from jobpilot_agents.tailor import (
+    FrenchForm,
+    LetterPlan,
+    Tone,
+    tailor_cv,
+    translate_bullets,
+    write_letter,
+)
 from jobpilot_agents.template_converter import (
     ConvertedChunk,
     convert_failed,
@@ -43,6 +52,7 @@ from jobpilot_core.models import (
     JobPosting,
     LatexTemplate,
 )
+from jobpilot_core.ratelimit import RateLimitExceededError
 from jobpilot_core.resume import ResumeProfile
 from jobpilot_jobs_sources.taxonomy import TECH_VOCAB, _pattern
 from jobpilot_latex import templates as tfiles
@@ -53,9 +63,12 @@ from jobpilot_resume import FileKind, JobKeyword, extract
 from jobpilot_resume.ats import keyword_coverage
 from jobpilot_resume.tailoring import (
     Finding,
+    Validated,
+    apply_translations,
     build_tailored,
     drop_order,
     feminine_forms,
+    master_worded_bullets,
     profile_text,
     validate_letter,
     validate_plan,
@@ -134,6 +147,42 @@ def plain_profile(profile: ResumeProfile) -> ResumeProfile:
         return node
 
     return ResumeProfile.model_validate(strip(data))
+
+
+async def translate_master_wording(
+    provider: LLMProvider,
+    master: ResumeProfile,
+    checked: Validated,
+    keywords: list[str],
+    *,
+    tpm: int,
+    form: FrenchForm = "neutral",
+) -> list[str]:
+    """Translate the plan's bullets still in the master's wording; return the translated ids.
+
+    Never fails a generation: if the budget is out or the answer is unusable, those bullets keep
+    the master wording and the findings say why.
+    """
+    plan = checked.plan
+    pending = master_worded_bullets(master, plan) if plan.language != master.language else {}
+    if not pending:
+        return []
+    try:
+        answer, _ = await translate_bullets(
+            provider, pending, lang=plan.language, tpm=tpm, form=form
+        )
+    except (RateLimitExceededError, StructuredOutputError, APIError) as exc:
+        # the OpenAI client wraps an error raised in its transport, which is where the limiter runs
+        budget = isinstance(exc, RateLimitExceededError) or isinstance(
+            exc.__cause__, RateLimitExceededError
+        )
+        code = "llm_budget" if budget else "llm_error"
+        log.warning("bullets kept in the master's language: %s", code)
+        checked.findings.extend(Finding("translation_unavailable", s, code) for s in pending)
+        return []
+    translated, findings = apply_translations(master, plan, pending, answer, keywords)
+    checked.findings.extend(findings)
+    return translated
 
 
 class DocumentFactory:
@@ -446,7 +495,16 @@ class DocumentFactory:
         mapping = tpl.mapping or {}
         source = self._prepare(await self.template_source(tpl.id), mapping)
         dropped: set[str] = set()
+        # before translating: papers are recognised by the wording a translation may change
         order = drop_order(checked.plan)
+        translated = await translate_master_wording(
+            self.provider,
+            master,
+            checked,
+            keywords,
+            tpm=self.tpm,
+            form=self.settings.candidate_french_form,
+        )
         result: CompileResult | None = None
         tex = ""
         error: str | None = None
@@ -473,6 +531,7 @@ class DocumentFactory:
             "plan": checked.plan.model_dump(mode="json"),
             "profile": tailored.model_dump(mode="json"),
             "findings": [f.as_dict() for f in checked.findings],
+            "translated_bullets": translated,
             "dropped_for_length": sorted(dropped),
             "keywords": keywords,
             "ats": ats,
