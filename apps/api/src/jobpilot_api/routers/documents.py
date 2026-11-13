@@ -6,8 +6,6 @@ review (Phase 7 adds the email and the approval).
 
 from __future__ import annotations
 
-import re
-import unicodedata
 from datetime import datetime
 from typing import Any, Literal
 
@@ -20,6 +18,7 @@ from jobpilot_api.auth import Authenticated
 from jobpilot_api.deps import Session, State
 from jobpilot_core.enums import ApplicationStatus, CompileStatus, DocumentKind
 from jobpilot_core.models import Application, GeneratedDocument, JobPosting, Resume
+from jobpilot_core.outgoing import attachment_name
 from jobpilot_core.tasks import create_task_run
 from jobpilot_resume.storage import resume_path
 
@@ -85,16 +84,7 @@ def _out(d: GeneratedDocument) -> dict[str, Any]:
     }
 
 
-def _slug(text: str | None) -> str:
-    ascii_text = unicodedata.normalize("NFKD", text or "").encode("ascii", "ignore").decode()
-    return re.sub(r"[^A-Za-z0-9]+", "_", ascii_text).strip("_")[:40]
-
-
-def file_name(kind: DocumentKind, full_name: str | None, company: str | None) -> str:
-    """CV_Firstname_Lastname_Company.pdf / CoverLetter_Firstname_Lastname_Company.pdf"""
-    prefix = "CV" if kind is DocumentKind.CV else "CoverLetter"
-    parts = [prefix, _slug(full_name), _slug(company)]
-    return "_".join(p for p in parts if p) + ".pdf"
+file_name = attachment_name  # the same name in the browser and in the application email
 
 
 @router.post("/generate", response_model=TaskStarted, status_code=status.HTTP_202_ACCEPTED)

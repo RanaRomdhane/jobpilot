@@ -625,6 +625,22 @@
         "title": "ApplyChannel",
         "type": "string"
       },
+      "ApproveIn": {
+        "properties": {
+          "confirm_flagged": {
+            "default": false,
+            "title": "Confirm Flagged",
+            "type": "boolean"
+          },
+          "override_duplicate": {
+            "default": false,
+            "title": "Override Duplicate",
+            "type": "boolean"
+          }
+        },
+        "title": "ApproveIn",
+        "type": "object"
+      },
       "AtsReportOut": {
         "properties": {
           "breakdown": {
@@ -1648,6 +1664,46 @@
           "gmail_url"
         ],
         "title": "EmailDetail",
+        "type": "object"
+      },
+      "EmailEdit": {
+        "properties": {
+          "body": {
+            "maxLength": 10000,
+            "title": "Body",
+            "type": "string"
+          },
+          "cc": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Cc",
+            "type": "array"
+          },
+          "subject": {
+            "maxLength": 200,
+            "title": "Subject",
+            "type": "string"
+          },
+          "to_address": {
+            "anyOf": [
+              {
+                "maxLength": 254,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Address"
+          }
+        },
+        "required": [
+          "subject",
+          "body"
+        ],
+        "title": "EmailEdit",
         "type": "object"
       },
       "EmailOut": {
@@ -3531,6 +3587,136 @@
         "title": "MatchOut",
         "type": "object"
       },
+      "OutgoingAttachment": {
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DocumentKind"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "document_id",
+          "kind",
+          "version",
+          "name"
+        ],
+        "title": "OutgoingAttachment",
+        "type": "object"
+      },
+      "OutgoingEmailOut": {
+        "properties": {
+          "approved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "attachments": {
+            "items": {
+              "$ref": "#/components/schemas/OutgoingAttachment"
+            },
+            "title": "Attachments",
+            "type": "array"
+          },
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "cc": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Cc",
+            "type": "array"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OutgoingStatus"
+          },
+          "subject": {
+            "title": "Subject",
+            "type": "string"
+          },
+          "to_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Address"
+          }
+        },
+        "required": [
+          "id",
+          "to_address",
+          "cc",
+          "subject",
+          "body",
+          "status",
+          "error",
+          "approved_at",
+          "sent_at",
+          "attachments"
+        ],
+        "title": "OutgoingEmailOut",
+        "type": "object"
+      },
+      "OutgoingStatus": {
+        "enum": [
+          "draft",
+          "approved",
+          "sent",
+          "failed"
+        ],
+        "title": "OutgoingStatus",
+        "type": "string"
+      },
       "Overview": {
         "properties": {
           "activity": {
@@ -3615,6 +3801,12 @@
             "title": "Daily Send Cap",
             "type": "integer"
           },
+          "email_signature": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Email Signature",
+            "type": "string"
+          },
           "locale": {
             "default": "fr",
             "enum": [
@@ -3623,6 +3815,11 @@
             ],
             "title": "Locale",
             "type": "string"
+          },
+          "sending_enabled": {
+            "default": false,
+            "title": "Sending Enabled",
+            "type": "boolean"
           },
           "timezone": {
             "default": "Africa/Tunis",
@@ -3762,6 +3959,69 @@
           "name"
         ],
         "title": "Project",
+        "type": "object"
+      },
+      "QueueItem": {
+        "properties": {
+          "application_id": {
+            "title": "Application Id",
+            "type": "integer"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "email_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OutgoingStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ApplicationStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "application_id",
+          "job_id",
+          "role_title",
+          "company",
+          "status",
+          "email_status",
+          "updated_at"
+        ],
+        "title": "QueueItem",
         "type": "object"
       },
       "Reclassify": {
@@ -4255,6 +4515,240 @@
         "title": "ResumeUploadOut",
         "type": "object"
       },
+      "ReviewDocument": {
+        "properties": {
+          "ats_after": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ats After"
+          },
+          "ats_before": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ats Before"
+          },
+          "findings": {
+            "title": "Findings",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "findings",
+          "page_count",
+          "ats_before",
+          "ats_after"
+        ],
+        "title": "ReviewDocument",
+        "type": "object"
+      },
+      "ReviewJob": {
+        "properties": {
+          "apply_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Email"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "injection_flag": {
+            "title": "Injection Flag",
+            "type": "boolean"
+          },
+          "match_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match Score"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "company",
+          "apply_email",
+          "url",
+          "injection_flag",
+          "match_score"
+        ],
+        "title": "ReviewJob",
+        "type": "object"
+      },
+      "ReviewOut": {
+        "properties": {
+          "application_id": {
+            "title": "Application Id",
+            "type": "integer"
+          },
+          "apply_channel": {
+            "$ref": "#/components/schemas/ApplyChannel"
+          },
+          "apply_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Apply Url"
+          },
+          "changes": {
+            "items": {
+              "$ref": "#/components/schemas/TailoringChange"
+            },
+            "title": "Changes",
+            "type": "array"
+          },
+          "checks": {
+            "$ref": "#/components/schemas/SendChecks"
+          },
+          "cover_letter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewDocument"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cv": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewDocument"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "$ref": "#/components/schemas/OutgoingEmailOut"
+          },
+          "job": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewJob"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          },
+          "send_account": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Send Account"
+          },
+          "sending_enabled": {
+            "title": "Sending Enabled",
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ApplicationStatus"
+          }
+        },
+        "required": [
+          "application_id",
+          "role_title",
+          "status",
+          "apply_channel",
+          "apply_url",
+          "job",
+          "cv",
+          "cover_letter",
+          "changes",
+          "email",
+          "checks",
+          "sending_enabled",
+          "send_account"
+        ],
+        "title": "ReviewOut",
+        "type": "object"
+      },
       "SavedSearchIn": {
         "properties": {
           "enabled": {
@@ -4392,6 +4886,48 @@
           "eval_reports"
         ],
         "title": "SecurityReport",
+        "type": "object"
+      },
+      "SendChecks": {
+        "properties": {
+          "blocking": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Blocking",
+            "type": "array"
+          },
+          "cap": {
+            "title": "Cap",
+            "type": "integer"
+          },
+          "duplicate_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Duplicate Ids",
+            "type": "array"
+          },
+          "sent_today": {
+            "title": "Sent Today",
+            "type": "integer"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "blocking",
+          "warnings",
+          "duplicate_ids",
+          "sent_today",
+          "cap"
+        ],
+        "title": "SendChecks",
         "type": "object"
       },
       "SessionInfo": {
@@ -4816,6 +5352,29 @@
           "false_positives"
         ],
         "title": "SuiteRun",
+        "type": "object"
+      },
+      "TailoringChange": {
+        "properties": {
+          "master": {
+            "title": "Master",
+            "type": "string"
+          },
+          "tailored": {
+            "title": "Tailored",
+            "type": "string"
+          },
+          "where": {
+            "title": "Where",
+            "type": "string"
+          }
+        },
+        "required": [
+          "where",
+          "master",
+          "tailored"
+        ],
+        "title": "TailoringChange",
         "type": "object"
       },
       "TaskCreated": {
@@ -6801,6 +7360,222 @@
         "summary": "Flag Job",
         "tags": [
           "jobs"
+        ]
+      }
+    },
+    "/api/v1/outgoing/applications/{application_id}/applied-via-link": {
+      "post": {
+        "description": "You applied on the employer's site with the downloaded PDFs: track it like a sent email.",
+        "operationId": "applied_via_link_api_v1_outgoing_applications__application_id__applied_via_link_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "application_id",
+            "required": true,
+            "schema": {
+              "title": "Application Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueItem"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Applied Via Link",
+        "tags": [
+          "outgoing"
+        ]
+      }
+    },
+    "/api/v1/outgoing/queue": {
+      "get": {
+        "description": "Applications with generated documents, most recently changed first.",
+        "operationId": "queue_api_v1_outgoing_queue_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/QueueItem"
+                  },
+                  "title": "Response Queue Api V1 Outgoing Queue Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Queue",
+        "tags": [
+          "outgoing"
+        ]
+      }
+    },
+    "/api/v1/outgoing/review/{application_id}": {
+      "get": {
+        "operationId": "review_api_v1_outgoing_review__application_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "application_id",
+            "required": true,
+            "schema": {
+              "title": "Application Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review",
+        "tags": [
+          "outgoing"
+        ]
+      }
+    },
+    "/api/v1/outgoing/{email_id}": {
+      "put": {
+        "operationId": "edit_api_v1_outgoing__email_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "email_id",
+            "required": true,
+            "schema": {
+              "title": "Email Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailEdit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutgoingEmailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Edit",
+        "tags": [
+          "outgoing"
+        ]
+      }
+    },
+    "/api/v1/outgoing/{email_id}/approve": {
+      "post": {
+        "description": "Approve & Send: the only way an email gets sent.",
+        "operationId": "approve_api_v1_outgoing__email_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "email_id",
+            "required": true,
+            "schema": {
+              "title": "Email Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApproveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskStarted"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Approve",
+        "tags": [
+          "outgoing"
         ]
       }
     },

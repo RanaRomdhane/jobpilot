@@ -17,11 +17,11 @@ from jobpilot_agents.tracing import configure_local_tracing
 from jobpilot_core.config import get_settings
 from jobpilot_core.crypto import SecretBox
 from jobpilot_core.db import create_engine, create_sessionmaker
-from jobpilot_core.enums import EmailCategory, OAuthScopeSet
+from jobpilot_core.enums import APPLICATION_LABEL, EmailCategory, OAuthScopeSet
 from jobpilot_core.health import WORKER_HEARTBEAT_KEY, WORKER_HEARTBEAT_TTL_S
 from jobpilot_core.llm import DbUsageSink, LLMConfigurationError, LLMProvider, build_provider
 from jobpilot_core.log import configure_logging
-from jobpilot_core.models import EmailMessage, OAuthCredential
+from jobpilot_core.models import EmailMessage, OAuthCredential, Resume
 from jobpilot_core.ratelimit import RateLimitExceededError
 from jobpilot_core.tasks import TaskReporter, create_task_run
 from jobpilot_mcp_gmail.credentials import CredentialStore, GmailNotConnectedError
@@ -30,6 +30,7 @@ from jobpilot_security.factory import build_detector
 from jobpilot_worker import job_runs
 from jobpilot_worker.documents import DocumentFactory, FactoryError
 from jobpilot_worker.resume import ResumePipeline, mark_failed
+from jobpilot_worker.sender import GmailSender, SendRefusedError, send_approved
 from jobpilot_worker.triage import run_triage
 from jobpilot_worker.user_labels import UserLabelActions
 
@@ -318,6 +319,65 @@ async def documents_generate(
     return await _factory_task(rep, "documents", run)
 
 
+async def send_email(
+    ctx: Ctx,
+    task_id: str,
+    email_id: int,
+    token: str,
+    override_duplicate: bool = False,
+    confirm_flagged: bool = False,
+) -> dict[str, Any]:
+    """Send one approved application email (the only job that sends; ADR-0003)."""
+    rep = reporter(ctx, task_id)
+    await rep.start("sending")
+    settings = ctx["settings"]
+    store = CredentialStore(ctx["sessionmaker"], SecretBox.from_settings(settings))
+
+    async def sender_factory() -> tuple[GmailSender, str]:
+        token_, account = await store.load(OAuthScopeSet.SEND)
+        if not account:
+            raise GmailNotConnectedError(OAuthScopeSet.SEND)
+        return GmailSender(
+            token_, on_token_refresh=lambda t: store.save(OAuthScopeSet.SEND, t)
+        ), account
+
+    async def labeler(message_id: str) -> None:
+        token_, _ = await store.load(OAuthScopeSet.TRIAGE)
+        gmail = GmailClient(token_, on_token_refresh=lambda t: store.save(OAuthScopeSet.TRIAGE, t))
+        try:
+            ids = await gmail.ensure_labels([APPLICATION_LABEL])
+            await gmail.add_labels([message_id], [ids[APPLICATION_LABEL]], ids)
+        finally:
+            await gmail.aclose()
+
+    async with ctx["sessionmaker"]() as session:
+        master = await session.scalar(select(Resume).where(Resume.is_master))
+    from_name = ((master.parsed or {}).get("contact") or {}).get("full_name") if master else None
+    try:
+        result = await send_approved(
+            ctx["sessionmaker"],
+            settings.storage_dir,
+            email_id,
+            token,
+            sender_factory=sender_factory,
+            labeler=labeler,
+            from_name=from_name,
+            override_duplicate=override_duplicate,
+            confirm_flagged=confirm_flagged,
+        )
+    except SendRefusedError as exc:
+        await rep.fail(exc.code)
+        return {"sent": False, "error": exc.code}
+    except (GmailNotConnectedError, GmailAuthExpiredError) as exc:
+        await rep.fail(f"gmail_send: {exc}")
+        return {"sent": False, "error": "gmail_send"}
+    except Exception as exc:
+        await rep.fail(f"{type(exc).__name__}: {exc}")
+        return {"sent": False, "error": "send_failed"}
+    await rep.succeed(result, "sent")
+    return result
+
+
 async def scheduled_jobs(ctx: Ctx) -> None:
     """Cron: the twice-daily job refresh (saved searches are updated at the end)."""
     async with ctx["sessionmaker"]() as session:
@@ -339,6 +399,7 @@ class WorkerSettings:
         template_convert,
         template_preview,
         documents_generate,
+        send_email,
     ]
     cron_jobs = [  # noqa: RUF012
         cron(heartbeat, second={0, 15, 30, 45}, run_at_startup=True),

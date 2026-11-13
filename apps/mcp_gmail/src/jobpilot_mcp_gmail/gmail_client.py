@@ -76,6 +76,35 @@ class OAuthToken:
 TokenSaver = Callable[[OAuthToken], Awaitable[None]]
 
 
+async def fresh_access_token(
+    http: httpx.AsyncClient, token: OAuthToken, on_refresh: TokenSaver | None = None
+) -> str:
+    """The token's access token, refreshed first when it expires within a minute.
+
+    Shared with the sender service, which has its own `gmail.send` token and no other Gmail access.
+    """
+    if token.expiry - time.time() > 60:
+        return token.access_token
+    resp = await http.post(
+        token.token_uri,
+        data={
+            "grant_type": "refresh_token",
+            "refresh_token": token.refresh_token,
+            "client_id": token.client_id,
+            "client_secret": token.client_secret,
+        },
+    )
+    if resp.status_code in (400, 401):
+        raise GmailAuthExpiredError()
+    resp.raise_for_status()
+    data = resp.json()
+    token.access_token = data["access_token"]
+    token.expiry = time.time() + int(data.get("expires_in", 3600))
+    if on_refresh is not None:
+        await on_refresh(token)
+    return token.access_token
+
+
 @dataclass(slots=True)
 class ParsedMessage:
     gmail_id: str
@@ -112,26 +141,7 @@ class GmailClient:
     # ------------------------------------------------------------------ auth
     async def _access_token(self) -> str:
         async with self._refresh_lock:
-            if self._token.expiry - time.time() > 60:
-                return self._token.access_token
-            resp = await self._http.post(
-                self._token.token_uri,
-                data={
-                    "grant_type": "refresh_token",
-                    "refresh_token": self._token.refresh_token,
-                    "client_id": self._token.client_id,
-                    "client_secret": self._token.client_secret,
-                },
-            )
-            if resp.status_code in (400, 401):
-                raise GmailAuthExpiredError()
-            resp.raise_for_status()
-            data = resp.json()
-            self._token.access_token = data["access_token"]
-            self._token.expiry = time.time() + int(data.get("expires_in", 3600))
-            if self._on_refresh is not None:
-                await self._on_refresh(self._token)
-            return self._token.access_token
+            return await fresh_access_token(self._http, self._token, self._on_refresh)
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> dict[str, Any]:
         for attempt in range(self._max_retries + 1):

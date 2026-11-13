@@ -268,6 +268,23 @@ def posting_phrases(text: str, job_text: str, profile_vocab: set[str]) -> list[s
     return found
 
 
+# a sentence that followed one the guardrail removed must not refer back to it
+_LEAD_CONNECTOR = re.compile(
+    r"^(?:par ailleurs|de plus|en outre|ensuite|également|moreover|also|additionally|furthermore)"
+    r"\s*,?\s+",
+    re.IGNORECASE,
+)
+_INNER_CONNECTOR = re.compile(
+    r"^((?:j['’]ai|je|i(?: have)?)\s+)(?:également|aussi|notamment|also)\s+", re.IGNORECASE
+)
+
+
+def after_cut(sentence: str) -> str:
+    """Drop the "also" that pointed at a sentence the guardrail removed."""
+    out = _INNER_CONNECTOR.sub(r"\1", _LEAD_CONNECTOR.sub("", sentence, count=1), count=1)
+    return out[:1].upper() + out[1:] if out else out
+
+
 _PRECISION = (
     (re.compile(r"\b([Dd])e précision\b"), r"\1'exactitude"),
     (re.compile(r"\b([Ll])a précision\b"), r"\1'exactitude"),
@@ -544,6 +561,7 @@ def validate_plan(
     cited = " ".join(sources.get(s, "") for s in plan.summary.sources)
     basis = f"{master.summary or ''} {master.headline or ''} {cited}"
     summary: list[str] = []
+    cut = False
     for sentence in re.split(r"(?<=[.!?])\s+", plan.summary.text.strip()):
         kept_text, claims = drop_unsupported_claims(keep_metric(sentence, basis), basis)
         if claims:
@@ -551,8 +569,11 @@ def validate_plan(
         copied = posting_phrases(kept_text, job_text, vocab)
         if copied:
             findings.append(Finding("posting_phrase", "summary", ", ".join(copied)))
-        elif kept_text:
-            summary.append(kept_text)
+        if copied or not kept_text:
+            cut = True
+            continue
+        summary.append(after_cut(kept_text) if cut else kept_text)
+        cut = False
     plan.summary.text = " ".join(summary)
     if plan.summary.text:
         problems = check_text(plan.summary.text, basis, vocab, keywords, "summary")
@@ -738,6 +759,7 @@ def validate_letter(
         )
         basis = f"{own} {job_text}"
         kept: list[str] = []
+        cut = False
         for sentence in re.split(r"(?<=[.!?])\s+", text.strip()):
             if not sentence:
                 continue
@@ -747,6 +769,7 @@ def validate_letter(
             if claims:
                 findings.append(Finding("unsupported_claim", f"p{n}", ", ".join(claims)))
             if not sentence:
+                cut = True
                 continue
             allowed = profile_vocab | identity_vocab if about_me else profile_vocab | job_vocab
             problems = check_text(sentence, own if about_me else basis, allowed, [], f"p{n}")
@@ -766,8 +789,10 @@ def validate_letter(
                 problems.append(Finding("job_keyword", f"p{n}", ", ".join(claimed)))
             if problems:
                 findings.extend(problems)
+                cut = True
                 continue
-            kept.append(sentence)
+            kept.append(after_cut(sentence) if cut else sentence)
+            cut = False
         if kept:
             out.append(CheckedParagraph(" ".join(kept), valid_sources))
     return out, findings

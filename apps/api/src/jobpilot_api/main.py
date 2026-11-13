@@ -21,6 +21,7 @@ from jobpilot_api.routers import (
     gmail,
     health,
     jobs,
+    outgoing,
     overview,
     resume,
     security,
@@ -91,6 +92,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     v1.include_router(jobs.saved_router)
     v1.include_router(templates.router)
     v1.include_router(documents.router)
+    v1.include_router(outgoing.router)
     v1.include_router(security.router)
     v1.include_router(settings_router.router)
     v1.include_router(tasks.router)

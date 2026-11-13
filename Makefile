@@ -60,6 +60,9 @@ password: ## Set the dashboard password (hash only, in .env); SHOW=1 echoes what
 gmail-auth: ## Connect Gmail (opens Google's consent page; see docs/setup/google-oauth.md)
 	$(UV) run python -m jobpilot_mcp_gmail.auth --scope triage
 
+gmail-auth-send: ## Allow JobPilot to send approved applications from Gmail (separate gmail.send token)
+	$(UV) run python -m jobpilot_mcp_gmail.auth --scope send
+
 triage: ## Start a Gmail sync + triage run in the worker and follow its progress
 	@tid=$$(curl -sf -X POST http://127.0.0.1:8000/api/v1/gmail/triage | $(UV) run python -c "import sys,json;print(json.load(sys.stdin)['task_id'])") && 	  echo "task $$tid" && curl -sN http://127.0.0.1:8000/api/v1/tasks/$$tid/events | grep --line-buffered '^data:'
 

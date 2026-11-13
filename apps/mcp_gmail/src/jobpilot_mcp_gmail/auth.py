@@ -1,7 +1,8 @@
 """`make gmail-auth`: run Google's installed-app consent flow and store the token encrypted.
 
-Runs on the host (it opens your browser). Only the triage scope set exists until Phase 7, where the
-separate `gmail.send` credential is added behind a Settings switch.
+Runs on the host (it opens your browser). `--scope triage` grants `gmail.modify`, for triage and
+labels. `--scope send` grants `gmail.send` (plus `userinfo.email`, to know the account), a separate
+token that only the sender service uses (ADR-0003).
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ import sys
 import time
 from pathlib import Path
 
+import httpx
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 from jobpilot_core.config import get_settings
@@ -21,7 +23,16 @@ from jobpilot_core.enums import OAuthScopeSet
 from jobpilot_mcp_gmail.credentials import CredentialStore
 from jobpilot_mcp_gmail.gmail_client import TRIAGE_SCOPES, GmailClient, OAuthToken
 
-SCOPES: dict[OAuthScopeSet, tuple[str, ...]] = {OAuthScopeSet.TRIAGE: TRIAGE_SCOPES}
+# gmail.send cannot read the profile: userinfo.email tells which account the token belongs to
+SEND_SCOPES = (
+    "https://www.googleapis.com/auth/gmail.send",
+    "https://www.googleapis.com/auth/userinfo.email",
+)
+TOKENINFO = "https://oauth2.googleapis.com/tokeninfo"
+SCOPES: dict[OAuthScopeSet, tuple[str, ...]] = {
+    OAuthScopeSet.TRIAGE: TRIAGE_SCOPES,
+    OAuthScopeSet.SEND: SEND_SCOPES,
+}
 DEFAULT_CLIENT_FILE = Path("secrets/google_credentials.json")
 
 
@@ -53,17 +64,35 @@ def run_consent(client_file: Path, scopes: tuple[str, ...]) -> OAuthToken:
     )
 
 
+async def account_email(scope_set: OAuthScopeSet, token: OAuthToken) -> str:
+    if scope_set is OAuthScopeSet.SEND:
+        async with httpx.AsyncClient(timeout=30) as http:
+            resp = await http.get(TOKENINFO, params={"access_token": token.access_token})
+            resp.raise_for_status()
+            return str(resp.json()["email"]).lower()
+    client = GmailClient(token)
+    try:
+        return str((await client.get_profile())["emailAddress"]).lower()
+    finally:
+        await client.aclose()
+
+
 async def store(scope_set: OAuthScopeSet, token: OAuthToken) -> str:
     settings = get_settings()
     engine = create_engine(settings)
     store_ = CredentialStore(create_sessionmaker(engine), SecretBox.from_settings(settings))
-    client = GmailClient(token)
     try:
-        email = str((await client.get_profile())["emailAddress"]).lower()
+        email = await account_email(scope_set, token)
+        if scope_set is OAuthScopeSet.SEND:
+            triage = (await store_.status()).get(OAuthScopeSet.TRIAGE.value)
+            if triage and triage != email:
+                raise SystemExit(
+                    f"this token is for {email}, but triage reads {triage}: "
+                    "sign in with the same Google account"
+                )
         await store_.save(scope_set, token, email)
         return email
     finally:
-        await client.aclose()
         await engine.dispose()
 
 

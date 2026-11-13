@@ -225,7 +225,7 @@
     "language": "Language",
     "timezone": "Time zone",
     "sendCap": "Maximum sends per day",
-    "sendCapHint": "Used once application sending is available (phase 7).",
+    "sendCapHint": "Approve & Send refuses to send more application emails than this in one day.",
     "saved": "Preferences saved",
     "gmail": "Gmail",
     "gmailConnected": "Connected: {email}",
@@ -254,7 +254,12 @@
     "autoApplyValue": "Confidence ≥ {value}, never for a suspicious email",
     "sources": "Job sources",
     "sourcesSoon": "Job sources arrive in phase 5.",
-    "scheduleValue": "Every 30 minutes (at :05 and :35)"
+    "scheduleValue": "Every 30 minutes (at :05 and :35)",
+    "sending": "Allow sending applications",
+    "sendingHint": "Off by default. Approve & Send also needs the separate Gmail sending permission.",
+    "signature": "Email signature",
+    "signatureHint": "Leave empty to use your name, phone and LinkedIn from your master profile.",
+    "sendNotConnected": "Not connected. Run `make gmail-auth-send` in a terminal."
   },
   "soon": {
     "title": "Not available yet",
@@ -276,7 +281,8 @@
     "jobsSummary": "{count, plural, =0 {no new jobs} one {# new job} other {# new jobs}}",
     "template_convert": "Template conversion",
     "template_preview": "Template preview",
-    "documents_generate": "CV and letter"
+    "documents_generate": "CV and letter",
+    "send_email": "Application email"
   },
   "theme": {
     "toggle": "Toggle theme"
@@ -1035,6 +1041,102 @@
       "job_not_found": "Job not found.",
       "generic": "Generation failed. Try again.",
       "llm_budget": "The language model's daily budget is used up for now. Try again later: nothing is lost."
+    },
+    "review": "Review and send"
+  },
+  "review": {
+    "intro": "Check each application, edit the email, then approve it. Nothing is sent without your approval.",
+    "queue": "Applications to review",
+    "unknownCompany": "Unknown company",
+    "emailStatus": {
+      "draft": "Email draft",
+      "approved": "Sending",
+      "sent": "Sent",
+      "failed": "Send failed"
+    },
+    "empty": {
+      "title": "No application to review yet",
+      "body": "Generate a tailored CV and letter from a job first.",
+      "action": "Browse jobs"
+    },
+    "loadError": "This application could not be loaded.",
+    "match": "match {score}/100",
+    "sentToday": "{n}/{cap} sent today",
+    "ready": "Ready to send: every check passed.",
+    "blocking": "Sending is blocked",
+    "warnings": "Check before sending",
+    "openSettings": "Open Settings",
+    "checks": {
+      "sending_disabled": "Sending is turned off in Settings.",
+      "gmail_send_not_connected": "Gmail sending is not connected. Run this in a terminal:",
+      "invalid_recipient": "The recipient is missing or not a valid address.",
+      "invalid_cc": "A copy address is not valid.",
+      "no_attachments": "No PDF is attached.",
+      "missing_document": "The CV or the letter is missing: generate them again.",
+      "empty_email": "The subject or the message is empty.",
+      "daily_cap": "Today's send limit is reached.",
+      "duplicate": "You already applied to this role at this company in the last 30 days.",
+      "flagged_posting": "This posting contains text addressed to an AI.",
+      "recipient_changed": "The recipient is not the address in the posting.",
+      "low_match": "This job matches your profile poorly.",
+      "guardrail_findings": "The guardrail corrected the documents: read them before sending.",
+      "not_draft": "This email is already approved or sent."
+    },
+    "documents": "Documents",
+    "noDocument": "Not generated yet.",
+    "link": {
+      "title": "Apply on the employer's site",
+      "body": "This posting has no application address. Open the link, upload the two PDFs, then mark the application as sent so it is tracked.",
+      "open": "Open the application page",
+      "mark": "I applied via the link",
+      "done": "Application marked as sent",
+      "error": "The application could not be updated."
+    },
+    "email": "Application email",
+    "failed": "The last send failed",
+    "to": "To",
+    "from": "From",
+    "toFromPosting": "From the job posting: check it before sending.",
+    "toManual": "The posting gives no address: enter the recipient.",
+    "cc": "Copy",
+    "ccHint": "Optional, separated by commas.",
+    "subject": "Subject",
+    "body": "Message",
+    "attachments": "Attachments",
+    "savedEmail": "Email saved",
+    "saveError": "The email could not be saved.",
+    "saveFirst": "Save your changes before approving.",
+    "approve": "Approve and send",
+    "confirm": {
+      "title": "Send this application?",
+      "body": "It is sent from your Gmail as soon as you confirm, and cannot be recalled.",
+      "duplicate": "Send anyway: I know I applied to this role recently.",
+      "flagged": "Send anyway: I checked this flagged posting.",
+      "cancel": "Cancel",
+      "send": "Send now"
+    },
+    "sentToast": "Application sent to {to}",
+    "approveError": "The email could not be approved: check the warnings.",
+    "sendErrors": {
+      "bad_token": "The approval was not valid: approve again.",
+      "approval_expired": "The approval expired: approve again.",
+      "not_approved": "This email was not approved, or was already sent.",
+      "daily_cap": "Today's send limit is reached.",
+      "duplicate": "Already applied to this role recently.",
+      "gmail_send": "Gmail refused the sending token: run make gmail-auth-send again.",
+      "send_failed": "Gmail did not send the email. Nothing was sent; you can retry."
+    },
+    "sent": {
+      "title": "Sent to {to}",
+      "body": "Replies in this Gmail thread are linked to the application automatically."
+    },
+    "changes": {
+      "title": "What the tailoring changed",
+      "hint": "Your master profile on the left, the tailored CV on the right.",
+      "headline": "Title",
+      "summary": "Summary",
+      "master": "Master profile",
+      "tailored": "Tailored CV"
     }
   }
 }
