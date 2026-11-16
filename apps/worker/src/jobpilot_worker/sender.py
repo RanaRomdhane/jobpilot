@@ -91,10 +91,12 @@ class GmailSender:
         *,
         on_token_refresh: TokenSaver | None = None,
         http: httpx.AsyncClient | None = None,
+        api_url: str = API,
     ) -> None:
         self._token = token
         self._on_refresh = on_token_refresh
         self._http = http or httpx.AsyncClient(timeout=60)
+        self._api = api_url.rstrip("/")
 
     async def aclose(self) -> None:
         await self._http.aclose()
@@ -103,7 +105,7 @@ class GmailSender:
         """Send once (never retried: a timeout may still have sent it). Returns (id, threadId)."""
         token = await fresh_access_token(self._http, self._token, self._on_refresh)
         resp = await self._http.post(
-            f"{API}/messages/send",
+            f"{self._api}/messages/send",
             headers={"Authorization": f"Bearer {token}"},
             json={"raw": raw},
         )

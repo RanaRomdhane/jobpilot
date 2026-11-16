@@ -1174,5 +1174,9 @@
       "latency": "Temps moyen",
       "cost": "Coût"
     }
+  },
+  "demo": {
+    "title": "Données de démonstration.",
+    "body": "Tout ici est inventé. Lancez `make up` pour revenir à vos données."
   }
 }

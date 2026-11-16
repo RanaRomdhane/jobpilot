@@ -1174,5 +1174,9 @@
       "latency": "Average time",
       "cost": "Cost"
     }
+  },
+  "demo": {
+    "title": "Demo data.",
+    "body": "Everything here is invented. Run `make up` to return to your own data."
   }
 }

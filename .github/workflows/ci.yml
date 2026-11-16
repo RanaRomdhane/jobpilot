@@ -62,6 +62,61 @@ jobs:
           uv run python -m jobpilot_api.export_openapi > apps/web/openapi.json
           git diff --exit-code apps/web/openapi.json || (echo "::error::run 'make gen-client' and commit" && exit 1)
 
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: jobpilot
+          POSTGRES_USER: jobpilot
+          POSTGRES_PASSWORD: jobpilot
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U jobpilot" --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      CI: "1"
+      DATABASE_URL: postgresql+asyncpg://jobpilot:jobpilot@127.0.0.1:5433/jobpilot
+      REDIS_URL: redis://127.0.0.1:6379/0
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          version: "0.13.6"
+          enable-cache: true
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.8.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - run: uv sync --frozen
+      - run: pnpm install --frozen-lockfile
+        working-directory: apps/web
+      - run: pnpm exec playwright install --with-deps chromium
+        working-directory: apps/web
+      # starts the stub LLM and Gmail, the API, the worker and the web app, then runs the journeys
+      - name: Playwright journeys
+        run: uv run python -m tests.e2e.run_stack
+      - name: Keep the report and logs when a journey fails
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+            storage/e2e/logs
+          retention-days: 7
+
   web:
     name: Web (lint, types, tests, build)
     runs-on: ubuntu-latest

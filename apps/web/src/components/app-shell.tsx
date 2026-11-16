@@ -26,6 +26,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { api, setCsrfToken, unwrap } from "@/lib/api/client";
+import { DemoBanner } from "@/components/demo-banner";
 import { cn } from "@/lib/utils";
 
 type NavKey =
@@ -214,7 +215,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <main id="main" className="min-w-0 px-4 py-6 sm:px-6 lg:px-10 lg:py-8">
-        <div className="mx-auto max-w-[1200px]">{children}</div>
+        <div className="mx-auto max-w-[1200px]">
+          <DemoBanner />
+          {children}
+        </div>
       </main>
     </div>
   );

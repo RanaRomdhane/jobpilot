@@ -5067,6 +5067,11 @@
       },
       "SettingsOut": {
         "properties": {
+          "demo": {
+            "default": false,
+            "title": "Demo",
+            "type": "boolean"
+          },
           "gmail": {
             "items": {
               "$ref": "#/components/schemas/GmailScope"

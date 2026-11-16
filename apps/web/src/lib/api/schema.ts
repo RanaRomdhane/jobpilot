@@ -2585,6 +2585,11 @@ export interface components {
         };
         /** SettingsOut */
         SettingsOut: {
+            /**
+             * Demo
+             * @default false
+             */
+            demo: boolean;
             /** Gmail */
             gmail: components["schemas"]["GmailScope"][];
             /** Job Sources */
