@@ -5,6 +5,7 @@ import {
   BriefcaseBusiness,
   FileText,
   FileUser,
+  Gauge,
   Inbox,
   LayoutDashboard,
   LogOut,
@@ -36,6 +37,7 @@ type NavKey =
   | "templates"
   | "review"
   | "security"
+  | "usage"
   | "settings";
 
 interface NavItem {
@@ -59,6 +61,7 @@ const NAV: NavItem[][] = [
   ],
   [
     { key: "security", href: "/security", icon: ShieldAlert },
+    { key: "usage", href: "/usage", icon: Gauge },
     { key: "settings", href: "/settings", icon: Settings },
   ],
 ];

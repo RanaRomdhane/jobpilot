@@ -66,6 +66,9 @@ class Settings(BaseSettings):
     llm_request_timeout_s: float = 60.0
     llm_max_retries: int = 4
     llm_cache_ttl_s: int = 7 * 24 * 3600
+    # USD per million input / output tokens, per model, for the usage page's cost estimate:
+    # LLM_PRICES={"some/model": [0.10, 0.40]}. Empty: the page shows tokens only.
+    llm_prices: dict[str, tuple[float, float]] = Field(default_factory=dict)
 
     # models per purpose and provider (override any of them from .env)
     groq_model_triage: str = "openai/gpt-oss-120b"

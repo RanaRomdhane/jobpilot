@@ -1098,6 +1098,47 @@
         "title": "Contact",
         "type": "object"
       },
+      "DayUsage": {
+        "properties": {
+          "cached_calls": {
+            "title": "Cached Calls",
+            "type": "integer"
+          },
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost"
+          },
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "tokens": {
+            "title": "Tokens",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "day",
+          "calls",
+          "cached_calls",
+          "tokens",
+          "cost"
+        ],
+        "title": "DayUsage",
+        "type": "object"
+      },
       "DocumentDetail": {
         "properties": {
           "application_id": {
@@ -3961,6 +4002,71 @@
         "title": "Project",
         "type": "object"
       },
+      "PurposeUsage": {
+        "properties": {
+          "avg_latency_ms": {
+            "title": "Avg Latency Ms",
+            "type": "integer"
+          },
+          "cached_calls": {
+            "title": "Cached Calls",
+            "type": "integer"
+          },
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "purpose": {
+            "title": "Purpose",
+            "type": "string"
+          }
+        },
+        "required": [
+          "purpose",
+          "provider",
+          "model",
+          "calls",
+          "cached_calls",
+          "errors",
+          "input_tokens",
+          "output_tokens",
+          "avg_latency_ms",
+          "cost"
+        ],
+        "title": "PurposeUsage",
+        "type": "object"
+      },
       "QueueItem": {
         "properties": {
           "application_id": {
@@ -5780,6 +5886,29 @@
         "title": "TemplateOut",
         "type": "object"
       },
+      "TodayUsage": {
+        "properties": {
+          "daily_limit": {
+            "title": "Daily Limit",
+            "type": "integer"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "tokens": {
+            "title": "Tokens",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tokens",
+          "daily_limit",
+          "provider"
+        ],
+        "title": "TodayUsage",
+        "type": "object"
+      },
       "UpcomingInterview": {
         "properties": {
           "application_id": {
@@ -5814,6 +5943,101 @@
           "interview_at"
         ],
         "title": "UpcomingInterview",
+        "type": "object"
+      },
+      "UsageOut": {
+        "properties": {
+          "by_day": {
+            "items": {
+              "$ref": "#/components/schemas/DayUsage"
+            },
+            "title": "By Day",
+            "type": "array"
+          },
+          "by_purpose": {
+            "items": {
+              "$ref": "#/components/schemas/PurposeUsage"
+            },
+            "title": "By Purpose",
+            "type": "array"
+          },
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "today": {
+            "$ref": "#/components/schemas/TodayUsage"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/UsageTotals"
+          },
+          "unpriced_models": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unpriced Models",
+            "type": "array"
+          }
+        },
+        "required": [
+          "days",
+          "totals",
+          "by_purpose",
+          "by_day",
+          "today",
+          "unpriced_models"
+        ],
+        "title": "UsageOut",
+        "type": "object"
+      },
+      "UsageTotals": {
+        "properties": {
+          "cached_calls": {
+            "title": "Cached Calls",
+            "type": "integer"
+          },
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "waited_s": {
+            "title": "Waited S",
+            "type": "number"
+          }
+        },
+        "required": [
+          "calls",
+          "cached_calls",
+          "errors",
+          "input_tokens",
+          "output_tokens",
+          "waited_s",
+          "cost"
+        ],
+        "title": "UsageTotals",
         "type": "object"
       },
       "ValidationError": {
@@ -8913,6 +9137,51 @@
         "summary": "Save Source",
         "tags": [
           "templates"
+        ]
+      }
+    },
+    "/api/v1/usage": {
+      "get": {
+        "operationId": "usage_api_v1_usage_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 90,
+              "minimum": 1,
+              "title": "Days",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Usage",
+        "tags": [
+          "usage"
         ]
       }
     }
