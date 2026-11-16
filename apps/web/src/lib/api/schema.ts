@@ -498,6 +498,100 @@ export interface paths {
         patch: operations["flag_job_api_v1_jobs__job_id__patch"];
         trace?: never;
     };
+    "/api/v1/outgoing/applications/{application_id}/applied-via-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Applied Via Link
+         * @description You applied on the employer's site with the downloaded PDFs: track it like a sent email.
+         */
+        post: operations["applied_via_link_api_v1_outgoing_applications__application_id__applied_via_link_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/outgoing/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Queue
+         * @description Applications with generated documents, most recently changed first.
+         */
+        get: operations["queue_api_v1_outgoing_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/outgoing/review/{application_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Review */
+        get: operations["review_api_v1_outgoing_review__application_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/outgoing/{email_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edit */
+        put: operations["edit_api_v1_outgoing__email_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/outgoing/{email_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve
+         * @description Approve & Send: the only way an email gets sent.
+         */
+        post: operations["approve_api_v1_outgoing__email_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/overview": {
         parameters: {
             query?: never;
@@ -1175,6 +1269,19 @@ export interface components {
          * @enum {string}
          */
         ApplyChannel: "email" | "link";
+        /** ApproveIn */
+        ApproveIn: {
+            /**
+             * Confirm Flagged
+             * @default false
+             */
+            confirm_flagged: boolean;
+            /**
+             * Override Duplicate
+             * @default false
+             */
+            override_duplicate: boolean;
+        };
         /** AtsReportOut */
         AtsReportOut: {
             /** Breakdown */
@@ -1474,6 +1581,17 @@ export interface components {
             subject: string | null;
             /** Thread Id */
             thread_id: string;
+        };
+        /** EmailEdit */
+        EmailEdit: {
+            /** Body */
+            body: string;
+            /** Cc */
+            cc?: string[];
+            /** Subject */
+            subject: string;
+            /** To Address */
+            to_address?: string | null;
         };
         /** EmailOut */
         EmailOut: {
@@ -2008,6 +2126,43 @@ export interface components {
             /** Vector Score */
             vector_score: number | null;
         };
+        /** OutgoingAttachment */
+        OutgoingAttachment: {
+            /** Document Id */
+            document_id: number;
+            kind: components["schemas"]["DocumentKind"];
+            /** Name */
+            name: string;
+            /** Version */
+            version: number;
+        };
+        /** OutgoingEmailOut */
+        OutgoingEmailOut: {
+            /** Approved At */
+            approved_at: string | null;
+            /** Attachments */
+            attachments: components["schemas"]["OutgoingAttachment"][];
+            /** Body */
+            body: string;
+            /** Cc */
+            cc: string[];
+            /** Error */
+            error: string | null;
+            /** Id */
+            id: number;
+            /** Sent At */
+            sent_at: string | null;
+            status: components["schemas"]["OutgoingStatus"];
+            /** Subject */
+            subject: string;
+            /** To Address */
+            to_address: string | null;
+        };
+        /**
+         * OutgoingStatus
+         * @enum {string}
+         */
+        OutgoingStatus: "draft" | "approved" | "sent" | "failed";
         /** Overview */
         Overview: {
             /** Activity */
@@ -2040,11 +2195,21 @@ export interface components {
              */
             daily_send_cap: number;
             /**
+             * Email Signature
+             * @default
+             */
+            email_signature: string;
+            /**
              * Locale
              * @default fr
              * @enum {string}
              */
             locale: "fr" | "en";
+            /**
+             * Sending Enabled
+             * @default false
+             */
+            sending_enabled: boolean;
             /**
              * Timezone
              * @default Africa/Tunis
@@ -2088,6 +2253,24 @@ export interface components {
             technologies?: string[];
             /** Url */
             url?: string | null;
+        };
+        /** QueueItem */
+        QueueItem: {
+            /** Application Id */
+            application_id: number;
+            /** Company */
+            company: string | null;
+            email_status: components["schemas"]["OutgoingStatus"] | null;
+            /** Job Id */
+            job_id: number | null;
+            /** Role Title */
+            role_title: string;
+            status: components["schemas"]["ApplicationStatus"];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
         };
         /** Reclassify */
         Reclassify: {
@@ -2219,6 +2402,60 @@ export interface components {
              */
             uploaded_at: string;
         };
+        /** ReviewDocument */
+        ReviewDocument: {
+            /** Ats After */
+            ats_after: number | null;
+            /** Ats Before */
+            ats_before: number | null;
+            /** Findings */
+            findings: number;
+            /** Id */
+            id: number;
+            /** Page Count */
+            page_count: number | null;
+            /** Version */
+            version: number;
+        };
+        /** ReviewJob */
+        ReviewJob: {
+            /** Apply Email */
+            apply_email: string | null;
+            /** Company */
+            company: string | null;
+            /** Id */
+            id: number;
+            /** Injection Flag */
+            injection_flag: boolean;
+            /** Match Score */
+            match_score: number | null;
+            /** Title */
+            title: string;
+            /** Url */
+            url: string | null;
+        };
+        /** ReviewOut */
+        ReviewOut: {
+            /** Application Id */
+            application_id: number;
+            apply_channel: components["schemas"]["ApplyChannel"];
+            /** Apply Url */
+            apply_url: string | null;
+            /** Changes */
+            changes: components["schemas"]["TailoringChange"][];
+            checks: components["schemas"]["SendChecks"];
+            cover_letter: components["schemas"]["ReviewDocument"] | null;
+            cv: components["schemas"]["ReviewDocument"] | null;
+            email: components["schemas"]["OutgoingEmailOut"];
+            job: components["schemas"]["ReviewJob"] | null;
+            /** Role Title */
+            role_title: string;
+            /** Send Account */
+            send_account: string | null;
+            /** Sending Enabled */
+            sending_enabled: boolean;
+            status: components["schemas"]["ApplicationStatus"];
+        };
         /** SavedSearchIn */
         SavedSearchIn: {
             /**
@@ -2267,6 +2504,19 @@ export interface components {
             /** Flagged */
             flagged: components["schemas"]["FlaggedItem"][];
             suite: components["schemas"]["SuiteRun"];
+        };
+        /** SendChecks */
+        SendChecks: {
+            /** Blocking */
+            blocking: string[];
+            /** Cap */
+            cap: number;
+            /** Duplicate Ids */
+            duplicate_ids: number[];
+            /** Sent Today */
+            sent_today: number;
+            /** Warnings */
+            warnings: string[];
         };
         /** SessionInfo */
         SessionInfo: {
@@ -2412,6 +2662,15 @@ export interface components {
             tn: number;
             /** Tp */
             tp: number;
+        };
+        /** TailoringChange */
+        TailoringChange: {
+            /** Master */
+            master: string;
+            /** Tailored */
+            tailored: string;
+            /** Where */
+            where: string;
         };
         /** TaskCreated */
         TaskCreated: {
@@ -3593,6 +3852,158 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    applied_via_link_api_v1_outgoing_applications__application_id__applied_via_link_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                application_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    queue_api_v1_outgoing_queue_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueItem"][];
+                };
+            };
+        };
+    };
+    review_api_v1_outgoing_review__application_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                application_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_api_v1_outgoing__email_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutgoingEmailOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_api_v1_outgoing__email_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskStarted"];
                 };
             };
             /** @description Validation Error */

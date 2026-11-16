@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ErrorState, PageHeader, Section } from "@/components/page-header";
 import { SystemStatus } from "@/components/system-status";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { setLocale } from "@/i18n/actions";
 import { api, unwrap, type Preferences, type SettingsOut } from "@/lib/api/client";
 
@@ -110,6 +112,35 @@ function PreferencesForm({ initial }: { initial: Preferences }) {
           {t("sendCapHint")}
         </p>
       </div>
+      <div className="flex items-start gap-2 sm:col-span-2">
+        <Checkbox
+          id="sending"
+          checked={prefs.sending_enabled ?? false}
+          onCheckedChange={(v) => setPrefs({ ...prefs, sending_enabled: v === true })}
+          aria-describedby="sending-hint"
+          className="mt-0.5"
+        />
+        <div className="space-y-0.5">
+          <Label htmlFor="sending">{t("sending")}</Label>
+          <p id="sending-hint" className="text-xs text-muted-foreground">
+            {t("sendingHint")}
+          </p>
+        </div>
+      </div>
+      <div className="space-y-1.5 sm:col-span-2">
+        <Label htmlFor="signature">{t("signature")}</Label>
+        <Textarea
+          id="signature"
+          rows={4}
+          maxLength={1000}
+          value={prefs.email_signature ?? ""}
+          onChange={(e) => setPrefs({ ...prefs, email_signature: e.target.value })}
+          aria-describedby="signature-hint"
+        />
+        <p id="signature-hint" className="text-xs text-muted-foreground">
+          {t("signatureHint")}
+        </p>
+      </div>
       <div className="sm:col-span-2">
         <Button type="submit" disabled={save.isPending}>
           {save.isPending ? tc("saving") : tc("save")}
@@ -141,7 +172,7 @@ function Details({ s }: { s: SettingsOut }) {
             {send ? (
               <Ok ok>{send.account_email}</Ok>
             ) : (
-              <span className="text-muted-foreground">—</span>
+              <span className="text-muted-foreground">{t("sendNotConnected")}</span>
             )}
           </Row>
         </dl>

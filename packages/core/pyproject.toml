@@ -15,6 +15,7 @@ dependencies = [
   "httpx2>=2.16",  # the HTTP client used by the openai SDK (v3+)
   "openai>=1.60",
   "cryptography>=44",
+  "tzdata>=2024.1",  # time zones for the daily send cap (Windows and slim images have none)
 ]
 
 [build-system]

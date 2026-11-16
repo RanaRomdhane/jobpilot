@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Loader2, ShieldAlert, Sparkles } from "lucide-react";
+import { FileText, Loader2, Send, ShieldAlert, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -150,6 +150,15 @@ export function JobDocuments({ jobId, flagged }: { jobId: number; flagged: boole
             latest[kind] ? <DocumentRow key={kind} doc={latest[kind]} /> : null,
           )}
         </ul>
+      ) : null}
+
+      {has && docs.data?.application_id ? (
+        <Button asChild variant="secondary" size="sm">
+          <Link href={`/review?application=${docs.data.application_id}`}>
+            <Send aria-hidden />
+            {t("review")}
+          </Link>
+        </Button>
       ) : null}
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>

@@ -120,11 +120,16 @@ async def link_batch(
     session: AsyncSession, batch_id: uuid.UUID, *, auto_apply_confidence: float
 ) -> LinkResult:
     result = LinkResult()
+    # a reply in the thread of an application email you sent is linked whatever its category
+    sent_threads = select(Application.gmail_thread_id).where(
+        Application.gmail_thread_id.is_not(None)
+    )
     emails = (
         await session.scalars(
             select(EmailMessage).where(
                 EmailMessage.batch_id == batch_id,
-                EmailMessage.category.in_(list(TARGET_STATUS)),
+                EmailMessage.category.in_(list(TARGET_STATUS))
+                | EmailMessage.thread_id.in_(sent_threads),
             )
         )
     ).all()
@@ -133,6 +138,25 @@ async def link_batch(
         assert email.category is not None
         app = await find_application(session, email)
         if app is None:
+            continue
+        if email.category not in TARGET_STATUS:
+            # an "Autre" or "Newsletter" reply: recorded on the timeline, no status change
+            if app.gmail_thread_id != email.thread_id:
+                continue
+            result.linked += 1
+            session.add(
+                ApplicationEvent(
+                    application_id=app.id,
+                    type="email_received",
+                    source_email_id=email.id,
+                    payload={
+                        "category": email.category.value,
+                        "confidence": email.confidence,
+                        "suspicious": email.injection_flag,
+                        "subject": (email.subject or "")[:200],
+                    },
+                )
+            )
             continue
         result.linked += 1
         session.add(

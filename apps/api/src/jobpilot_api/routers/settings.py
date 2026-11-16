@@ -35,6 +35,10 @@ class Preferences(BaseModel):
     locale: Literal["fr", "en"] = "fr"
     timezone: str = Field(default="Africa/Tunis", max_length=64)
     daily_send_cap: int = Field(default=20, ge=1, le=200)
+    # Approve & Send works only when this is on and the gmail.send token is connected
+    sending_enabled: bool = False
+    # empty: name, phone and LinkedIn from the master profile
+    email_signature: str = Field(default="", max_length=1_000)
 
 
 class SettingsOut(BaseModel):
@@ -87,6 +91,8 @@ async def get_settings(_: Authenticated, session: Session, state: State) -> Sett
             locale="en" if profile.locale == "en" else "fr",
             timezone=profile.timezone,
             daily_send_cap=profile.daily_send_cap,
+            sending_enabled=profile.sending_enabled,
+            email_signature=str((profile.preferences or {}).get("email_signature") or ""),
         ),
     )
 
@@ -97,5 +103,11 @@ async def update_preferences(body: Preferences, _: Authenticated, session: Sessi
     profile.locale = body.locale
     profile.timezone = body.timezone
     profile.daily_send_cap = body.daily_send_cap
+    profile.sending_enabled = body.sending_enabled
+    # a new dict, so SQLAlchemy sees the JSONB column change
+    profile.preferences = {
+        **(profile.preferences or {}),
+        "email_signature": body.email_signature.replace("\r\n", "\n").strip(),
+    }
     await session.commit()
     return body

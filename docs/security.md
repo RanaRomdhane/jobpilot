@@ -77,8 +77,23 @@ the brief is classified as *Newsletter* and flagged.
 
 ### T3 — Unwanted sending (Phase 7)
 
-No agent tool can send. Sending requires a separate `gmail.send` credential and a one-time,
-hashed, short-lived approval token created by a human click (ADR-0003).
+No agent tool can send. The only code that sends is the sender service in the worker
+(`jobpilot_worker.sender`), which holds the only `gmail.send` token; the triage token cannot
+send, and the send token can do nothing else. Sending is off until enabled in Settings.
+
+- **Approval:** Approve and send creates a random token. Only its SHA-256 is stored, with a
+  10-minute expiry. The token itself travels once, in the worker job's arguments in Redis. The
+  sender checks it in the same transaction that marks it consumed, with a row lock, so a token
+  sends at most one email. A replayed, wrong or expired token sends nothing.
+- **Rechecked at send time:** the daily cap, the duplicate guard (same company and role within
+  30 days, unless overridden at review), a valid recipient, sending still enabled.
+- **Never retried:** a Gmail call that fails or times out marks the email failed. It may still
+  have been sent, so a resend needs a new approval rather than an automatic retry.
+- **Untrusted values in headers:** the job title, company and apply address come from the
+  posting. The recipient must be one plain address (no list, display name or line break), and
+  line breaks are stripped from the subject, so a posting cannot add a `Bcc:` header.
+- **The draft is a fixed template:** no model writes the email, so it cannot claim anything.
+- **Audit:** every approval, refusal, send and failure is an `application_event`.
 
 ### T4 — Data exfiltration through the LLM
 

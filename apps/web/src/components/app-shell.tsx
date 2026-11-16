@@ -55,7 +55,7 @@ const NAV: NavItem[][] = [
     { key: "jobs", href: "/jobs", icon: Search },
     { key: "resume", href: "/resume", icon: FileUser },
     { key: "templates", href: "/templates", icon: FileText },
-    { key: "review", href: "/review", icon: Send, soon: true },
+    { key: "review", href: "/review", icon: Send },
   ],
   [
     { key: "security", href: "/security", icon: ShieldAlert },

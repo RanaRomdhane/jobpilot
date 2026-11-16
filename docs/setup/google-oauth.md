@@ -26,9 +26,11 @@ Google account whose Gmail you want to triage.
 4. **Contact information**: your address → Next → accept the policy → **Create**.
 5. **Audience** tab → **Test users** → **Add users** → your Gmail address → Save.
    Leave the publishing status on **Testing**.
-6. **Data access** tab → **Add or remove scopes** → add these two, then **Update** and **Save**:
+6. **Data access** tab → **Add or remove scopes** → add these three, then **Update** and **Save**:
    - `https://www.googleapis.com/auth/gmail.modify` — read mail and add labels (triage)
-   - `https://www.googleapis.com/auth/gmail.send` — only used from Phase 7, when you enable sending
+   - `https://www.googleapis.com/auth/gmail.send` — send the applications you approve
+   - `https://www.googleapis.com/auth/userinfo.email` — tells JobPilot which account the sending
+     token belongs to (`gmail.send` alone cannot read it). Google adds `openid` by itself.
 
    JobPilot asks for them **separately**: triage never holds the send permission (ADR-0002/0003).
 
@@ -56,10 +58,24 @@ A browser tab opens on Google's consent page. Because the app is in Testing mode
 The token is encrypted with your `FERNET_KEY` and stored in the database; the terminal prints the
 connected address.
 
+## 6. Allow sending (optional)
+
+Sending is off until you turn it on. It needs its own token, so triage never holds the send
+permission:
+
+```bash
+make gmail-auth-send
+```
+
+Sign in with **the same Google account** as triage: a token for another account is refused. Then
+tick **Allow sending applications** in Settings. Nothing is ever sent without **Approve and send**
+on the review screen.
+
 ## Good to know
 
 - **Tokens of apps in Testing mode expire after 7 days.** When triage reports
-  `gmail auth expired`, run `make gmail-auth` again. (Publishing the app to "In production" removes
+  `gmail auth expired`, run `make gmail-auth` again, and `make gmail-auth-send` when a send fails
+  with a Gmail token error. (Publishing the app to "In production" removes
   this limit but `gmail.modify` then needs Google's security review — not worth it for personal use.)
 - Revoke access any time at <https://myaccount.google.com/permissions>.
 - JobPilot never deletes, trashes, forwards or archives mail; it only adds labels under `JobPilot/`.
