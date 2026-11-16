@@ -1,7 +1,7 @@
 # JobPilot — Delivery plan
 
-Status: **awaiting approval**. Each phase lives on its own branch, lands through a PR into `main`
-(template in `.github/`), and is merged only after CI is green and its acceptance criteria pass.
+Status: **delivered** (all eight phases merged). Each phase lived on its own branch and landed
+through a PR into `main`, merged only after CI was green and its acceptance criteria passed.
 
 ## Workflow
 
