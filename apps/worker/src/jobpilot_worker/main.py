@@ -205,6 +205,8 @@ async def ats_report(
 
 async def scheduled_triage(ctx: Ctx) -> None:
     """Cron: incremental sync + triage, only once Gmail is connected."""
+    if ctx["settings"].demo_mode:
+        return
     async with ctx["sessionmaker"]() as session:
         connected = await session.scalar(
             select(OAuthCredential.id).where(OAuthCredential.scope_set == OAuthScopeSet.TRIAGE)
@@ -338,12 +340,18 @@ async def send_email(
         if not account:
             raise GmailNotConnectedError(OAuthScopeSet.SEND)
         return GmailSender(
-            token_, on_token_refresh=lambda t: store.save(OAuthScopeSet.SEND, t)
+            token_,
+            on_token_refresh=lambda t: store.save(OAuthScopeSet.SEND, t),
+            api_url=settings.gmail_api_url,
         ), account
 
     async def labeler(message_id: str) -> None:
         token_, _ = await store.load(OAuthScopeSet.TRIAGE)
-        gmail = GmailClient(token_, on_token_refresh=lambda t: store.save(OAuthScopeSet.TRIAGE, t))
+        gmail = GmailClient(
+            token_,
+            on_token_refresh=lambda t: store.save(OAuthScopeSet.TRIAGE, t),
+            api_url=settings.gmail_api_url,
+        )
         try:
             ids = await gmail.ensure_labels([APPLICATION_LABEL])
             await gmail.add_labels([message_id], [ids[APPLICATION_LABEL]], ids)
@@ -380,6 +388,8 @@ async def send_email(
 
 async def scheduled_jobs(ctx: Ctx) -> None:
     """Cron: the twice-daily job refresh (saved searches are updated at the end)."""
+    if ctx["settings"].demo_mode:
+        return
     async with ctx["sessionmaker"]() as session:
         row = await create_task_run(session, "jobs_refresh", {"scheduled": True})
     await jobs_refresh(ctx, str(row.id))

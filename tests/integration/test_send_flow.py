@@ -41,8 +41,14 @@ from jobpilot_core.models import (
     Resume,
     TriageBatch,
 )
+from jobpilot_mcp_gmail.gmail_client import GmailError
 from jobpilot_worker.pipeline import link_batch
-from jobpilot_worker.sender import GmailSender, SendRefusedError, send_approved
+from jobpilot_worker.sender import (
+    GmailSender,
+    SendRefusedError,
+    label_sent_applications,
+    send_approved,
+)
 
 from .conftest import TEST_PASSWORD
 
@@ -377,3 +383,54 @@ async def test_applied_via_link_is_tracked(ctx: dict[str, Any]) -> None:
         app = await s.get(Application, 1)
         kind = await s.scalar(select(ApplicationEvent.type).order_by(ApplicationEvent.id.desc()))
     assert app is not None and app.applied_at is not None and kind == "applied_via_link"
+
+
+class FakeGmail:
+    """Label calls only; a message id starting with "gone" was deleted."""
+
+    def __init__(self) -> None:
+        self.labelled: list[str] = []
+
+    async def ensure_labels(self, names: list[str]) -> dict[str, str]:
+        return {n: "L1" for n in names}
+
+    async def add_labels(
+        self, ids: list[str], label_ids: list[str], allowed: dict[str, str]
+    ) -> None:
+        if ids[0].startswith("gone"):
+            raise GmailError("gmail POST /messages/batchModify -> 404")
+        self.labelled += ids
+
+
+async def test_a_label_missed_at_send_time_is_applied_by_the_next_triage(
+    ctx: dict[str, Any],
+) -> None:
+    sm = ctx["sm"]
+    now = datetime.now(UTC)
+    async with sm() as s:
+        for message_id, sent_at, labelled_at in (
+            ("m-late", now, None),  # the label failed when it was sent
+            ("m-done", now, now),  # already labelled
+            ("gone-1", now, None),  # deleted in Gmail since
+            ("m-old", now - timedelta(days=60), None),  # too old to keep trying
+        ):
+            s.add(
+                OutgoingEmail(
+                    application_id=1,
+                    status=OutgoingStatus.SENT,
+                    sent_message_id=message_id,
+                    sent_at=sent_at,
+                    labelled_at=labelled_at,
+                )
+            )
+        s.add(OutgoingEmail(application_id=1, status=OutgoingStatus.DRAFT))
+        await s.commit()
+    gmail = FakeGmail()
+    assert await label_sent_applications(sm, gmail) == 1  # type: ignore[arg-type]
+    assert gmail.labelled == ["m-late"]
+    assert await label_sent_applications(sm, gmail) == 0  # type: ignore[arg-type]
+    async with sm() as s:
+        late = await s.scalar(
+            select(OutgoingEmail).where(OutgoingEmail.sent_message_id == "m-late")
+        )
+    assert late is not None and late.labelled_at is not None

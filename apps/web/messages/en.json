@@ -16,7 +16,8 @@
     "soon": "Soon",
     "menu": "Open menu",
     "logout": "Sign out",
-    "skip": "Skip to content"
+    "skip": "Skip to content",
+    "usage": "Usage"
   },
   "login": {
     "title": "Sign in",
@@ -1139,5 +1140,43 @@
       "tailored": "Tailored CV"
     },
     "queueError": "The list of applications could not be loaded."
+  },
+  "usage": {
+    "intro": "What the language models were asked, and what it would cost on a paid plan.",
+    "period": "Period",
+    "lastDays": "Last {n} days",
+    "calls": "Calls to the provider",
+    "tokens": "Tokens",
+    "inOut": "{input} in · {output} out",
+    "cache": "Answered from cache",
+    "cacheHint": "{n, plural, =0 {no cached answer} one {# cached answer} other {# cached answers}}",
+    "cost": "Estimated cost",
+    "costHint": "At the prices set in .env",
+    "noPrices": "Set LLM_PRICES in .env to estimate it",
+    "unpriced": "No price is set for: {models}. Their tokens are not in the estimate.",
+    "errors": "{n, plural, one {# error} other {# errors}}",
+    "today": "Last 24 hours against the daily limit",
+    "todayValue": "{tokens} of {limit} tokens ({share})",
+    "todayNoLimit": "{tokens} tokens in the last 24 hours. This provider has no daily limit set.",
+    "perDay": "Tokens per day",
+    "dayTitle": "{day}: {tokens} tokens, {calls, plural, one {# call} other {# calls}}",
+    "waited": "{s} s spent waiting for the rate limit",
+    "perPurpose": "By purpose",
+    "noCalls": "No call in this period.",
+    "ms": "{n} ms",
+    "cols": {
+      "purpose": "Purpose",
+      "model": "Model",
+      "calls": "Calls",
+      "cached": "Cached",
+      "input": "Input tokens",
+      "output": "Output tokens",
+      "latency": "Average time",
+      "cost": "Cost"
+    }
+  },
+  "demo": {
+    "title": "Demo data.",
+    "body": "Everything here is invented. Run `make up` to return to your own data."
   }
 }

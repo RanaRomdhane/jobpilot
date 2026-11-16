@@ -510,6 +510,8 @@ class OutgoingEmail(Base):
     sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     sent_message_id: Mapped[str | None] = mapped_column(String(64))
     gmail_thread_id: Mapped[str | None] = mapped_column(String(64))
+    # when JobPilot/Candidature was applied; empty on a sent email means: retry at triage
+    labelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     error: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = created_at_col()
     updated_at: Mapped[datetime] = updated_at_col()

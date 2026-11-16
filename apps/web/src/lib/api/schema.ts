@@ -1098,6 +1098,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Usage */
+        get: operations["usage_api_v1_usage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1432,6 +1449,22 @@ export interface components {
             location?: string | null;
             /** Phone */
             phone?: string | null;
+        };
+        /** DayUsage */
+        DayUsage: {
+            /** Cached Calls */
+            cached_calls: number;
+            /** Calls */
+            calls: number;
+            /** Cost */
+            cost: number | null;
+            /**
+             * Day
+             * Format: date
+             */
+            day: string;
+            /** Tokens */
+            tokens: number;
         };
         /** DocumentDetail */
         DocumentDetail: {
@@ -2254,6 +2287,29 @@ export interface components {
             /** Url */
             url?: string | null;
         };
+        /** PurposeUsage */
+        PurposeUsage: {
+            /** Avg Latency Ms */
+            avg_latency_ms: number;
+            /** Cached Calls */
+            cached_calls: number;
+            /** Calls */
+            calls: number;
+            /** Cost */
+            cost: number | null;
+            /** Errors */
+            errors: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Model */
+            model: string;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Provider */
+            provider: string;
+            /** Purpose */
+            purpose: string;
+        };
         /** QueueItem */
         QueueItem: {
             /** Application Id */
@@ -2529,6 +2585,11 @@ export interface components {
         };
         /** SettingsOut */
         SettingsOut: {
+            /**
+             * Demo
+             * @default false
+             */
+            demo: boolean;
             /** Gmail */
             gmail: components["schemas"]["GmailScope"][];
             /** Job Sources */
@@ -2804,6 +2865,15 @@ export interface components {
             /** Warnings */
             warnings: string[];
         };
+        /** TodayUsage */
+        TodayUsage: {
+            /** Daily Limit */
+            daily_limit: number;
+            /** Provider */
+            provider: string;
+            /** Tokens */
+            tokens: number;
+        };
         /** UpcomingInterview */
         UpcomingInterview: {
             /** Application Id */
@@ -2817,6 +2887,36 @@ export interface components {
             interview_at: string;
             /** Role Title */
             role_title: string;
+        };
+        /** UsageOut */
+        UsageOut: {
+            /** By Day */
+            by_day: components["schemas"]["DayUsage"][];
+            /** By Purpose */
+            by_purpose: components["schemas"]["PurposeUsage"][];
+            /** Days */
+            days: number;
+            today: components["schemas"]["TodayUsage"];
+            totals: components["schemas"]["UsageTotals"];
+            /** Unpriced Models */
+            unpriced_models: string[];
+        };
+        /** UsageTotals */
+        UsageTotals: {
+            /** Cached Calls */
+            cached_calls: number;
+            /** Calls */
+            calls: number;
+            /** Cost */
+            cost: number | null;
+            /** Errors */
+            errors: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Waited S */
+            waited_s: number;
         };
         /** ValidationError */
         ValidationError: {
@@ -5009,6 +5109,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TemplateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    usage_api_v1_usage_get: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsageOut"];
                 };
             };
             /** @description Validation Error */

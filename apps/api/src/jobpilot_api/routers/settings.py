@@ -48,6 +48,7 @@ class SettingsOut(BaseModel):
     triage: dict[str, object]
     job_sources: list[dict[str, object]]
     preferences: Preferences
+    demo: bool = False  # synthetic data (`make demo`)
 
 
 async def _profile(session: Session) -> UserProfile:
@@ -94,6 +95,7 @@ async def get_settings(_: Authenticated, session: Session, state: State) -> Sett
             sending_enabled=profile.sending_enabled,
             email_signature=str((profile.preferences or {}).get("email_signature") or ""),
         ),
+        demo=s.demo_mode,
     )
 
 

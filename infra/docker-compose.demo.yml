@@ -1,0 +1,18 @@
+# Demo mode (`make demo`): the same stack on a separate database, Redis index and storage folder,
+# with scheduled jobs off. Your real data is not read or changed; `make up` switches back.
+
+x-demo-env: &demo-env
+  DATABASE_URL: postgresql+asyncpg://jobpilot:${POSTGRES_PASSWORD:-jobpilot}@postgres:5432/jobpilot_demo
+  REDIS_URL: redis://redis:6379/1
+  STORAGE_DIR: /app/storage/demo
+  LATEX_SPOOL_DIR: /spool
+  ORT_DISABLE_TELEMETRY: "1"
+  DEMO_MODE: "true"
+
+services:
+  migrate:
+    environment: *demo-env
+  api:
+    environment: *demo-env
+  worker:
+    environment: *demo-env

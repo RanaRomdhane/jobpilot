@@ -188,9 +188,30 @@ responses are capped at 8 MB. The local embedding model is pinned and SHA-256-ve
 ONNX Runtime's built-in telemetry is disabled (`ORT_DISABLE_TELEMETRY=1`). Towards the sources: identifiable user agent, `robots.txt`
 (Protego), daily caps, pacing and caching; no login-walled pages, no LinkedIn/Indeed scraping.
 
+### T12 — Demo and test data mixing with real data (Phase 8)
+
+The demo and the end-to-end tests use invented data only. `make demo` runs on a separate
+database, Redis index and storage folder, so its tasks cannot reach the real worker queue or
+files. The seed script empties its target first and therefore refuses any database whose name
+does not end in `_demo`. Scheduled triage and job refresh are off in demo mode. The end-to-end
+stack points Gmail and the language model at a local stub and holds a fake token.
+
 ## Residual risks
 
 - Injection detection is probabilistic. A missed injection can still mislabel an email (visible,
   reversible) but cannot trigger any other action.
 - `gmail.modify` is broader at Google's level than what JobPilot uses (ADR-0002).
 - Google OAuth apps in *Testing* mode expire refresh tokens after 7 days (re-run `make gmail-auth`).
+- The no-fabrication guardrail checks numbers, technical terms, a list of inflated claims and
+  phrases copied from the posting. A vague or inflated sentence outside those checks can pass, so
+  a person reads every document on the review screen before it is sent.
+- The approval token passes once through Redis, as an argument of the sender job. Redis is bound
+  to `127.0.0.1` with no password: anything that can run code on this machine as you can read
+  it for up to 10 minutes. JobPilot is a single-user local app and does not defend against a
+  compromised local account.
+- A sent email cannot be recalled. The daily cap bounds the damage of a mistake, it does not
+  prevent one.
+- The dashboard is served over plain HTTP on `127.0.0.1`. Do not publish these ports or put the
+  app on a server without adding TLS and reviewing T7.
+- `GMAIL_API_URL` and `GROQ_BASE_URL` redirect where tokens and prompts are sent. They exist for
+  tests and provider choice; anyone who can edit `.env` already controls the app.

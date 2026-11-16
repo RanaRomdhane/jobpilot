@@ -16,7 +16,8 @@
     "soon": "Bientôt",
     "menu": "Ouvrir le menu",
     "logout": "Se déconnecter",
-    "skip": "Aller au contenu"
+    "skip": "Aller au contenu",
+    "usage": "Utilisation"
   },
   "login": {
     "title": "Connexion",
@@ -1139,5 +1140,43 @@
       "tailored": "CV adapté"
     },
     "queueError": "La liste des candidatures n'a pas pu être chargée."
+  },
+  "usage": {
+    "intro": "Ce qui a été demandé aux modèles de langue, et ce que cela coûterait avec une offre payante.",
+    "period": "Période",
+    "lastDays": "{n} derniers jours",
+    "calls": "Appels au fournisseur",
+    "tokens": "Tokens",
+    "inOut": "{input} en entrée · {output} en sortie",
+    "cache": "Réponses tirées du cache",
+    "cacheHint": "{n, plural, =0 {aucune réponse en cache} one {# réponse en cache} other {# réponses en cache}}",
+    "cost": "Coût estimé",
+    "costHint": "Aux prix définis dans .env",
+    "noPrices": "Définissez LLM_PRICES dans .env pour l'estimer",
+    "unpriced": "Aucun prix n'est défini pour : {models}. Leurs tokens ne sont pas dans l'estimation.",
+    "errors": "{n, plural, one {# erreur} other {# erreurs}}",
+    "today": "Dernières 24 heures par rapport à la limite quotidienne",
+    "todayValue": "{tokens} sur {limit} tokens ({share})",
+    "todayNoLimit": "{tokens} tokens ces dernières 24 heures. Ce fournisseur n'a pas de limite quotidienne définie.",
+    "perDay": "Tokens par jour",
+    "dayTitle": "{day} : {tokens} tokens, {calls, plural, one {# appel} other {# appels}}",
+    "waited": "{s} s d'attente pour la limite de débit",
+    "perPurpose": "Par usage",
+    "noCalls": "Aucun appel sur cette période.",
+    "ms": "{n} ms",
+    "cols": {
+      "purpose": "Usage",
+      "model": "Modèle",
+      "calls": "Appels",
+      "cached": "En cache",
+      "input": "Tokens en entrée",
+      "output": "Tokens en sortie",
+      "latency": "Temps moyen",
+      "cost": "Coût"
+    }
+  },
+  "demo": {
+    "title": "Données de démonstration.",
+    "body": "Tout ici est inventé. Lancez `make up` pour revenir à vos données."
   }
 }

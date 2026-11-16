@@ -1,6 +1,56 @@
 # JobPilot — Architecture
 
-Status: **proposed** (Phase 0). Updated at the end of every phase.
+Status: **current** (Phase 8).
+
+## 0. Diagram
+
+```mermaid
+flowchart LR
+    user([You, in the browser])
+
+    subgraph stack["docker compose, bound to 127.0.0.1"]
+        web["web<br/>Next.js dashboard"]
+        api["api<br/>FastAPI /api/v1"]
+        redis[("redis<br/>queue, rate limiter,<br/>LLM cache, sessions")]
+        pg[("postgres + pgvector")]
+        subgraph worker["worker (arq)"]
+            agents["agents<br/>triage, parse, match,<br/>tailor, letter"]
+            guard["guardrails<br/>injection detector,<br/>no-fabrication checks"]
+            sender["sender service<br/>consumes approval tokens"]
+            mcp["mcp_gmail<br/>read + add JobPilot labels"]
+        end
+        latex["latex sandbox<br/>no network, no shell escape"]
+    end
+
+    gmail_r[/"Gmail API<br/>gmail.modify token"/]
+    gmail_s[/"Gmail API<br/>gmail.send token"/]
+    llm[/"LLM provider<br/>Groq or OpenAI"/]
+    jobs[/"Job sources<br/>APIs and RSS"/]
+
+    user --> web
+    web -- "REST + SSE (proxy)" --> api
+    api --> pg
+    api -- "enqueue task,<br/>approval token" --> redis
+    redis --> worker
+    worker --> pg
+    agents -- "untrusted text is<br/>spotlighted" --> llm
+    agents --> guard
+    mcp --> gmail_r
+    sender --> gmail_s
+    worker -- "spool folder" --> latex
+    worker --> jobs
+```
+
+How to read it:
+
+- **You** only ever talk to the web app, which proxies to the API. Nothing listens outside
+  `127.0.0.1`.
+- **The API never does long work and never sends.** It writes to PostgreSQL and enqueues tasks.
+- **Agents have no consequential tools.** The strongest thing an agent can do is add a
+  `JobPilot/*` label through `mcp_gmail`. Everything an agent writes passes the guardrails.
+- **Only the sender service can send**, with a token no other component holds, and only with a
+  one-time approval created by your click.
+- **LaTeX compiles in a container with no network**, fed through a spool folder.
 
 ## 1. System overview
 
@@ -151,6 +201,7 @@ reads. The container compiles with **network disabled**, no
 shell-escape, `openout_any=p`, read-only template mount, CPU/memory/time limits. The compile client
 returns PDF + parsed log. Engine choice (TeX Live `latexmk` vs Tectonic) is decided in Phase 6 —
 Tectonic downloads packages on demand, which conflicts with a no-network sandbox.
+Phase 6 chose a curated TeX Live with `latexmk` (ADR-0008).
 
 ## 8. Sending
 
@@ -171,6 +222,18 @@ authentication itself is enforced by the API (Argon2 password, Redis sessions, C
 Background work follows one pattern: the API creates a `task_run` row, enqueues an arq job with the
 same id and returns `202 {task_id}`; the worker reports progress through `TaskReporter` (DB row +
 Redis pub/sub); `GET /api/v1/tasks/{id}/events` streams it as SSE.
+
+## 9b. Observability, demo and end-to-end tests
+
+- **Usage.** Every LLM call is written to `llm_call_log` (purpose, model, tokens, latency,
+  wait, cache hit). The Utilisation page reads it through `GET /api/v1/usage` and estimates
+  a cost from the prices in `LLM_PRICES`.
+- **Demo.** `make demo` runs the same images on database `jobpilot_demo`, Redis index 1 and
+  storage folder `demo`, with `DEMO_MODE=true`, which turns the scheduled jobs off.
+  `scripts/seed_demo.py` refuses any database whose name does not end in `_demo`.
+- **End-to-end tests.** Playwright drives the real web app, API and worker. The language
+  model and Gmail are replaced by a local stub (`GROQ_BASE_URL`, `GMAIL_API_URL`), so no
+  test reaches a real provider or mailbox.
 
 ## 10. Local ports
 

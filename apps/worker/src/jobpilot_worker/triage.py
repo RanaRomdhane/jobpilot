@@ -31,6 +31,7 @@ from jobpilot_mcp_gmail.tools import (
 from jobpilot_security.factory import build_detector
 from jobpilot_worker.gmail_sync import GmailSync
 from jobpilot_worker.pipeline import link_batch
+from jobpilot_worker.sender import label_sent_applications
 
 if TYPE_CHECKING:
     from redis.asyncio import Redis
@@ -57,6 +58,7 @@ class TriageSummary:
     auto_applied: int = 0
     suggested: int = 0
     relabelled: int = 0
+    application_labels: int = 0  # sent applications labelled late
     budget_exhausted: bool = False
     errors: list[str] = field(default_factory=list)
 
@@ -106,6 +108,7 @@ async def run_triage(
             subject_max_chars=settings.triage_subject_max_chars,
         )
         summary.relabelled = await apply_pending_labels(tools, sessionmaker)
+        summary.application_labels = await label_sent_applications(sessionmaker, gmail)
 
         async with sessionmaker() as session:
             batch_ids = await create_batches(

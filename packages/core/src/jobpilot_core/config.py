@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://jobpilot:jobpilot@127.0.0.1:5433/jobpilot"
     redis_url: str = "redis://127.0.0.1:6379/0"
     storage_dir: Path = Path("storage")
+    # `make demo`: synthetic data on a separate database; scheduled jobs are off
+    demo_mode: bool = False
     latex_spool_dir: Path = Path("storage/latex-spool")
     latex_heartbeat_max_age_s: int = 30
 
@@ -66,6 +68,9 @@ class Settings(BaseSettings):
     llm_request_timeout_s: float = 60.0
     llm_max_retries: int = 4
     llm_cache_ttl_s: int = 7 * 24 * 3600
+    # USD per million input / output tokens, per model, for the usage page's cost estimate:
+    # LLM_PRICES={"some/model": [0.10, 0.40]}. Empty: the page shows tokens only.
+    llm_prices: dict[str, tuple[float, float]] = Field(default_factory=dict)
 
     # models per purpose and provider (override any of them from .env)
     groq_model_triage: str = "openai/gpt-oss-120b"
@@ -110,6 +115,8 @@ class Settings(BaseSettings):
     # --- gmail
     google_client_file: Path = Path("secrets/google_credentials.json")
     gmail_query: str = "in:inbox -category:promotions -category:social"
+    # only the end-to-end tests change this, to talk to a local stub instead of Google
+    gmail_api_url: str = "https://gmail.googleapis.com/gmail/v1/users/me"
     gmail_backfill_days: int = Field(default=90, ge=1, le=3650)
     gmail_max_backfill: int = 3_000
 

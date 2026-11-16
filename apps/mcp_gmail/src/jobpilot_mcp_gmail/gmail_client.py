@@ -128,11 +128,13 @@ class GmailClient:
         on_token_refresh: TokenSaver | None = None,
         http: httpx.AsyncClient | None = None,
         max_retries: int = 4,
+        api_url: str = API,
     ) -> None:
         self._token = token
         self._on_refresh = on_token_refresh
         self._http = http or httpx.AsyncClient(timeout=30)
         self._max_retries = max_retries
+        self._api = api_url.rstrip("/")
         self._refresh_lock = asyncio.Lock()
 
     async def aclose(self) -> None:
@@ -146,7 +148,7 @@ class GmailClient:
     async def _request(self, method: str, path: str, **kwargs: Any) -> dict[str, Any]:
         for attempt in range(self._max_retries + 1):
             headers = {"Authorization": f"Bearer {await self._access_token()}"}
-            resp = await self._http.request(method, f"{API}{path}", headers=headers, **kwargs)
+            resp = await self._http.request(method, f"{self._api}{path}", headers=headers, **kwargs)
             if resp.status_code == 401 and attempt == 0:
                 self._token.expiry = 0  # force a refresh once
                 continue

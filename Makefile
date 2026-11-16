@@ -5,10 +5,12 @@ SHELL := bash
 UV ?= uv
 PNPM ?= pnpm
 COMPOSE := docker compose -f infra/docker-compose.yml --env-file .env
+DEMO := docker compose -f infra/docker-compose.yml -f infra/docker-compose.demo.yml --env-file .env
 WEB := apps/web
 PY_SRC := packages apps/api apps/worker apps/mcp_gmail apps/agents scripts tests
 
 .PHONY: help env install up down restart logs ps infra migrate migrate-local revision \
+        demo demo-reset e2e \
         test test-unit test-integration eval lint fmt typecheck check gen-client \
         api-dev worker-dev web-dev clean
 
@@ -40,6 +42,16 @@ logs: ## Follow logs (s=<service> to filter)
 
 ps: ## Show service status and health
 	$(COMPOSE) ps
+
+demo: env ## Start the stack on synthetic demo data (a separate database; `make up` switches back)
+	$(COMPOSE) up -d --wait postgres redis
+	$(COMPOSE) exec -T postgres sh -c "psql -U jobpilot -d postgres -tAc \"SELECT 1 FROM pg_database WHERE datname='jobpilot_demo'\" | grep -q 1 || createdb -U jobpilot jobpilot_demo"
+	$(DEMO) up -d --build --wait
+	$(DEMO) exec -T worker python - < scripts/seed_demo.py
+	@echo "Demo dashboard: http://localhost:3000 (synthetic data). Run 'make up' to return to your data."
+
+demo-reset: ## Reload the demo data (the demo stack must be running)
+	$(DEMO) exec -T worker python - < scripts/seed_demo.py
 
 infra: env ## Start only postgres and redis (for host development and tests)
 	$(COMPOSE) up -d --wait postgres redis
@@ -95,6 +107,9 @@ typecheck: ## mypy (strict) + tsc
 	cd $(WEB) && $(PNPM) typecheck
 
 check: lint typecheck test ## Everything CI runs
+
+e2e: ## Playwright journeys on an isolated stack with a stub LLM and Gmail (needs `make infra`)
+	$(UV) run python -m tests.e2e.run_stack
 
 gen-client: ## Regenerate the typed TS API client from FastAPI's OpenAPI schema
 	$(UV) run python -m jobpilot_api.export_openapi > $(WEB)/openapi.json
