@@ -1137,6 +1137,7 @@
       "summary": "Profil",
       "master": "Profil principal",
       "tailored": "CV adapté"
-    }
+    },
+    "queueError": "La liste des candidatures n'a pas pu être chargée."
   }
 }

@@ -27,6 +27,7 @@ from jobpilot_mcp_gmail.gmail_client import TRIAGE_SCOPES, GmailClient, OAuthTok
 SEND_SCOPES = (
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/userinfo.email",
+    "openid",  # Google adds it to userinfo scopes; asking for it keeps the granted set equal
 )
 TOKENINFO = "https://oauth2.googleapis.com/tokeninfo"
 SCOPES: dict[OAuthScopeSet, tuple[str, ...]] = {

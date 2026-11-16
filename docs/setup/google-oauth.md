@@ -30,7 +30,7 @@ Google account whose Gmail you want to triage.
    - `https://www.googleapis.com/auth/gmail.modify` — read mail and add labels (triage)
    - `https://www.googleapis.com/auth/gmail.send` — send the applications you approve
    - `https://www.googleapis.com/auth/userinfo.email` — tells JobPilot which account the sending
-     token belongs to (`gmail.send` alone cannot read it)
+     token belongs to (`gmail.send` alone cannot read it). Google adds `openid` by itself.
 
    JobPilot asks for them **separately**: triage never holds the send permission (ADR-0002/0003).
 

@@ -65,6 +65,7 @@ MASTER: dict[str, Any] = {
     ],
 }
 CV_CONTENT = {
+    "dropped_for_length": ["b_gone"],
     "language": "fr",
     "findings": [],
     "profile": {"headline": "Ingénieure IA"},
@@ -191,6 +192,11 @@ async def test_review_approve_send_and_track(ctx: dict[str, Any]) -> None:
 
     review = (await c.get("/api/v1/outgoing/review/1")).json()
     mail = review["email"]
+    queue = await c.get("/api/v1/outgoing/queue")
+    assert queue.status_code == 200, queue.text
+    assert [(q["application_id"], q["company"], q["email_status"]) for q in queue.json()] == [
+        (1, "Exemplia Gulf", "draft")
+    ]
     assert mail["to_address"] == "jobs@example.com" and mail["status"] == "draft"
     assert mail["subject"] == "Candidature : Ingénieur IA F/H"
     assert mail["body"].endswith(

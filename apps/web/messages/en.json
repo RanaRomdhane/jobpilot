@@ -1137,6 +1137,7 @@
       "summary": "Summary",
       "master": "Master profile",
       "tailored": "Tailored CV"
-    }
+    },
+    "queueError": "The list of applications could not be loaded."
   }
 }

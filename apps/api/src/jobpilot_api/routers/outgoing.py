@@ -207,11 +207,14 @@ def changes(master: ResumeProfile | None, cv: GeneratedDocument | None) -> list[
             out.append(TailoringChange(where=where, master=before or "", tailored=after))
     texts = all_texts(master)
     plan = content.get("plan") or {}
+    dropped = set(content.get("dropped_for_length") or [])  # not on the CV: nothing to compare
     for group in ("experiences", "projects", "extra_sections"):
         for item in plan.get(group) or []:
             for bullet in item.get("bullets") or []:
                 source = bullet.get("source")
                 before = texts.get(source or "")
+                if source in dropped:
+                    continue
                 if before is not None and bullet.get("text") != before:
                     out.append(
                         TailoringChange(
@@ -331,7 +334,7 @@ async def queue(_: Authenticated, session: Session) -> list[QueueItem]:
                 .distinct(OutgoingEmail.application_id)
                 .order_by(OutgoingEmail.application_id, OutgoingEmail.id.desc())
             )
-        ).tuples()
+        ).all()  # not the result itself: it has .keys(), so dict() would read it as a mapping
     )
     return [
         QueueItem(

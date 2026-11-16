@@ -19,6 +19,7 @@ import { ReviewDetail } from "./review-detail";
 /** Applications with documents on the left, the selected one's review on the right. */
 export function ReviewScreen() {
   const t = useTranslations("review");
+  const tc = useTranslations("common");
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -36,6 +37,16 @@ export function ReviewScreen() {
       <div className="grid gap-4 lg:grid-cols-[18rem_1fr]">
         <Skeleton className="h-64" />
         <Skeleton className="h-96" />
+      </div>
+    );
+  }
+  if (queue.isError) {
+    return (
+      <div role="alert" className="rounded-lg border border-dashed p-8 text-center">
+        <p className="font-medium">{t("queueError")}</p>
+        <Button className="mt-4" variant="outline" onClick={() => void queue.refetch()}>
+          {tc("retry")}
+        </Button>
       </div>
     );
   }
