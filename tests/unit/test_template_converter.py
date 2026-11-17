@@ -291,3 +291,70 @@ def test_detex_keeps_text_after_layout_commands() -> None:
   Intern
 \end{twocolentry}"""
     assert detex(src) == "June 2025 Intern"
+
+
+def test_undouble_backslashes() -> None:
+    from jobpilot_agents.template_converter import undouble
+
+    src = r"{\small x} \par Tunis\\Tel \textbf{y}"
+    # a JSON double-escape slip: every command came back as "\\cmd" (a line break + a word)
+    assert undouble(r"{\\small \\VAR{name}} \\par", src) == r"{\small \VAR{name}} \par"
+    # "\\" followed by text that is in the source is a real line break: kept
+    assert undouble(r"Tunis\\Tel", src) == r"Tunis\\Tel"
+    # a line break before a command (odd run) is not a slip
+    assert undouble(r"a \\\textbf{b}", src) == r"a \\\textbf{b}"
+    # inside a tag, "\\" is Jinja string escaping: untouched
+    tag = r"\VAR{xs|ljoin(' \\newline ')}"
+    assert undouble(tag, src) == tag
+
+
+async def test_doubled_backslashes_are_repaired() -> None:
+    doubled = replies()
+    doubled[1] = {
+        "edits": [
+            {"find": r"{\\Large   Ada Example}", "replace": r"{\\Large \\VAR{name}}"},
+            {"find": "ada@example.com", "replace": r"\VAR{contact.email}"},
+        ],
+        "data": {"name": "Ada Example", "email": "ada@example.com"},
+    }
+    doubled[2] = {**doubled[2], "template": SECTION_TEMPLATE.replace("\\", "\\\\")}
+    conv = await convert_template(ScriptedProvider(*doubled), CV, "cv", tpm=0)  # type: ignore[arg-type]
+    assert conv.ok, [(c.title, c.error) for c in conv.chunks]
+    assert r"{\Large \VAR{name}}" in conv.template
+    assert r"\textbf{\VAR{e.title}}" in conv.template and r"\\textbf" not in conv.template
+    assert r"\\begin" not in conv.template and r"\begin{itemize}" in conv.template
+
+
+SUBJECT_LETTER = LETTER.replace(
+    r"\opening",
+    r"\textbf{Subject: Application for the Data Engineer position}" + "\n\n" + r"\opening",
+)
+
+
+async def test_letter_subject_line_uses_the_tailored_subject() -> None:
+    from jobpilot_latex.render import render
+
+    fixed = GOOD_LETTER.replace(
+        r"\opening",
+        r"\textbf{Subject: Application for the \VAR{letter.position} position}"
+        + "\n\n"
+        + r"\opening",
+    )
+    good = GOOD_LETTER.replace(r"\opening", r"\textbf{\VAR{letter.subject}}" + "\n\n" + r"\opening")
+    subject = "Subject: Application for the Data Engineer position"
+    data = {"letter": {**LETTER_DATA["letter"], "position": "Data Engineer", "subject": subject}}
+    provider = ScriptedProvider(
+        {
+            "edits": [{"find": "Ada Example", "replace": r"\VAR{name}"}],
+            "data": {"name": "Ada Example"},
+        },
+        {"template": fixed, "data": data},
+        {"template": good, "data": data},
+    )
+    conv = await convert_template(provider, SUBJECT_LETTER, "cover_letter", tpm=0)  # type: ignore[arg-type]
+    assert conv.ok, [(c.title, c.error) for c in conv.chunks]
+    assert "letter.subject" in provider.calls[2]["messages"][-1]["content"]
+    assert "Application for the" not in conv.template
+    # a French posting gets a French subject line, not an English sentence around the title
+    ctx = {"name": "Ada", "letter": {**data["letter"], "subject": "Candidature : Ingénieure Data"}}
+    assert "Candidature" in render(conv.template, ctx)
