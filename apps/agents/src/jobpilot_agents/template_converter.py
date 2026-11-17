@@ -87,7 +87,8 @@ Variables:
 - languages[]: name, level, cefr ; certifications[]: name, issuer, date, url
 - extra_sections[]: title, bullets[].text  (anything else: publications, writing, awards...)
 - letter (cover letters only): company, position, hiring_manager, recipient[] (address lines),
-  opening (salutation), paragraphs[], closing, source (where the job was found), date"""
+  opening (salutation), paragraphs[], closing, source (where the job was found), date,
+  subject (the whole subject line, label included, written in the posting's language)"""
 
 INSTRUCTIONS = f"""You turn one part of a filled LaTeX document (a CV or a cover letter) into a
 reusable template, for its owner. JobPilot later fills the template with tailored data.
@@ -118,6 +119,10 @@ Rules:
   recipient lines through letter.recipient, the salutation through letter.opening, ONE loop
   \\BLOCK{{for p in letter.paragraphs}}\\VAR{{p|rich}}<blank line>\\BLOCK{{endfor}} replacing every
   paragraph, the closing through letter.closing. data.letter holds the original text.
+- A cover letter's subject line ("Subject: Application for the X position", "Objet :
+  Candidature ...") becomes \\VAR{{letter.subject}} as a whole, label included, because the
+  letter may be written in another language: keep only its layout, e.g.
+  \\textbf{{\\VAR{{letter.subject}}}}. data.letter.subject holds the original line.
 - A URL prefix already in the template (https://github.com/\\github) needs only the last part:
   \\VAR{{link.github|handle}}. Every occurrence of a personal value becomes a variable.
 - Items have only the fields listed above. Text with no field of its own (a subtitle, a tag such
@@ -253,6 +258,7 @@ def render_context(
         "closing": "",
         "source": "",
         "date": "",
+        "subject": "",
     }
     letter.update({k: v for k, v in (data.get("letter") or {}).items() if v is not None})
     ctx["letter"] = letter
@@ -276,6 +282,31 @@ _TWO_DATES = re.compile(
 )
 
 
+# "\\VAR{" / "\\BLOCK{": a tag escaped twice
+_DOUBLED_TAG = re.compile(r"(?<!\\)\\\\(VAR|BLOCK|#)\{")
+_TAG = re.compile(r"(\\(?:VAR|BLOCK)\{[^{}]*\}|\\#\{[^{}]*\})")
+# an even run of backslashes right before a command name
+_EVEN_RUN = re.compile(r"(?<!\\)((?:\\\\)+)([A-Za-z]+)")
+
+
+def undouble(text: str, source: str) -> str:
+    """Undo a JSON double-escape slip: "\\\\small" (a line break, then the word "small").
+
+    A run of 2k backslashes before letters is halved unless the source has that exact sequence
+    (a real line break followed by text, e.g. "Tunis\\\\Tel"). Inside \\VAR{}/\\BLOCK{} tags a
+    doubled backslash is Jinja string escaping and stays.
+    """
+    text = _DOUBLED_TAG.sub(r"\\\1{", text)
+
+    def halve(m: re.Match[str]) -> str:
+        if m.group(0) in source:
+            return m.group(0)
+        return m.group(1)[: len(m.group(1)) // 2] + m.group(2)
+
+    parts = _TAG.split(text)
+    return "".join(p if i % 2 else _EVEN_RUN.sub(halve, p) for i, p in enumerate(parts))
+
+
 def repair(template: str) -> str:
     """Fix the slips models make with the LaTeX delimiters (each fix is unambiguous)."""
     out = _FILTER_OUTSIDE.sub(r"\\VAR{\1\2}", template)
@@ -286,6 +317,9 @@ def repair(template: str) -> str:
 
 
 MAX_STATIC_WORDS = {"section": 12, "body": 12}
+# "Poste : \VAR{letter.position}" is a label; "Application for the ... position" is a sentence
+# in one language that a letter in another language would keep
+MAX_WORDS_AROUND_POSITION = 2
 _PARAGRAPH_LOOP = re.compile(r"\\BLOCK\{\s*for\s+\w+\s+in\s+letter\.paragraphs\s*\}")
 
 
@@ -313,6 +347,14 @@ def template_problem(
             )
     if kind == "cover_letter" and chunk.kind == "body" and not _PARAGRAPH_LOOP.search(template):
         return "the letter body must loop over letter.paragraphs"
+    if kind == "cover_letter":
+        for line in template.splitlines():
+            if "letter.position" in line and len(static_words(line)) > MAX_WORDS_AROUND_POSITION:
+                return (
+                    f"fixed sentence around the position: {line.strip()[:100]!r}. A subject "
+                    "line is \\VAR{letter.subject} as a whole (it is written in the letter's "
+                    "language)"
+                )
     tags = re.sub(r"\\(?:VAR|BLOCK)\{[^{}]*\}", " ", template)
     left = [v for v in _personal_values(data) if v in tags]
     if left:
@@ -348,10 +390,13 @@ def _apply(chunk: Chunk, mode: str, proposal: ChunkProposal) -> str:
     if mode == "rewrite":
         if not proposal.template:
             raise ReplacementError("no template returned")
-        text = repair(proposal.template)
+        text = repair(undouble(proposal.template, chunk.source))
         text = text if text.endswith("\n") else text + "\n"
         return guard_empty_section(text) if chunk.kind == "section" else text
-    edits = [Replacement(e.find, repair(e.replace)) for e in proposal.edits]
+    edits = [
+        Replacement(undouble(e.find, chunk.source), repair(undouble(e.replace, chunk.source)))
+        for e in proposal.edits
+    ]
     return apply_replacements(chunk.source, edits) if edits else chunk.source
 
 
